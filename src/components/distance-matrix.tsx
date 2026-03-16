@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { ChevronDown, ChevronUp, Table2 } from "lucide-react";
 import { useTripStore } from "@/store/trip-store";
 import { haversineKm } from "@/lib/distance";
 import { Button } from "@/components/ui/button";
@@ -24,26 +25,29 @@ export function DistanceMatrix() {
         onClick={() => setExpanded(!expanded)}
         className="w-full justify-between"
       >
-        <span className="font-semibold text-sm">Distance Matrix</span>
-        <span>{expanded ? "\u25B2" : "\u25BC"}</span>
+        <span className="font-semibold text-sm flex items-center gap-1.5">
+          <Table2 className="h-4 w-4" />
+          Distance Matrix
+        </span>
+        <span>{expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</span>
       </Button>
 
       {expanded && (
         <div className="overflow-x-auto mt-2">
-          <table className="text-xs w-full">
+          <table className="text-sm w-full">
             <thead>
               <tr>
-                <th className="text-left p-1"></th>
+                <th className="text-left p-2"></th>
                 {destinations.map((d) => (
-                  <th key={d.id} className="p-1 text-center max-w-[80px] truncate">
+                  <th key={d.id} className="p-2 text-center max-w-[80px] truncate">
                     {d.name}
                   </th>
                 ))}
-                <th className="p-1 text-center font-bold">Avg</th>
+                <th className="p-2 text-center font-bold">Avg</th>
               </tr>
             </thead>
             <tbody>
-              {homestays.map((h) => {
+              {homestays.map((h, rowIndex) => {
                 const dists = destinations.map((d) =>
                   haversineKm(h.lat, h.lon, d.lat, d.lon)
                 );
@@ -51,17 +55,17 @@ export function DistanceMatrix() {
                 return (
                   <tr
                     key={h.id}
-                    className="hover:bg-muted cursor-pointer"
+                    className={`hover:bg-muted cursor-pointer border-b border-border/50 ${rowIndex % 2 !== 0 ? "bg-muted/30" : ""}`}
                     onClick={() => setSelected(h.id)}
                   >
-                    <td className="p-1 font-medium">{h.name}</td>
+                    <td className="p-2 font-medium">{h.name}</td>
                     {dists.map((km, i) => (
-                      <td key={destinations[i].id} className="p-1 text-center">
+                      <td key={destinations[i].id} className="p-2 text-center">
                         <div>{km.toFixed(1)}</div>
                         <DrivingTimeButton fromLat={h.lat} fromLon={h.lon} toLat={destinations[i].lat} toLon={destinations[i].lon} />
                       </td>
                     ))}
-                    <td className="p-1 text-center font-bold">{avg.toFixed(1)}</td>
+                    <td className="p-2 text-center font-bold">{avg.toFixed(1)}</td>
                   </tr>
                 );
               })}

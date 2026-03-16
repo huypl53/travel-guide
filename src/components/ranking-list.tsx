@@ -1,11 +1,18 @@
 "use client";
 
 import { useMemo } from "react";
+import { Trophy } from "lucide-react";
 import { useTripStore } from "@/store/trip-store";
 import { rankHomestays } from "@/lib/ranking";
 import { Button } from "@/components/ui/button";
 
-const medals = ["\u{1F947}", "\u{1F948}", "\u{1F949}"];
+function RankBadge({ rank }: { rank: number }) {
+  const base = "inline-flex items-center justify-center h-6 w-6 rounded-full text-xs font-bold";
+  if (rank === 1) return <div className={`${base} bg-amber-500 text-white`}>1</div>;
+  if (rank === 2) return <div className={`${base} bg-gray-400 text-white`}>2</div>;
+  if (rank === 3) return <div className={`${base} bg-amber-700 text-white`}>3</div>;
+  return <div className={`${base} bg-muted text-muted-foreground`}>{rank}</div>;
+}
 
 export function RankingList() {
   const locations = useTripStore((s) => s.locations);
@@ -23,7 +30,10 @@ export function RankingList() {
 
   return (
     <div className="space-y-1">
-      <h3 className="font-semibold text-sm">Ranking: Best → Worst</h3>
+      <h3 className="font-semibold text-base flex items-center gap-1.5">
+        <Trophy className="h-4 w-4" />
+        Ranking: Best → Worst
+      </h3>
       {ranked.map((r, i) => (
         <Button
           key={r.homestay.id}
@@ -31,8 +41,9 @@ export function RankingList() {
           className="w-full justify-between h-auto py-2"
           onClick={() => setSelected(r.homestay.id)}
         >
-          <span>
-            {medals[i] ?? `#${i + 1}`} {r.homestay.name}
+          <span className="flex items-center gap-2">
+            <RankBadge rank={i + 1} />
+            {r.homestay.name}
           </span>
           <span className="text-muted-foreground text-xs">
             avg {r.weightedAvgKm.toFixed(1)} km
