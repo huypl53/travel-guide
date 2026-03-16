@@ -5,18 +5,32 @@ interface ParsedLocation {
 }
 
 export function parseGoogleMapsUrl(url: string): ParsedLocation | null {
+  const name = extractPlaceName(url);
+
+  // Try @lat,lon pattern (most common in place URLs)
   const atMatch = url.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*)/);
   if (atMatch) {
-    const name = extractPlaceName(url);
     return { lat: parseFloat(atMatch[1]), lon: parseFloat(atMatch[2]), name };
   }
 
+  // Try ?q=lat,lon pattern
   const qMatch = url.match(/[?&]q=(-?\d+\.?\d*),(-?\d+\.?\d*)/);
   if (qMatch) {
-    return { lat: parseFloat(qMatch[1]), lon: parseFloat(qMatch[2]), name: null };
+    return { lat: parseFloat(qMatch[1]), lon: parseFloat(qMatch[2]), name };
+  }
+
+  // Try !3d (lat) and !4d (lon) pattern in data params
+  const lat3d = url.match(/!3d(-?\d+\.?\d*)/);
+  const lon4d = url.match(/!4d(-?\d+\.?\d*)/);
+  if (lat3d && lon4d) {
+    return { lat: parseFloat(lat3d[1]), lon: parseFloat(lon4d[1]), name };
   }
 
   return null;
+}
+
+export function isShortMapsUrl(url: string): boolean {
+  return /^https?:\/\/(maps\.app\.goo\.gl|goo\.gl\/maps)\//.test(url);
 }
 
 function extractPlaceName(url: string): string | null {

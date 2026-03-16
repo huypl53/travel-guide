@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTripStore } from "@/store/trip-store";
-import { parseGoogleMapsUrl, parseCsvLocations, parseJsonLocations } from "@/lib/parsers";
+import { parseGoogleMapsUrl, isShortMapsUrl, parseCsvLocations, parseJsonLocations } from "@/lib/parsers";
 import type { LocationType } from "@/lib/types";
 
 interface LocationInputProps {
@@ -21,7 +21,27 @@ export function LocationInput({ type }: LocationInputProps) {
   const label = type === "homestay" ? "Homestay" : "Destination";
 
   async function handlePaste() {
-    const parsed = parseGoogleMapsUrl(input);
+    let url = input.trim();
+
+    // Resolve short URLs (maps.app.goo.gl) via server
+    if (isShortMapsUrl(url)) {
+      setGeocoding(true);
+      try {
+        const res = await fetch(`/api/resolve-url?url=${encodeURIComponent(url)}`);
+        const data = await res.json();
+        if (data.resolvedUrl) {
+          url = data.resolvedUrl;
+        } else {
+          return;
+        }
+      } catch {
+        return;
+      } finally {
+        setGeocoding(false);
+      }
+    }
+
+    const parsed = parseGoogleMapsUrl(url);
     if (parsed) {
       addLocation({
         type,
