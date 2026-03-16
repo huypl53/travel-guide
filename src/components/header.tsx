@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import { createSupabaseBrowser } from "@/lib/supabase-browser";
@@ -39,10 +40,10 @@ export function Header() {
 
   return (
     <header className="border-b px-4 py-2 flex items-center justify-between">
-      <a href="/" className="flex items-center gap-2 font-semibold text-lg">
+      <Link href="/" className="flex items-center gap-2 font-semibold text-lg">
         <MapPin className="h-5 w-5" />
         Homestay Locator
-      </a>
+      </Link>
 
       {user ? (
         <DropdownMenu>

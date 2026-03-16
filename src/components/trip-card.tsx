@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import type { TripCardData } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Share2, Trash2 } from "lucide-react";
+import { Check, Share2, Trash2 } from "lucide-react";
 
 function timeAgo(dateStr: string): string {
   const seconds = Math.floor(
@@ -69,7 +69,7 @@ export function TripCard({ trip, onDelete }: TripCardProps) {
         </div>
         <div className="flex gap-1 ml-2 shrink-0">
           <Button variant="ghost" size="icon" onClick={handleShare} title="Copy share link">
-            <Share2 className="h-4 w-4" />
+            {copied ? <Check className="h-4 w-4 text-green-500" /> : <Share2 className="h-4 w-4" />}
           </Button>
           <Button
             variant="ghost"

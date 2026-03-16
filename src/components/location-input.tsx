@@ -149,7 +149,9 @@ export function LocationInput({ type }: LocationInputProps) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") mode === "paste" ? handlePaste() : handleManual();
+            if (e.key === "Enter") {
+              if (mode === "paste") handlePaste(); else handleManual();
+            }
           }}
         />
         <Button
