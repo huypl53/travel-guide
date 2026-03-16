@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { useDistanceStore } from "@/store/distance-store";
 import type { Location } from "@/lib/types";
 
@@ -10,8 +10,14 @@ const destinations: Location[] = [
   { id: "d1", tripId: "t1", type: "destination", name: "D1", address: null, lat: 11.95, lon: 108.46, priority: 5, source: "manual" },
 ];
 
+const originalFetch = global.fetch;
+
 beforeEach(() => {
   useDistanceStore.getState().clear();
+});
+
+afterEach(() => {
+  global.fetch = originalFetch;
 });
 
 describe("useDistanceStore", () => {
