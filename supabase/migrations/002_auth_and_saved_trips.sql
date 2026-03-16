@@ -23,12 +23,14 @@ CREATE POLICY "trips_select" ON trips FOR SELECT USING (
   OR user_id IS NULL
   OR share_slug IS NOT NULL
 );
-CREATE POLICY "trips_insert" ON trips FOR INSERT WITH CHECK (true);
-CREATE POLICY "trips_update" ON trips FOR UPDATE USING (
+CREATE POLICY "trips_insert" ON trips FOR INSERT WITH CHECK (
   user_id = auth.uid() OR user_id IS NULL
 );
+CREATE POLICY "trips_update" ON trips FOR UPDATE USING (
+  user_id = auth.uid() OR (user_id IS NULL AND auth.uid() IS NULL)
+);
 CREATE POLICY "trips_delete" ON trips FOR DELETE USING (
-  user_id = auth.uid() OR user_id IS NULL
+  user_id = auth.uid() OR (user_id IS NULL AND auth.uid() IS NULL)
 );
 
 -- locations policies (inherit from trip)
@@ -69,3 +71,6 @@ CREATE POLICY "saved_trips_insert" ON saved_trips FOR INSERT WITH CHECK (
 CREATE POLICY "saved_trips_delete" ON saved_trips FOR DELETE USING (
   user_id = auth.uid()
 );
+
+-- Index for efficient saved_trips lookups by trip
+CREATE INDEX idx_saved_trips_trip_id ON saved_trips(trip_id);
