@@ -179,3 +179,66 @@ Initializes the Supabase client using `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLI
 | Supabase   | Database persistence   | Free tier: 500 MB, 2 GB transfer  |
 
 All three are free and require no API keys (Supabase uses project URL + anon key).
+
+## Authentication
+
+### Architecture
+
+Authentication uses **Supabase Auth** with `@supabase/ssr` for cookie-based session management. Two sign-in methods are supported:
+
+- **Google OAuth** — redirects through Supabase's OAuth flow
+- **Magic link** — passwordless email sign-in
+
+Sessions are stored in cookies and refreshed automatically by Next.js middleware (`src/middleware.ts`), which runs on every request to keep the Supabase auth token fresh. Row Level Security (RLS) policies on all tables ensure users can only access their own data.
+
+### Middleware (`src/middleware.ts`)
+
+Refreshes the Supabase auth session on every request using `@supabase/ssr`. This ensures the server-side Supabase client always has a valid session token when rendering pages or handling API calls.
+
+### New Components
+
+| Component        | File                                  | Description                                                  |
+|------------------|---------------------------------------|--------------------------------------------------------------|
+| Header           | `src/components/header.tsx`           | Top navigation bar with sign-in/sign-out and user avatar     |
+| AuthDialog       | `src/components/auth-dialog.tsx`      | Modal dialog for Google OAuth and magic link sign-in         |
+| TripCard         | `src/components/trip-card.tsx`        | Card displaying a saved trip summary (name, date, locations) |
+| MyTripsList      | `src/components/my-trips-list.tsx`    | Grid of TripCards for the logged-in user's saved trips       |
+| AnonLanding      | `src/components/anon-landing.tsx`     | Landing page content shown to anonymous (non-authenticated) users |
+| SaveTripButton   | `src/components/save-trip-button.tsx` | Button on shared trip pages to save a trip to the user's account |
+
+### Database Changes
+
+#### `trips` table — new column
+
+| Column  | Type          | Notes                                      |
+|---------|---------------|--------------------------------------------|
+| user_id | uuid (nullable) | FK to `auth.users`, owner of the trip    |
+
+#### `saved_trips` join table (new)
+
+| Column   | Type             | Notes                          |
+|----------|------------------|--------------------------------|
+| id       | uuid (PK)        | Auto-generated                 |
+| user_id  | uuid (FK auth.users) | The user who saved the trip |
+| trip_id  | uuid (FK trips)  | The saved trip                 |
+| saved_at | timestamptz      | Defaults to now()              |
+
+Unique constraint on `(user_id, trip_id)`.
+
+#### RLS Policies
+
+Row Level Security is enabled on all tables (`trips`, `locations`, `distance_cache`, `saved_trips`). Policies enforce:
+
+- Users can read any trip (public sharing still works)
+- Users can only insert/update/delete their own trips
+- Users can only manage their own saved trips entries
+
+### New API Routes
+
+#### GET /api/auth/callback
+
+Handles the OAuth redirect from Supabase Auth. Exchanges the authorization code for a session and sets session cookies.
+
+#### GET/POST/DELETE /api/saved-trips
+
+Manages saved trips for the authenticated user. `GET` returns all saved trips, `POST` saves a trip by ID, `DELETE` removes a saved trip.
