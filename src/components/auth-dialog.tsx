@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 type Mode = "sign-in" | "sign-up" | "magic-link" | "forgot-password";
 
 export function AuthDialog() {
+  const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState<Mode>("sign-in");
@@ -26,6 +27,18 @@ export function AuthDialog() {
   function resetState() {
     setMessage(null);
     setError(null);
+  }
+
+  function handleOpenChange(nextOpen: boolean) {
+    setOpen(nextOpen);
+    if (!nextOpen) {
+      // Reset everything when dialog closes
+      setEmail("");
+      setPassword("");
+      setMode("sign-in");
+      setMessage(null);
+      setError(null);
+    }
   }
 
   async function handleGoogle() {
@@ -95,7 +108,7 @@ export function AuthDialog() {
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger render={<Button variant="outline" size="sm" />}>
         Sign in
       </DialogTrigger>
