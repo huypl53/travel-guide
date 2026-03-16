@@ -36,8 +36,8 @@ export function LocationList({ type }: LocationListProps) {
             }`}
           >
             <Tooltip>
-              <TooltipTrigger>
-                <span className="text-sm truncate flex-1 text-left">{loc.name}</span>
+              <TooltipTrigger className="flex-1 truncate text-sm text-left">
+                {loc.name}
               </TooltipTrigger>
               <TooltipContent side="top">
                 <p className="text-xs">{loc.name}</p>

@@ -47,21 +47,12 @@ export function DrivingTimeButton({ fromLat, fromLon, toLat, toLon }: DrivingTim
   return (
     <TooltipProvider delay={200}>
       <Tooltip>
-        <TooltipTrigger>
-          <span
-            role="button"
-            tabIndex={0}
-            onClick={loading ? undefined : fetchDriving}
-            onKeyDown={(e) => {
-              if ((e.key === "Enter" || e.key === " ") && !loading) {
-                e.preventDefault();
-                fetchDriving();
-              }
-            }}
-            className={`inline-flex items-center justify-center h-5 px-1 rounded text-xs cursor-pointer hover:bg-muted transition-colors ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
-          >
-            {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Car className="h-3 w-3" />}
-          </span>
+        <TooltipTrigger
+          onClick={loading ? undefined : fetchDriving}
+          className={`inline-flex items-center justify-center h-5 px-1 rounded text-xs cursor-pointer hover:bg-muted transition-colors ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+          disabled={loading}
+        >
+          {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Car className="h-3 w-3" />}
         </TooltipTrigger>
         <TooltipContent>
           <p>Get driving time</p>

@@ -87,8 +87,8 @@ export default function TripPage() {
           )}
         </Button>
         <div
-          className={`transition-all overflow-y-auto p-4 space-y-4 ${
-            bottomSheetOpen ? "max-h-[60vh]" : "max-h-0 p-0"
+          className={`transition-[max-height] duration-300 ease-in-out overflow-y-auto space-y-4 ${
+            bottomSheetOpen ? "max-h-[60vh] p-4" : "max-h-0 overflow-hidden"
           }`}
         >
           <RankingList />
