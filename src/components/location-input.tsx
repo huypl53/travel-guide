@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { Link, Search, Upload, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTripStore } from "@/store/trip-store";
@@ -110,17 +111,27 @@ export function LocationInput({ type }: LocationInputProps) {
           variant={mode === "paste" ? "default" : "outline"}
           size="sm"
           onClick={() => setMode("paste")}
+          aria-label="Paste Link"
         >
+          <Link className="h-3.5 w-3.5 mr-1" />
           Paste Link
         </Button>
         <Button
           variant={mode === "manual" ? "default" : "outline"}
           size="sm"
           onClick={() => setMode("manual")}
+          aria-label="Search Address"
         >
+          <Search className="h-3.5 w-3.5 mr-1" />
           Search Address
         </Button>
-        <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => fileRef.current?.click()}
+          aria-label="Upload File"
+        >
+          <Upload className="h-3.5 w-3.5 mr-1" />
           Upload File
         </Button>
         <input
@@ -144,8 +155,9 @@ export function LocationInput({ type }: LocationInputProps) {
         <Button
           onClick={mode === "paste" ? handlePaste : handleManual}
           disabled={geocoding}
+          aria-label={geocoding ? "Loading" : "Add location"}
         >
-          {geocoding ? "..." : "Add"}
+          {geocoding ? <Loader2 className="h-4 w-4 animate-spin" /> : "Add"}
         </Button>
       </div>
     </div>

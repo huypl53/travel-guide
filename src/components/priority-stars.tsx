@@ -33,7 +33,7 @@ export function PriorityStars({ value, onChange }: PriorityStarsProps) {
                       onChange(level);
                     }
                   }}
-                  className={`text-xs leading-none cursor-pointer select-none ${level <= value ? "text-blue-500" : "text-gray-300"} hover:text-blue-400`}
+                  className={`text-xs leading-none cursor-pointer select-none ${level <= value ? "text-primary" : "text-muted-foreground/40"} hover:text-primary/70`}
                 >
                   ●
                 </span>
