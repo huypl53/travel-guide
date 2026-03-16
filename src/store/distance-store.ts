@@ -1,10 +1,19 @@
 import { create } from "zustand";
 import type { Location } from "@/lib/types";
-import { buildOsrmRouteUrl, decodePolyline } from "@/lib/osrm";
+import { decodePolyline } from "@/lib/osrm";
 
 export interface DrivingDistance {
   drivingKm: number;
   drivingMinutes: number;
+}
+
+function coordHash(homestays: Location[], destinations: Location[]): string {
+  const coords = [
+    ...homestays.map((h) => `${h.lat},${h.lon}`),
+    "|",
+    ...destinations.map((d) => `${d.lat},${d.lon}`),
+  ];
+  return coords.join(";");
 }
 
 interface DistanceState {
@@ -13,6 +22,7 @@ interface DistanceState {
   routesLoading: boolean;
   loading: boolean;
   error: string | null;
+  _lastCoordHash: string;
   fetchDistances: (homestays: Location[], destinations: Location[]) => Promise<void>;
   fetchRoutes: (homestay: Location, destinations: Location[]) => Promise<void>;
   clear: () => void;
@@ -24,12 +34,16 @@ export const useDistanceStore = create<DistanceState>((set, get) => ({
   routesLoading: false,
   loading: false,
   error: null,
+  _lastCoordHash: "",
 
   fetchDistances: async (homestays, destinations) => {
     if (homestays.length === 0 || destinations.length === 0) {
-      set({ distances: new Map(), loading: false });
+      set({ distances: new Map(), loading: false, _lastCoordHash: "" });
       return;
     }
+
+    const hash = coordHash(homestays, destinations);
+    if (hash === get()._lastCoordHash) return;
 
     set({ loading: true, error: null });
 
@@ -55,7 +69,7 @@ export const useDistanceStore = create<DistanceState>((set, get) => ({
         }
       }
 
-      set({ distances: newDistances, loading: false });
+      set({ distances: newDistances, loading: false, _lastCoordHash: hash });
     } catch (e) {
       set({ error: (e as Error).message, loading: false });
     }
@@ -65,35 +79,33 @@ export const useDistanceStore = create<DistanceState>((set, get) => ({
     if (destinations.length === 0) return;
 
     // Skip routes we already have cached
-    const cached = get().routes;
-    const needed = destinations.filter((d) => !cached.has(`${homestay.id}:${d.id}`));
+    const needed = destinations.filter((d) => !get().routes.has(`${homestay.id}:${d.id}`));
     if (needed.length === 0) return;
 
     set({ routesLoading: true });
 
-    const newRoutes = new Map(cached);
-
-    await Promise.all(
+    const results = await Promise.all(
       needed.map(async (dest) => {
         try {
-          const url = buildOsrmRouteUrl(
-            { lat: homestay.lat, lon: homestay.lon },
-            { lat: dest.lat, lon: dest.lon }
-          );
-          const res = await fetch(url);
-          if (!res.ok) return;
+          const res = await fetch(`/api/routes?from=${homestay.lat},${homestay.lon}&to=${dest.lat},${dest.lon}`);
+          if (!res.ok) return null;
           const data = await res.json();
-          if (data.code !== "Ok" || !data.routes?.[0]?.geometry) return;
-          const points = decodePolyline(data.routes[0].geometry);
-          newRoutes.set(`${homestay.id}:${dest.id}`, points);
+          if (!data.geometry) return null;
+          return { key: `${homestay.id}:${dest.id}`, points: decodePolyline(data.geometry) };
         } catch {
-          // Skip failed routes — straight line fallback
+          return null;
         }
       })
     );
 
-    set({ routes: newRoutes, routesLoading: false });
+    // Merge with current state at write time to avoid race condition
+    const merged = new Map(get().routes);
+    for (const r of results) {
+      if (r) merged.set(r.key, r.points);
+    }
+
+    set({ routes: merged, routesLoading: false });
   },
 
-  clear: () => set({ distances: new Map(), routes: new Map(), loading: false, routesLoading: false, error: null }),
+  clear: () => set({ distances: new Map(), routes: new Map(), loading: false, routesLoading: false, error: null, _lastCoordHash: "" }),
 }));

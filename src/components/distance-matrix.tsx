@@ -53,11 +53,12 @@ export function DistanceMatrix() {
                 const dists = destinations.map((d) =>
                   haversineKm(h.lat, h.lon, d.lat, d.lon)
                 );
+                const totalWeight = destinations.reduce((sum, d) => sum + d.priority, 0);
                 const avg = destinations.reduce((sum, d, i) => {
                   const key = `${h.id}:${d.id}`;
                   const driving = drivingDistances.get(key);
-                  return sum + (driving ? driving.drivingKm : dists[i]);
-                }, 0) / destinations.length;
+                  return sum + (driving ? driving.drivingKm : dists[i]) * d.priority;
+                }, 0) / totalWeight;
 
                 return (
                   <tr

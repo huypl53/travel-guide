@@ -15,7 +15,7 @@ function FlyToLocation() {
 
   useEffect(() => {
     if (focused) {
-      map.flyTo([focused.lat, focused.lon], 15, { duration: 1.8 });
+      map.flyTo([focused.lat, focused.lon], 15, { duration: 1.2 });
       clearFocus(null);
     }
   }, [focused, map, clearFocus]);
