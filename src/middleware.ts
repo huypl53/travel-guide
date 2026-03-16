@@ -27,6 +27,16 @@ export async function middleware(request: NextRequest) {
 
   await supabase.auth.getUser();
 
+  // If the request has a `code` query param, redirect to the auth callback
+  // This handles cases where Supabase redirects to the site URL instead of /api/auth/callback
+  const { searchParams } = request.nextUrl;
+  const code = searchParams.get("code");
+  if (code && !request.nextUrl.pathname.startsWith("/api/auth/callback")) {
+    const callbackUrl = request.nextUrl.clone();
+    callbackUrl.pathname = "/api/auth/callback";
+    return NextResponse.redirect(callbackUrl);
+  }
+
   return supabaseResponse;
 }
 
