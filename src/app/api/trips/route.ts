@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { createSupabaseServer } from "@/lib/supabase-server";
 import { nanoid } from "nanoid";
 
 export async function POST(request: NextRequest) {
+  const supabase = await createSupabaseServer();
   const body = await request.json();
   const { name, locations } = body;
 
@@ -10,11 +11,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Missing trip name" }, { status: 400 });
   }
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   const slug = nanoid(10);
 
   const { data: trip, error: tripError } = await supabase
     .from("trips")
-    .insert({ name, share_slug: slug })
+    .insert({ name, share_slug: slug, user_id: user?.id ?? null })
     .select()
     .single();
 
