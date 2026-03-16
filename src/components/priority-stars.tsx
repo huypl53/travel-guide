@@ -1,22 +1,43 @@
 "use client";
 
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
 interface PriorityStarsProps {
   value: number;
   onChange: (value: number) => void;
 }
 
+const priorityLabels = ["", "Low", "Below avg", "Normal", "High", "Must visit"];
+
 export function PriorityStars({ value, onChange }: PriorityStarsProps) {
   return (
-    <div className="flex gap-0.5">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <button
-          key={star}
-          onClick={() => onChange(star)}
-          className={`text-sm ${star <= value ? "text-yellow-500" : "text-gray-300"}`}
-        >
-          ★
-        </button>
-      ))}
-    </div>
+    <TooltipProvider delay={300}>
+      <Tooltip>
+        <TooltipTrigger>
+          <div className="flex items-center gap-1">
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Priority</span>
+            <div className="flex gap-0.5">
+              {[1, 2, 3, 4, 5].map((level) => (
+                <button
+                  key={level}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onChange(level);
+                  }}
+                  className={`text-xs leading-none ${level <= value ? "text-blue-500" : "text-gray-300"} hover:text-blue-400`}
+                >
+                  ●
+                </button>
+              ))}
+            </div>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="top">
+          <p className="text-xs">
+            {priorityLabels[value]} priority — higher = weighs more in ranking
+          </p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

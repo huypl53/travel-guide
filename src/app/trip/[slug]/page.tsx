@@ -30,7 +30,10 @@ export default function TripPage() {
           <LocationList type="homestay" />
         </Card>
         <Card className="p-4 space-y-3">
-          <h2 className="font-semibold">Destinations</h2>
+          <div className="flex items-baseline justify-between">
+            <h2 className="font-semibold">Destinations</h2>
+            <span className="text-[10px] text-muted-foreground">Set priority to weight ranking</span>
+          </div>
           <LocationInput type="destination" />
           <LocationList type="destination" />
         </Card>
