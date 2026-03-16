@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useTripStore } from "@/store/trip-store";
 import { rankHomestays } from "@/lib/ranking";
 import { Button } from "@/components/ui/button";
@@ -11,10 +12,10 @@ export function RankingList() {
   const setSelected = useTripStore((s) => s.setSelectedHomestay);
   const selectedId = useTripStore((s) => s.selectedHomestayId);
 
-  const homestays = locations.filter((l) => l.type === "homestay");
-  const destinations = locations.filter((l) => l.type === "destination");
+  const homestays = useMemo(() => locations.filter((l) => l.type === "homestay"), [locations]);
+  const destinations = useMemo(() => locations.filter((l) => l.type === "destination"), [locations]);
 
-  const ranked = rankHomestays(homestays, destinations);
+  const ranked = useMemo(() => rankHomestays(homestays, destinations), [homestays, destinations]);
 
   if (ranked.length === 0) {
     return <p className="text-sm text-muted-foreground">Add homestays and destinations to see rankings.</p>;

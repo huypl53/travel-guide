@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -40,8 +41,8 @@ export default function MapInner() {
   const selectedId = useTripStore((s) => s.selectedHomestayId);
   const setSelected = useTripStore((s) => s.setSelectedHomestay);
 
-  const homestays = locations.filter((l) => l.type === "homestay");
-  const destinations = locations.filter((l) => l.type === "destination");
+  const homestays = useMemo(() => locations.filter((l) => l.type === "homestay"), [locations]);
+  const destinations = useMemo(() => locations.filter((l) => l.type === "destination"), [locations]);
 
   // Default center: Da Lat, Vietnam
   const center: [number, number] =

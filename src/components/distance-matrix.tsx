@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useTripStore } from "@/store/trip-store";
 import { haversineKm } from "@/lib/distance";
 import { Button } from "@/components/ui/button";
@@ -11,8 +11,8 @@ export function DistanceMatrix() {
   const locations = useTripStore((s) => s.locations);
   const setSelected = useTripStore((s) => s.setSelectedHomestay);
 
-  const homestays = locations.filter((l) => l.type === "homestay");
-  const destinations = locations.filter((l) => l.type === "destination");
+  const homestays = useMemo(() => locations.filter((l) => l.type === "homestay"), [locations]);
+  const destinations = useMemo(() => locations.filter((l) => l.type === "destination"), [locations]);
 
   if (homestays.length === 0 || destinations.length === 0) return null;
 

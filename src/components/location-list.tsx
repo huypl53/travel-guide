@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useTripStore } from "@/store/trip-store";
 import { PriorityStars } from "@/components/priority-stars";
 import { Button } from "@/components/ui/button";
@@ -10,8 +11,10 @@ interface LocationListProps {
 }
 
 export function LocationList({ type }: LocationListProps) {
-  const locations = useTripStore((s) =>
-    s.locations.filter((l) => l.type === type)
+  const allLocations = useTripStore((s) => s.locations);
+  const locations = useMemo(
+    () => allLocations.filter((l) => l.type === type),
+    [allLocations, type]
   );
   const removeLocation = useTripStore((s) => s.removeLocation);
   const updatePriority = useTripStore((s) => s.updatePriority);
