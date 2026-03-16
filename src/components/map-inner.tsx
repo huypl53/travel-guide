@@ -70,8 +70,17 @@ export default function MapInner() {
       : [11.9404, 108.4583];
 
   const drivingDistances = useDistanceStore((s) => s.distances);
+  const routes = useDistanceStore((s) => s.routes);
+  const fetchRoutes = useDistanceStore((s) => s.fetchRoutes);
 
   const selectedHomestay = homestays.find((h) => h.id === selectedId);
+
+  // Fetch route geometries when selected homestay changes
+  useEffect(() => {
+    if (selectedHomestay && destinations.length > 0) {
+      fetchRoutes(selectedHomestay, destinations);
+    }
+  }, [selectedHomestay, destinations, fetchRoutes]);
 
   // Calculate max distance for color scaling
   const maxKm =
@@ -116,14 +125,16 @@ export default function MapInner() {
         destinations.map((d) => {
           const key = `${selectedHomestay.id}:${d.id}`;
           const driving = drivingDistances.get(key);
+          const routeGeometry = routes.get(key);
           const km = driving?.drivingKm ?? haversineKm(selectedHomestay.lat, selectedHomestay.lon, d.lat, d.lon);
+          const positions: [number, number][] = routeGeometry ?? [
+            [selectedHomestay.lat, selectedHomestay.lon],
+            [d.lat, d.lon],
+          ];
           return (
             <Polyline
               key={`${selectedHomestay.id}-${d.id}`}
-              positions={[
-                [selectedHomestay.lat, selectedHomestay.lon],
-                [d.lat, d.lon],
-              ]}
+              positions={positions}
               pathOptions={{
                 color: distanceToColor(km, maxKm),
                 weight: 3,
