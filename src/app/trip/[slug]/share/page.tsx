@@ -1,0 +1,39 @@
+import { supabase } from "@/lib/supabase";
+import { notFound } from "next/navigation";
+
+export default async function SharePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const { data: trip } = await supabase
+    .from("trips")
+    .select("*, locations(*)")
+    .eq("share_slug", slug)
+    .single();
+
+  if (!trip) notFound();
+
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-xl font-bold">{trip.name}</h1>
+      <p className="text-sm text-muted-foreground">Shared trip — read only</p>
+      {/* Basic read-only view of locations */}
+      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <h2 className="font-semibold mb-2">Homestays</h2>
+          <ul className="space-y-1">
+            {trip.locations?.filter((l: { type: string }) => l.type === "homestay").map((l: { id: string; name: string }) => (
+              <li key={l.id} className="text-sm">{l.name}</li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <h2 className="font-semibold mb-2">Destinations</h2>
+          <ul className="space-y-1">
+            {trip.locations?.filter((l: { type: string }) => l.type === "destination").map((l: { id: string; name: string; priority: number }) => (
+              <li key={l.id} className="text-sm">{l.name} (priority: {l.priority})</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}

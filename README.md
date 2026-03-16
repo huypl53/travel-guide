@@ -19,7 +19,8 @@ Open [http://localhost:3000](http://localhost:3000) to see the landing page.
    - View all locations on an interactive **map** with color-coded markers and distance polylines.
    - See the **ranking list** showing homestays sorted by average distance to destinations.
    - Inspect the **distance matrix** for detailed pairwise distances. Click the **"drive?"** button in any cell to fetch on-demand driving distance and time via OSRM.
-   - Use **Share** and **Export** buttons in the header.
+   - Click **Share** to save the trip to Supabase and copy a shareable read-only link to the clipboard.
+   - Click **Export** to download the trip data as a JSON file.
 
 ## Development
 

@@ -1,21 +1,23 @@
 "use client";
 
+import { useParams } from "next/navigation";
 import { MapView } from "@/components/map-view";
 import { LocationInput } from "@/components/location-input";
 import { LocationList } from "@/components/location-list";
 import { RankingList } from "@/components/ranking-list";
 import { DistanceMatrix } from "@/components/distance-matrix";
+import { ShareExport } from "@/components/share-export";
 import { Card } from "@/components/ui/card";
 
 export default function TripPage() {
+  const params = useParams();
+  const slug = params.slug as string;
+
   return (
     <div className="container mx-auto p-4 space-y-4">
       <header className="flex items-center justify-between">
         <h1 className="text-xl font-bold">Trip Planner</h1>
-        <div className="flex gap-2">
-          <button className="text-sm text-muted-foreground hover:underline">Share</button>
-          <button className="text-sm text-muted-foreground hover:underline">Export</button>
-        </div>
+        <ShareExport slug={slug} />
       </header>
 
       {/* Data Input */}

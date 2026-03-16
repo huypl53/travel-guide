@@ -46,6 +46,14 @@ The main workspace page. Composes all UI components in a responsive grid layout:
 - Full-width `MapView`
 - Two-column bottom section with `RankingList` and `DistanceMatrix`
 
+### Share & Export (`src/components/share-export.tsx`)
+
+- **`ShareExport`** - Renders Share and Export buttons in the trip page header. Share saves the trip via `POST /api/trips` and copies the read-only share URL (`/trip/[slug]/share`) to the clipboard. Export downloads the current trip data (name + locations) as a `.json` file.
+
+### Shared Trip Page (`src/app/trip/[slug]/share/page.tsx`)
+
+Server component that loads a trip by its share slug from Supabase and renders a read-only view. Displays homestays and destinations in a two-column grid. Returns a 404 if the trip is not found.
+
 ## API Routes (`src/app/api/`)
 
 ### Trips CRUD (`src/app/api/trips/`)
