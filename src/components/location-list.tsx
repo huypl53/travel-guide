@@ -20,6 +20,7 @@ export function LocationList({ type }: LocationListProps) {
   );
   const removeLocation = useTripStore((s) => s.removeLocation);
   const updatePriority = useTripStore((s) => s.updatePriority);
+  const setFocusedLocation = useTripStore((s) => s.setFocusedLocation);
 
   if (locations.length === 0) {
     return <p className="text-sm text-muted-foreground">No {type}s added yet.</p>;
@@ -31,9 +32,10 @@ export function LocationList({ type }: LocationListProps) {
         {locations.map((loc) => (
           <li
             key={loc.id}
-            className={`flex items-center justify-between py-1 px-2 rounded hover:bg-muted border-l-2 ${
+            className={`flex items-center justify-between py-1 px-2 rounded hover:bg-muted border-l-2 cursor-pointer ${
               loc.type === "destination" ? "border-l-red-400" : "border-l-blue-400"
             }`}
+            onClick={() => setFocusedLocation({ lat: loc.lat, lon: loc.lon })}
           >
             <Tooltip>
               <TooltipTrigger className="flex-1 truncate text-sm text-left">

@@ -16,11 +16,13 @@ interface TripState {
   tripName: string;
   locations: Location[];
   selectedHomestayId: string | null;
+  focusedLocation: { lat: number; lon: number } | null;
   setTripName: (name: string) => void;
   addLocation: (input: AddLocationInput) => void;
   removeLocation: (id: string) => void;
   updatePriority: (id: string, priority: number) => void;
   setSelectedHomestay: (id: string | null) => void;
+  setFocusedLocation: (loc: { lat: number; lon: number } | null) => void;
   reset: () => void;
 }
 
@@ -28,6 +30,7 @@ export const useTripStore = create<TripState>((set) => ({
   tripName: "",
   locations: [],
   selectedHomestayId: null,
+  focusedLocation: null,
 
   setTripName: (name) => set({ tripName: name }),
 
@@ -60,5 +63,7 @@ export const useTripStore = create<TripState>((set) => ({
 
   setSelectedHomestay: (id) => set({ selectedHomestayId: id }),
 
-  reset: () => set({ tripName: "", locations: [], selectedHomestayId: null }),
+  setFocusedLocation: (loc) => set({ focusedLocation: loc }),
+
+  reset: () => set({ tripName: "", locations: [], selectedHomestayId: null, focusedLocation: null }),
 }));

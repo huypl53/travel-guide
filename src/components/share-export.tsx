@@ -17,12 +17,14 @@ export function ShareExport({ slug }: ShareExportProps) {
   async function handleShare() {
     setSaving(true);
     try {
-      await fetch("/api/trips", {
+      const res = await fetch("/api/trips", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: tripName || "Untitled Trip", locations }),
       });
-      await navigator.clipboard.writeText(`${window.location.origin}/trip/${slug}/share`);
+      const data = await res.json();
+      const shareSlug = data.slug ?? slug;
+      await navigator.clipboard.writeText(`${window.location.origin}/trip/${shareSlug}/share`);
       setShared(true);
       setTimeout(() => setShared(false), 2000);
     } finally {
