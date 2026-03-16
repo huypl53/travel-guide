@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-type Mode = "sign-in" | "sign-up" | "magic-link";
+type Mode = "sign-in" | "sign-up" | "magic-link" | "forgot-password";
 
 export function AuthDialog() {
   const [email, setEmail] = useState("");
@@ -83,6 +83,17 @@ export function AuthDialog() {
     setLoading(false);
   }
 
+  async function handleForgotPassword() {
+    if (!email) return;
+    setLoading(true);
+    resetState();
+    await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/api/auth/callback`,
+    });
+    setMessage("Check your email for a password reset link.");
+    setLoading(false);
+  }
+
   return (
     <Dialog>
       <DialogTrigger render={<Button variant="outline" size="sm" />}>
@@ -91,7 +102,7 @@ export function AuthDialog() {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {mode === "sign-up" ? "Create account" : "Sign in"}
+            {mode === "sign-up" ? "Create account" : mode === "forgot-password" ? "Reset password" : "Sign in"}
           </DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-4">
@@ -121,7 +132,7 @@ export function AuthDialog() {
                 onChange={(e) => { setEmail(e.target.value); resetState(); }}
               />
 
-              {mode !== "magic-link" && (
+              {mode === "sign-in" || mode === "sign-up" ? (
                 <Input
                   type="password"
                   placeholder="Password"
@@ -129,7 +140,7 @@ export function AuthDialog() {
                   onChange={(e) => { setPassword(e.target.value); resetState(); }}
                   onKeyDown={(e) => e.key === "Enter" && handleEmailPassword()}
                 />
-              )}
+              ) : null}
 
               {error && (
                 <p className="text-sm text-center text-destructive">{error}</p>
@@ -138,6 +149,10 @@ export function AuthDialog() {
               {mode === "magic-link" ? (
                 <Button onClick={handleMagicLink} disabled={loading || !email}>
                   {loading ? "Sending..." : "Send magic link"}
+                </Button>
+              ) : mode === "forgot-password" ? (
+                <Button onClick={handleForgotPassword} disabled={loading || !email}>
+                  {loading ? "Sending..." : "Send reset link"}
                 </Button>
               ) : (
                 <Button onClick={handleEmailPassword} disabled={loading || !email || !password}>
@@ -148,6 +163,9 @@ export function AuthDialog() {
               <div className="flex flex-col gap-1 text-center text-sm text-muted-foreground">
                 {mode === "sign-in" && (
                   <>
+                    <button className="underline hover:text-foreground" onClick={() => { setMode("forgot-password"); resetState(); }}>
+                      Forgot password?
+                    </button>
                     <button className="underline hover:text-foreground" onClick={() => { setMode("sign-up"); resetState(); }}>
                       Don&apos;t have an account? Sign up
                     </button>
@@ -161,9 +179,9 @@ export function AuthDialog() {
                     Already have an account? Sign in
                   </button>
                 )}
-                {mode === "magic-link" && (
+                {(mode === "magic-link" || mode === "forgot-password") && (
                   <button className="underline hover:text-foreground" onClick={() => { setMode("sign-in"); resetState(); }}>
-                    Sign in with password instead
+                    Back to sign in
                   </button>
                 )}
               </div>
