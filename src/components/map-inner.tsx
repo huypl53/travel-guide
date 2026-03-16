@@ -15,7 +15,7 @@ function FlyToLocation() {
 
   useEffect(() => {
     if (focused) {
-      map.flyTo([focused.lat, focused.lon], 15, { duration: 0.8 });
+      map.flyTo([focused.lat, focused.lon], 15, { duration: 1.8 });
       clearFocus(null);
     }
   }, [focused, map, clearFocus]);
@@ -95,7 +95,7 @@ export default function MapInner() {
       : 10;
 
   return (
-    <MapContainer center={center} zoom={13} className="h-[300px] md:h-[500px] w-full rounded-lg z-0">
+    <MapContainer center={center} zoom={13} zoomSnap={0.5} wheelDebounceTime={100} wheelPxPerZoomLevel={120} className="h-[300px] md:h-[500px] w-full rounded-lg z-0">
       <FlyToLocation />
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
