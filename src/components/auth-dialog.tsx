@@ -42,10 +42,8 @@ export function AuthDialog() {
 
   return (
     <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          Sign in
-        </Button>
+      <DialogTrigger render={<Button variant="outline" size="sm" />}>
+        Sign in
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>

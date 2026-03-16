@@ -46,13 +46,11 @@ export function Header() {
 
       {user ? (
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="gap-2">
-              <UserIcon className="h-4 w-4" />
-              <span className="max-w-[150px] truncate text-sm">
-                {user.email}
-              </span>
-            </Button>
+          <DropdownMenuTrigger render={<Button variant="ghost" size="sm" className="gap-2" />}>
+            <UserIcon className="h-4 w-4" />
+            <span className="max-w-[150px] truncate text-sm">
+              {user.email}
+            </span>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => router.push("/")}>
