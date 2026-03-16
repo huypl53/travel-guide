@@ -105,3 +105,11 @@ npm run lint         # Run ESLint
 npm run test         # Run tests (vitest)
 npm run test:watch   # Run tests in watch mode
 ```
+
+## Documentation
+
+- [Architecture](docs/architecture.md) — System overview, component descriptions, tech stack
+- [Developer Guide](docs/specs/developer-guide.md) — Project structure, setup, conventions, how to add features
+- [User Flows](docs/specs/user-flows.md) — Step-by-step flows for every user action
+- [API Reference](docs/specs/api-reference.md) — All API endpoints with params and responses
+- [Data Model](docs/specs/data-model.md) — Database schema, Zustand stores, TypeScript types, ranking algorithm
