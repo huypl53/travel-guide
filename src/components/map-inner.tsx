@@ -1,0 +1,113 @@
+"use client";
+
+import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import { useTripStore } from "@/store/trip-store";
+import { haversineKm } from "@/lib/distance";
+
+// Fix Leaflet default marker icons in Next.js
+delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+});
+
+const homestayIcon = new L.Icon({
+  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+});
+
+const destinationIcon = new L.Icon({
+  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+});
+
+function distanceToColor(km: number, maxKm: number): string {
+  const ratio = Math.min(km / maxKm, 1);
+  const r = Math.round(255 * ratio);
+  const g = Math.round(255 * (1 - ratio));
+  return `rgb(${r},${g},0)`;
+}
+
+export default function MapInner() {
+  const locations = useTripStore((s) => s.locations);
+  const selectedId = useTripStore((s) => s.selectedHomestayId);
+  const setSelected = useTripStore((s) => s.setSelectedHomestay);
+
+  const homestays = locations.filter((l) => l.type === "homestay");
+  const destinations = locations.filter((l) => l.type === "destination");
+
+  // Default center: Da Lat, Vietnam
+  const center: [number, number] =
+    locations.length > 0
+      ? [
+          locations.reduce((s, l) => s + l.lat, 0) / locations.length,
+          locations.reduce((s, l) => s + l.lon, 0) / locations.length,
+        ]
+      : [11.9404, 108.4583];
+
+  const selectedHomestay = homestays.find((h) => h.id === selectedId);
+
+  // Calculate max distance for color scaling
+  const maxKm =
+    selectedHomestay && destinations.length > 0
+      ? Math.max(
+          ...destinations.map((d) =>
+            haversineKm(selectedHomestay.lat, selectedHomestay.lon, d.lat, d.lon)
+          )
+        )
+      : 10;
+
+  return (
+    <MapContainer center={center} zoom={13} className="h-[500px] w-full rounded-lg z-0">
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      />
+
+      {homestays.map((h) => (
+        <Marker
+          key={h.id}
+          position={[h.lat, h.lon]}
+          icon={homestayIcon}
+          eventHandlers={{ click: () => setSelected(h.id) }}
+        >
+          <Popup>{h.name}</Popup>
+        </Marker>
+      ))}
+
+      {destinations.map((d) => (
+        <Marker key={d.id} position={[d.lat, d.lon]} icon={destinationIcon}>
+          <Popup>
+            {d.name} (priority: {d.priority})
+          </Popup>
+        </Marker>
+      ))}
+
+      {selectedHomestay &&
+        destinations.map((d) => {
+          const km = haversineKm(selectedHomestay.lat, selectedHomestay.lon, d.lat, d.lon);
+          return (
+            <Polyline
+              key={`${selectedHomestay.id}-${d.id}`}
+              positions={[
+                [selectedHomestay.lat, selectedHomestay.lon],
+                [d.lat, d.lon],
+              ]}
+              pathOptions={{
+                color: distanceToColor(km, maxKm),
+                weight: 3,
+                opacity: 0.8,
+              }}
+            />
+          );
+        })}
+    </MapContainer>
+  );
+}
