@@ -16,31 +16,55 @@ export function useAutoSave(slug: string) {
 
     const { tripName, locations } = useTripStore.getState();
 
-    // Update trip name
-    await supabase
-      .from("trips")
-      .update({ name: tripName || "Untitled Trip" })
-      .eq("id", tripIdRef.current);
+    try {
+      // Update trip name
+      await supabase
+        .from("trips")
+        .update({ name: tripName || "Untitled Trip" })
+        .eq("id", tripIdRef.current);
 
-    // Replace locations: delete all, then re-insert
-    await supabase
-      .from("locations")
-      .delete()
-      .eq("trip_id", tripIdRef.current);
+      if (locations.length > 0) {
+        // Replace locations: delete all, then re-insert
+        const { error: deleteError } = await supabase
+          .from("locations")
+          .delete()
+          .eq("trip_id", tripIdRef.current);
 
-    if (locations.length > 0) {
-      await supabase.from("locations").insert(
-        locations.map((loc) => ({
-          trip_id: tripIdRef.current,
-          type: loc.type,
-          name: loc.name,
-          address: loc.address,
-          lat: loc.lat,
-          lon: loc.lon,
-          priority: loc.priority,
-          source: loc.source,
-        }))
-      );
+        if (deleteError) {
+          console.error("Failed to delete locations:", deleteError);
+          return;
+        }
+
+        const { error: insertError } = await supabase
+          .from("locations")
+          .insert(
+            locations.map((loc) => ({
+              trip_id: tripIdRef.current,
+              type: loc.type,
+              name: loc.name,
+              address: loc.address,
+              lat: loc.lat,
+              lon: loc.lon,
+              priority: loc.priority,
+              source: loc.source,
+            }))
+          );
+
+        if (insertError) {
+          console.error(
+            "Failed to insert locations after delete:",
+            insertError
+          );
+        }
+      } else {
+        // No locations to save, just delete existing ones
+        await supabase
+          .from("locations")
+          .delete()
+          .eq("trip_id", tripIdRef.current);
+      }
+    } catch (err) {
+      console.error("Auto-save failed:", err);
     }
   }, [supabase]);
 
@@ -58,11 +82,14 @@ export function useAutoSave(slug: string) {
       // Try to load existing trip
       const { data: existing } = await supabase
         .from("trips")
-        .select("id, name, locations(*)")
+        .select("id, name, user_id, locations(*)")
         .eq("share_slug", slug)
         .maybeSingle();
 
       if (existing) {
+        // Only auto-save if the current user owns this trip
+        if (existing.user_id !== user.id) return;
+
         tripIdRef.current = existing.id;
         // Load into store if it has data
         const store = useTripStore.getState();

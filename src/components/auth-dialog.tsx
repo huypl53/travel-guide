@@ -86,13 +86,17 @@ export function AuthDialog() {
     if (!email) return;
     setLoading(true);
     resetState();
-    await supabase.auth.signInWithOtp({
+    const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
         emailRedirectTo: `${window.location.origin}/api/auth/callback`,
       },
     });
-    setMessage("Check your email for a login link.");
+    if (error) {
+      setError(error.message);
+    } else {
+      setMessage("Check your email for a login link.");
+    }
     setLoading(false);
   }
 
@@ -100,10 +104,14 @@ export function AuthDialog() {
     if (!email) return;
     setLoading(true);
     resetState();
-    await supabase.auth.resetPasswordForEmail(email, {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/api/auth/callback`,
     });
-    setMessage("Check your email for a password reset link.");
+    if (error) {
+      setError(error.message);
+    } else {
+      setMessage("Check your email for a password reset link.");
+    }
     setLoading(false);
   }
 

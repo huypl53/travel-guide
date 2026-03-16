@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
       if (recoverySentAt) {
         const recoveryTime = new Date(recoverySentAt).getTime();
         const now = Date.now();
-        if (now - recoveryTime < 10 * 60 * 1000) {
+        if (now - recoveryTime < 2 * 60 * 1000) {
           return NextResponse.redirect(`${origin}/reset-password`);
         }
       }

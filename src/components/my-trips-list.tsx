@@ -33,10 +33,16 @@ export function MyTripsList({ initialTrips }: MyTripsListProps) {
     if (!deleteTarget) return;
     setDeleting(true);
 
-    await fetch(`/api/trips/${deleteTarget.shareSlug}`, { method: "DELETE" });
+    const res = await fetch(`/api/trips/${deleteTarget.shareSlug}`, {
+      method: "DELETE",
+    });
 
-    setTrips((prev) => prev.filter((t) => t.id !== deleteTarget.id));
-    setDeleteTarget(null);
+    if (res.ok) {
+      setTrips((prev) => prev.filter((t) => t.id !== deleteTarget.id));
+      setDeleteTarget(null);
+    } else {
+      setDeleteTarget(null);
+    }
     setDeleting(false);
   }
 

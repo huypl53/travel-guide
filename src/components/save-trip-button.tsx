@@ -16,12 +16,14 @@ export function SaveTripButton({ tripId, initialSaved }: SaveTripButtonProps) {
   async function toggle() {
     setLoading(true);
     const method = saved ? "DELETE" : "POST";
-    await fetch("/api/saved-trips", {
+    const res = await fetch("/api/saved-trips", {
       method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ tripId }),
     });
-    setSaved(!saved);
+    if (res.ok) {
+      setSaved(!saved);
+    }
     setLoading(false);
   }
 
