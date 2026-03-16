@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { Location } from "@/lib/types";
-import { decodePolyline } from "@/lib/osrm";
+
 
 export interface DrivingDistance {
   drivingKm: number;
@@ -91,7 +91,7 @@ export const useDistanceStore = create<DistanceState>((set, get) => ({
           if (!res.ok) return null;
           const data = await res.json();
           if (!data.geometry) return null;
-          return { key: `${homestay.id}:${dest.id}`, points: decodePolyline(data.geometry) };
+          return { key: `${homestay.id}:${dest.id}`, points: data.geometry };
         } catch {
           return null;
         }
