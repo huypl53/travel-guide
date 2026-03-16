@@ -1,11 +1,26 @@
 "use client";
 
-import { useMemo } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
+import { useEffect, useMemo } from "react";
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useTripStore } from "@/store/trip-store";
 import { haversineKm } from "@/lib/distance";
+
+function FlyToLocation() {
+  const map = useMap();
+  const focused = useTripStore((s) => s.focusedLocation);
+  const clearFocus = useTripStore((s) => s.setFocusedLocation);
+
+  useEffect(() => {
+    if (focused) {
+      map.flyTo([focused.lat, focused.lon], 15, { duration: 0.8 });
+      clearFocus(null);
+    }
+  }, [focused, map, clearFocus]);
+
+  return null;
+}
 
 // Fix Leaflet default marker icons in Next.js
 delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
@@ -67,6 +82,7 @@ export default function MapInner() {
 
   return (
     <MapContainer center={center} zoom={13} className="h-[300px] md:h-[500px] w-full rounded-lg z-0">
+      <FlyToLocation />
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
