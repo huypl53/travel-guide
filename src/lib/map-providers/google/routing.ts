@@ -29,6 +29,9 @@ export class GoogleRoutingProvider implements RoutingProvider {
 
     const url = `https://maps.googleapis.com/maps/api/distancematrix/json?${params}`;
     const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error(`Google Distance Matrix API HTTP error: ${res.status}`);
+    }
     const data = await res.json();
 
     if (data.status !== "OK") {
@@ -63,6 +66,9 @@ export class GoogleRoutingProvider implements RoutingProvider {
 
     const url = `https://maps.googleapis.com/maps/api/directions/json?${params}`;
     const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error(`Google Directions API HTTP error: ${res.status}`);
+    }
     const data = await res.json();
 
     if (data.status === "ZERO_RESULTS" || (data.status === "OK" && (!data.routes || data.routes.length === 0))) {

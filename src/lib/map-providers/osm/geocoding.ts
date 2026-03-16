@@ -19,26 +19,25 @@ export class NominatimGeocodingProvider implements GeocodingProvider {
 
     const url = `https://nominatim.openstreetmap.org/search?${params.toString()}`;
 
-    let res: Response;
     try {
-      res = await fetch(url, {
+      const res = await fetch(url, {
         headers: { "User-Agent": "HomestayLocator/1.0" },
       });
+
+      if (!res.ok) {
+        return [];
+      }
+
+      const data = await res.json();
+      return data.map(
+        (item: { display_name: string; lat: string; lon: string }) => ({
+          name: item.display_name,
+          lat: parseFloat(item.lat),
+          lon: parseFloat(item.lon),
+        })
+      );
     } catch {
       return [];
     }
-
-    if (!res.ok) {
-      return [];
-    }
-
-    const data = await res.json();
-    return data.map(
-      (item: { display_name: string; lat: string; lon: string }) => ({
-        name: item.display_name,
-        lat: parseFloat(item.lat),
-        lon: parseFloat(item.lon),
-      })
-    );
   }
 }

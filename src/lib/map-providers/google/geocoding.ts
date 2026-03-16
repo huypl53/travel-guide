@@ -23,6 +23,9 @@ export class GoogleGeocodingProvider implements GeocodingProvider {
     }
 
     const response = await fetch(url.toString());
+    if (!response.ok) {
+      throw new Error(`Google Geocoding API HTTP error: ${response.status}`);
+    }
     const data = await response.json();
 
     if (data.status === "ZERO_RESULTS") {
