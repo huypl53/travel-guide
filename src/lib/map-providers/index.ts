@@ -2,6 +2,7 @@ import { NominatimGeocodingProvider } from "./osm/geocoding";
 import { OsrmRoutingProvider } from "./osm/routing";
 import { GoogleGeocodingProvider } from "./google/geocoding";
 import { GoogleRoutingProvider } from "./google/routing";
+import { withFallback } from "./fallback";
 import type { GeocodingProvider, RoutingProvider } from "./types";
 
 export type { GeocodingProvider, RoutingProvider } from "./types";
@@ -29,17 +30,21 @@ function isGoogleConfigured(): boolean {
 }
 
 export function getGeocodingProvider(): GeocodingProvider {
+  const osm = new NominatimGeocodingProvider();
   if (isGoogleConfigured()) {
-    return new GoogleGeocodingProvider();
+    const google = new GoogleGeocodingProvider();
+    return withFallback.geocoding(google, osm);
   }
-  return new NominatimGeocodingProvider();
+  return osm;
 }
 
 export function getRoutingProvider(): RoutingProvider {
+  const osm = new OsrmRoutingProvider();
   if (isGoogleConfigured()) {
-    return new GoogleRoutingProvider();
+    const google = new GoogleRoutingProvider();
+    return withFallback.routing(google, osm);
   }
-  return new OsrmRoutingProvider();
+  return osm;
 }
 
 export function getMapProvider(): "google" | "osm" {

@@ -18,7 +18,7 @@ describe("map provider factory", () => {
       vi.stubEnv("GOOGLE_MAPS_API_KEY", "test-key");
       const { getGeocodingProvider } = await import("@/lib/map-providers");
       const provider = getGeocodingProvider();
-      expect(provider.name).toBe("google");
+      expect(provider.name).toBe("google+nominatim");
     });
 
     it("falls back to nominatim when google configured without API key", async () => {
@@ -46,7 +46,7 @@ describe("map provider factory", () => {
       vi.stubEnv("GOOGLE_MAPS_API_KEY", "test-key");
       const { getRoutingProvider } = await import("@/lib/map-providers");
       const provider = getRoutingProvider();
-      expect(provider.name).toBe("google");
+      expect(provider.name).toBe("google+osrm");
     });
 
     it("falls back to osrm when google configured without API key", async () => {
