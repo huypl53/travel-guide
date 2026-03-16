@@ -8,7 +8,7 @@ Find the best homestay based on proximity to the places you want to visit. Add h
 - Automatic ranking of homestays by weighted average distance to destinations
 - Pairwise distance matrix with on-demand driving time via OSRM
 - Priority weighting for destinations (1-5 stars)
-- Multiple input methods: Google Maps URLs, CSV, JSON, and manual coordinates
+- Multiple input methods: Google Maps URLs (full and short links), CSV, JSON, and manual coordinates
 - Share trips via unique URLs backed by Supabase
 - Export trip data as JSON
 - Mobile-responsive layout with collapsible bottom sheet

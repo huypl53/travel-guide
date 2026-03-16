@@ -94,6 +94,10 @@ Proxies to OSRM for driving route calculation. Returns `{ distanceKm, durationMi
 
 Creates a new trip. Accepts `{ name, locations? }`. Generates a `nanoid` share slug. Optionally bulk-inserts locations. Returns `{ slug, id }`.
 
+### GET /api/resolve-url?url=...
+
+Follows short URL redirects (e.g., `maps.app.goo.gl/...`) server-side and returns the resolved full URL. Used by the location input to support short Google Maps links.
+
 ### GET /api/trips/[slug]
 
 Retrieves a trip by share slug with all associated locations via Supabase join.
