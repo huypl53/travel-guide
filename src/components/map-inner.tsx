@@ -65,7 +65,7 @@ export default function MapInner() {
       : 10;
 
   return (
-    <MapContainer center={center} zoom={13} className="h-[500px] w-full rounded-lg z-0">
+    <MapContainer center={center} zoom={13} className="h-[300px] md:h-[500px] w-full rounded-lg z-0">
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

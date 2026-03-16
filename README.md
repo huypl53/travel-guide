@@ -14,13 +14,14 @@ Open [http://localhost:3000](http://localhost:3000) to see the landing page.
 ## Usage
 
 1. **Landing page** (`/`) - Click "New Trip" to create a trip workspace with a unique shareable URL.
-2. **Trip page** (`/trip/[slug]`) - The main workspace where you:
+2. **Trip page** (`/trip/[slug]`) - The main workspace (mobile-responsive) where you:
    - Add **homestays** and **destinations** using the location input panels (supports Google Maps URLs, CSV, JSON, and manual entry).
    - View all locations on an interactive **map** with color-coded markers and distance polylines.
    - See the **ranking list** showing homestays sorted by average distance to destinations.
    - Inspect the **distance matrix** for detailed pairwise distances. Click the **"drive?"** button in any cell to fetch on-demand driving distance and time via OSRM.
    - Click **Share** to save the trip to Supabase and copy a shareable read-only link to the clipboard.
    - Click **Export** to download the trip data as a JSON file.
+   - On mobile, rankings and distance matrix appear in a collapsible bottom sheet panel.
 
 ## Development
 

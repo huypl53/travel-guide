@@ -43,8 +43,10 @@ Client component that displays the app title and a "New Trip" button. Clicking t
 The main workspace page. Composes all UI components in a responsive grid layout:
 - Header with Share/Export actions
 - Two-column input panel (Homestays + Destinations) using `LocationInput` and `LocationList`
-- Full-width `MapView`
+- Full-width `MapView` (300px tall on mobile, 500px on desktop)
 - Two-column bottom section with `RankingList` and `DistanceMatrix`
+
+On mobile screens (`< md` breakpoint), the ranking and distance matrix are moved into a fixed bottom sheet panel that can be toggled open/closed, keeping the main content area uncluttered. A `pb-16` padding is applied to the main container on mobile to prevent content from being hidden behind the bottom bar.
 
 ### Share & Export (`src/components/share-export.tsx`)
 
