@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTripStore } from "@/store/trip-store";
 import { haversineKm } from "@/lib/distance";
 import { Button } from "@/components/ui/button";
+import { DrivingTimeButton } from "@/components/driving-time-button";
 
 export function DistanceMatrix() {
   const [expanded, setExpanded] = useState(false);
@@ -56,7 +57,8 @@ export function DistanceMatrix() {
                     <td className="p-1 font-medium">{h.name}</td>
                     {dists.map((km, i) => (
                       <td key={destinations[i].id} className="p-1 text-center">
-                        {km.toFixed(1)}
+                        <div>{km.toFixed(1)}</div>
+                        <DrivingTimeButton fromLat={h.lat} fromLon={h.lon} toLat={destinations[i].lat} toLon={destinations[i].lon} />
                       </td>
                     ))}
                     <td className="p-1 text-center font-bold">{avg.toFixed(1)}</td>
