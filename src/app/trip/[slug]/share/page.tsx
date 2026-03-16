@@ -1,8 +1,15 @@
-import { supabase } from "@/lib/supabase";
+import { createSupabaseServer } from "@/lib/supabase-server";
 import { notFound } from "next/navigation";
+import { SaveTripButton } from "@/components/save-trip-button";
 
-export default async function SharePage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function SharePage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   const { slug } = await params;
+  const supabase = await createSupabaseServer();
+
   const { data: trip } = await supabase
     .from("trips")
     .select("*, locations(*)")
@@ -11,26 +18,59 @@ export default async function SharePage({ params }: { params: Promise<{ slug: st
 
   if (!trip) notFound();
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let alreadySaved = false;
+  if (user) {
+    const { data } = await supabase
+      .from("saved_trips")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("trip_id", trip.id)
+      .maybeSingle();
+    alreadySaved = !!data;
+  }
+
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-xl font-bold">{trip.name}</h1>
-      <p className="text-sm text-muted-foreground">Shared trip — read only</p>
-      {/* Basic read-only view of locations */}
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h1 className="text-xl font-bold">{trip.name}</h1>
+          <p className="text-sm text-muted-foreground">
+            Shared trip — read only
+          </p>
+        </div>
+        {user && trip.user_id !== user.id && (
+          <SaveTripButton tripId={trip.id} initialSaved={alreadySaved} />
+        )}
+      </div>
       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <h2 className="font-semibold mb-2">Homestays</h2>
           <ul className="space-y-1">
-            {trip.locations?.filter((l: { type: string }) => l.type === "homestay").map((l: { id: string; name: string }) => (
-              <li key={l.id} className="text-sm">{l.name}</li>
-            ))}
+            {trip.locations
+              ?.filter((l: { type: string }) => l.type === "homestay")
+              .map((l: { id: string; name: string }) => (
+                <li key={l.id} className="text-sm">
+                  {l.name}
+                </li>
+              ))}
           </ul>
         </div>
         <div>
           <h2 className="font-semibold mb-2">Destinations</h2>
           <ul className="space-y-1">
-            {trip.locations?.filter((l: { type: string }) => l.type === "destination").map((l: { id: string; name: string; priority: number }) => (
-              <li key={l.id} className="text-sm">{l.name} (priority: {l.priority})</li>
-            ))}
+            {trip.locations
+              ?.filter((l: { type: string }) => l.type === "destination")
+              .map(
+                (l: { id: string; name: string; priority: number }) => (
+                  <li key={l.id} className="text-sm">
+                    {l.name} (priority: {l.priority})
+                  </li>
+                )
+              )}
           </ul>
         </div>
       </div>
