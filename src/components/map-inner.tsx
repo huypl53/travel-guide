@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useTripStore } from "@/store/trip-store";
+import { useDistanceStore } from "@/store/distance-store";
 import { haversineKm } from "@/lib/distance";
 
 function FlyToLocation() {
@@ -68,15 +69,19 @@ export default function MapInner() {
         ]
       : [11.9404, 108.4583];
 
+  const drivingDistances = useDistanceStore((s) => s.distances);
+
   const selectedHomestay = homestays.find((h) => h.id === selectedId);
 
   // Calculate max distance for color scaling
   const maxKm =
     selectedHomestay && destinations.length > 0
       ? Math.max(
-          ...destinations.map((d) =>
-            haversineKm(selectedHomestay.lat, selectedHomestay.lon, d.lat, d.lon)
-          )
+          ...destinations.map((d) => {
+            const key = `${selectedHomestay.id}:${d.id}`;
+            const driving = drivingDistances.get(key);
+            return driving?.drivingKm ?? haversineKm(selectedHomestay.lat, selectedHomestay.lon, d.lat, d.lon);
+          })
         )
       : 10;
 
@@ -109,7 +114,9 @@ export default function MapInner() {
 
       {selectedHomestay &&
         destinations.map((d) => {
-          const km = haversineKm(selectedHomestay.lat, selectedHomestay.lon, d.lat, d.lon);
+          const key = `${selectedHomestay.id}:${d.id}`;
+          const driving = drivingDistances.get(key);
+          const km = driving?.drivingKm ?? haversineKm(selectedHomestay.lat, selectedHomestay.lon, d.lat, d.lon);
           return (
             <Polyline
               key={`${selectedHomestay.id}-${d.id}`}
