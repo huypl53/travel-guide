@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import { Trophy } from "lucide-react";
+import { Trophy, Loader2 } from "lucide-react";
 import { useTripStore } from "@/store/trip-store";
+import { useDistanceStore } from "@/store/distance-store";
 import { rankHomestays } from "@/lib/ranking";
 import { Button } from "@/components/ui/button";
 
@@ -19,10 +20,13 @@ export function RankingList() {
   const setSelected = useTripStore((s) => s.setSelectedHomestay);
   const selectedId = useTripStore((s) => s.selectedHomestayId);
 
+  const distances = useDistanceStore((s) => s.distances);
+  const distancesLoading = useDistanceStore((s) => s.loading);
+
   const homestays = useMemo(() => locations.filter((l) => l.type === "homestay"), [locations]);
   const destinations = useMemo(() => locations.filter((l) => l.type === "destination"), [locations]);
 
-  const ranked = useMemo(() => rankHomestays(homestays, destinations), [homestays, destinations]);
+  const ranked = useMemo(() => rankHomestays(homestays, destinations, distances), [homestays, destinations, distances]);
 
   if (ranked.length === 0) {
     return <p className="text-sm text-muted-foreground">Add homestays and destinations to see rankings.</p>;
@@ -45,7 +49,10 @@ export function RankingList() {
             <RankBadge rank={i + 1} />
             {r.homestay.name}
           </span>
-          <span className="text-muted-foreground text-xs">
+          <span className="text-muted-foreground text-xs flex items-center gap-1">
+            {distancesLoading && (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            )}
             avg {r.weightedAvgKm.toFixed(1)} km
           </span>
         </Button>

@@ -11,12 +11,14 @@ import { DistanceMatrix } from "@/components/distance-matrix";
 import { ShareExport } from "@/components/share-export";
 import { Button } from "@/components/ui/button";
 import { useAutoSave } from "@/hooks/use-auto-save";
+import { useAutoFetchDistances } from "@/hooks/use-auto-fetch-distances";
 import { Card } from "@/components/ui/card";
 
 export default function TripPage() {
   const params = useParams();
   const slug = params.slug as string;
   useAutoSave(slug);
+  useAutoFetchDistances();
   const [bottomSheetOpen, setBottomSheetOpen] = useState(false);
 
   return (

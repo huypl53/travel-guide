@@ -1,16 +1,18 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { ChevronDown, ChevronUp, Table2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Table2, Car, Loader2 } from "lucide-react";
 import { useTripStore } from "@/store/trip-store";
+import { useDistanceStore } from "@/store/distance-store";
 import { haversineKm } from "@/lib/distance";
 import { Button } from "@/components/ui/button";
-import { DrivingTimeButton } from "@/components/driving-time-button";
 
 export function DistanceMatrix() {
   const [expanded, setExpanded] = useState(false);
   const locations = useTripStore((s) => s.locations);
   const setSelected = useTripStore((s) => s.setSelectedHomestay);
+  const drivingDistances = useDistanceStore((s) => s.distances);
+  const distancesLoading = useDistanceStore((s) => s.loading);
 
   const homestays = useMemo(() => locations.filter((l) => l.type === "homestay"), [locations]);
   const destinations = useMemo(() => locations.filter((l) => l.type === "destination"), [locations]);
@@ -51,7 +53,13 @@ export function DistanceMatrix() {
                 const dists = destinations.map((d) =>
                   haversineKm(h.lat, h.lon, d.lat, d.lon)
                 );
-                const avg = dists.reduce((s, d) => s + d, 0) / dists.length;
+                const totalWeight = destinations.reduce((sum, d) => sum + d.priority, 0);
+                const avg = destinations.reduce((sum, d, i) => {
+                  const key = `${h.id}:${d.id}`;
+                  const driving = drivingDistances.get(key);
+                  return sum + (driving ? driving.drivingKm : dists[i]) * d.priority;
+                }, 0) / totalWeight;
+
                 return (
                   <tr
                     key={h.id}
@@ -59,12 +67,34 @@ export function DistanceMatrix() {
                     onClick={() => setSelected(h.id)}
                   >
                     <td className="p-2 font-medium">{h.name}</td>
-                    {dists.map((km, i) => (
-                      <td key={destinations[i].id} className="p-2 text-center">
-                        <div>{km.toFixed(1)}</div>
-                        <DrivingTimeButton fromLat={h.lat} fromLon={h.lon} toLat={destinations[i].lat} toLon={destinations[i].lon} />
-                      </td>
-                    ))}
+                    {destinations.map((d, i) => {
+                      const key = `${h.id}:${d.id}`;
+                      const driving = drivingDistances.get(key);
+                      const haversine = dists[i];
+
+                      return (
+                        <td key={d.id} className="p-2 text-center">
+                          {driving ? (
+                            <div>
+                              <div className="flex items-center justify-center gap-1">
+                                <Car className="h-3 w-3 text-muted-foreground" />
+                                <span>{driving.drivingKm.toFixed(1)}</span>
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {driving.drivingMinutes.toFixed(0)} min
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-center gap-1">
+                              <span className={distancesLoading ? "text-muted-foreground" : ""}>
+                                {haversine.toFixed(1)}
+                              </span>
+                              {distancesLoading && <Loader2 className="h-3 w-3 animate-spin" />}
+                            </div>
+                          )}
+                        </td>
+                      );
+                    })}
                     <td className="p-2 text-center font-bold">{avg.toFixed(1)}</td>
                   </tr>
                 );

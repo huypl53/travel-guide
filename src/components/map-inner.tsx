@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useTripStore } from "@/store/trip-store";
+import { useDistanceStore } from "@/store/distance-store";
 import { haversineKm } from "@/lib/distance";
 
 function FlyToLocation() {
@@ -14,7 +15,7 @@ function FlyToLocation() {
 
   useEffect(() => {
     if (focused) {
-      map.flyTo([focused.lat, focused.lon], 15, { duration: 0.8 });
+      map.flyTo([focused.lat, focused.lon], 15, { duration: 1.2 });
       clearFocus(null);
     }
   }, [focused, map, clearFocus]);
@@ -68,20 +69,33 @@ export default function MapInner() {
         ]
       : [11.9404, 108.4583];
 
+  const drivingDistances = useDistanceStore((s) => s.distances);
+  const routes = useDistanceStore((s) => s.routes);
+  const fetchRoutes = useDistanceStore((s) => s.fetchRoutes);
+
   const selectedHomestay = homestays.find((h) => h.id === selectedId);
+
+  // Fetch route geometries when selected homestay changes
+  useEffect(() => {
+    if (selectedHomestay && destinations.length > 0) {
+      fetchRoutes(selectedHomestay, destinations);
+    }
+  }, [selectedHomestay, destinations, fetchRoutes]);
 
   // Calculate max distance for color scaling
   const maxKm =
     selectedHomestay && destinations.length > 0
       ? Math.max(
-          ...destinations.map((d) =>
-            haversineKm(selectedHomestay.lat, selectedHomestay.lon, d.lat, d.lon)
-          )
+          ...destinations.map((d) => {
+            const key = `${selectedHomestay.id}:${d.id}`;
+            const driving = drivingDistances.get(key);
+            return driving?.drivingKm ?? haversineKm(selectedHomestay.lat, selectedHomestay.lon, d.lat, d.lon);
+          })
         )
       : 10;
 
   return (
-    <MapContainer center={center} zoom={13} className="h-[300px] md:h-[500px] w-full rounded-lg z-0">
+    <MapContainer center={center} zoom={13} zoomSnap={0.5} wheelDebounceTime={100} wheelPxPerZoomLevel={120} className="h-[300px] md:h-[500px] w-full rounded-lg z-0">
       <FlyToLocation />
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -109,14 +123,18 @@ export default function MapInner() {
 
       {selectedHomestay &&
         destinations.map((d) => {
-          const km = haversineKm(selectedHomestay.lat, selectedHomestay.lon, d.lat, d.lon);
+          const key = `${selectedHomestay.id}:${d.id}`;
+          const driving = drivingDistances.get(key);
+          const routeGeometry = routes.get(key);
+          const km = driving?.drivingKm ?? haversineKm(selectedHomestay.lat, selectedHomestay.lon, d.lat, d.lon);
+          const positions: [number, number][] = routeGeometry ?? [
+            [selectedHomestay.lat, selectedHomestay.lon],
+            [d.lat, d.lon],
+          ];
           return (
             <Polyline
               key={`${selectedHomestay.id}-${d.id}`}
-              positions={[
-                [selectedHomestay.lat, selectedHomestay.lon],
-                [d.lat, d.lon],
-              ]}
+              positions={positions}
               pathOptions={{
                 color: distanceToColor(km, maxKm),
                 weight: 3,

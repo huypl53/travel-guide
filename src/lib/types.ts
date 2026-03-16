@@ -24,7 +24,12 @@ export interface DistanceEntry {
 export interface RankedHomestay {
   homestay: Location;
   weightedAvgKm: number;
-  distances: { destination: Location; km: number }[];
+  distances: {
+    destination: Location;
+    km: number;
+    drivingKm?: number;
+    drivingMinutes?: number;
+  }[];
 }
 
 export interface Trip {
