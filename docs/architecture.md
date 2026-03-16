@@ -111,7 +111,7 @@ Retrieves a trip by share slug with all associated locations via Supabase join.
 
 ### MapView / MapInner (`src/components/map-view.tsx`, `map-inner.tsx`)
 
-Interactive Leaflet map loaded client-side via `next/dynamic` (Leaflet requires `window`). Displays blue markers for homestays and red markers for destinations. When a homestay is selected, draws polylines to each destination color-coded by distance (green = close, red = far). Default center: Da Lat, Vietnam.
+Interactive Leaflet map loaded client-side via `next/dynamic` (Leaflet requires `window`). Displays blue markers for homestays and red markers for destinations. When a homestay is selected, fetches actual driving route geometries from OSRM and draws them as polylines color-coded by driving distance (green = close, red = far). Falls back to straight lines if route geometry is unavailable. Default center: Da Lat, Vietnam.
 
 ### LocationInput / LocationList (`src/components/location-input.tsx`, `location-list.tsx`)
 

@@ -4,7 +4,7 @@ Find the best homestay based on proximity to the places you want to visit. Add h
 
 ## Features
 
-- Interactive map with color-coded markers and distance polylines
+- Interactive map with color-coded markers and actual driving route polylines
 - Automatic ranking of homestays by weighted average distance to destinations
 - Real driving distances via OSRM Table API, auto-fetched when locations change (haversine fallback)
 - Priority weighting for destinations (1-5 stars)
