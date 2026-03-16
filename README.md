@@ -2,6 +2,30 @@
 
 Find the best homestay based on proximity to the places you want to visit. Add homestays and destinations on a map, compare distances, and rank options automatically.
 
+## Screenshots
+
+### Landing Page
+
+![Landing Page](/public/screenshots/landing-page.png)
+
+### Trip Workspace
+
+Add homestays and destinations, see them on the map with driving route polylines, and get automatic rankings.
+
+![Trip Workspace](/public/screenshots/trip-workspace.png)
+
+### Distance Matrix
+
+View pairwise driving distances and durations between all homestays and destinations.
+
+![Distance Matrix](/public/screenshots/distance-matrix.png)
+
+### Mobile View
+
+Fully responsive layout with collapsible bottom sheet for rankings.
+
+![Mobile View](/public/screenshots/mobile-view.png)
+
 ## Features
 
 - Interactive map with color-coded markers and actual driving route polylines (Leaflet/OSM or Google Maps)
