@@ -26,3 +26,30 @@ export interface RankedHomestay {
   weightedAvgKm: number;
   distances: { destination: Location; km: number }[];
 }
+
+export interface Trip {
+  id: string;
+  name: string;
+  shareSlug: string;
+  userId: string | null;
+  createdAt: string;
+  locations: Location[];
+}
+
+export interface SavedTrip {
+  id: string;
+  userId: string;
+  tripId: string;
+  savedAt: string;
+}
+
+export interface TripCardData {
+  id: string;
+  name: string;
+  shareSlug: string;
+  createdAt: string;
+  homestayCount: number;
+  destinationCount: number;
+  topHomestay: string | null;
+  isSaved: boolean;
+}

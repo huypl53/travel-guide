@@ -10,11 +10,13 @@ import { RankingList } from "@/components/ranking-list";
 import { DistanceMatrix } from "@/components/distance-matrix";
 import { ShareExport } from "@/components/share-export";
 import { Button } from "@/components/ui/button";
+import { useAutoSave } from "@/hooks/use-auto-save";
 import { Card } from "@/components/ui/card";
 
 export default function TripPage() {
   const params = useParams();
   const slug = params.slug as string;
+  useAutoSave(slug);
   const [bottomSheetOpen, setBottomSheetOpen] = useState(false);
 
   return (

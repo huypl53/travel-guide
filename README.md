@@ -13,6 +13,13 @@ Find the best homestay based on proximity to the places you want to visit. Add h
 - Export trip data as JSON
 - Mobile-responsive layout with collapsible bottom sheet
 
+## Authentication
+
+- **Google OAuth** and **magic link** (passwordless email) sign-in via Supabase Auth
+- **"My Trips" dashboard** on the landing page for logged-in users — view and manage all your saved trips
+- **Save shared trips** to your account with one click when viewing someone else's trip
+- **No login required** — anonymous users retain full access to create and share trips
+
 ## Tech Stack
 
 - **Next.js 16** (App Router)
