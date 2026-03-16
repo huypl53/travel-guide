@@ -21,6 +21,30 @@ Interactive Leaflet map rendered client-side via `next/dynamic` (SSR disabled si
 - **`MapView`** - Dynamic wrapper that lazy-loads `MapInner` with a skeleton placeholder.
 - **`MapInner`** - The actual map using `react-leaflet`. Displays homestay markers (blue) and destination markers (red). When a homestay is selected, draws polylines to each destination color-coded by distance (green = close, red = far) using the haversine function. Centers on the average of all locations, defaulting to Da Lat, Vietnam.
 
+### Data Input Panel (`src/components/location-input.tsx`, `src/components/location-list.tsx`)
+
+- **`LocationInput`** - Input component for adding locations. Accepts a `type` prop (`"homestay"` or `"destination"`) to target the correct store slice. Supports Google Maps URL pasting, CSV/JSON upload, and manual coordinate entry.
+- **`LocationList`** - Displays added locations for a given type with remove actions.
+
+### Ranking & Distance (`src/components/ranking-list.tsx`, `src/components/distance-matrix.tsx`)
+
+- **`RankingList`** - Shows homestays ranked by average distance to all destinations.
+- **`DistanceMatrix`** - Displays a pairwise distance table between homestays and destinations.
+
+## Pages (`src/app/`)
+
+### Landing Page (`src/app/page.tsx`)
+
+Client component that displays the app title and a "New Trip" button. Clicking the button generates a random 10-character slug via `nanoid` and navigates to `/trip/[slug]`.
+
+### Trip Workspace (`src/app/trip/[slug]/page.tsx`)
+
+The main workspace page. Composes all UI components in a responsive grid layout:
+- Header with Share/Export actions
+- Two-column input panel (Homestays + Destinations) using `LocationInput` and `LocationList`
+- Full-width `MapView`
+- Two-column bottom section with `RankingList` and `DistanceMatrix`
+
 ## API Routes (`src/app/api/`)
 
 ### Trips CRUD (`src/app/api/trips/`)
