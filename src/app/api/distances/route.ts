@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { buildOsrmTableUrl, parseTableResponse } from "@/lib/osrm";
+import { getRoutingProvider } from "@/lib/map-providers";
 
 const MAX_COORDINATES = 100;
 
@@ -33,23 +33,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: `Too many coordinates (max ${MAX_COORDINATES})` }, { status: 400 });
   }
 
-  const url = buildOsrmTableUrl(sources, destinations);
-
   try {
-    const res = await fetch(url);
-    if (!res.ok) {
-      return NextResponse.json({ error: "OSRM table request failed" }, { status: 502 });
-    }
-
-    const data = await res.json();
-    if (data.code !== "Ok") {
-      return NextResponse.json({ error: "OSRM error: " + data.code }, { status: 502 });
-    }
-
-    const matrix = parseTableResponse(data, sources.length, destinations.length);
-
+    const provider = getRoutingProvider();
+    const matrix = await provider.getDistanceMatrix(sources, destinations);
     return NextResponse.json({ matrix });
   } catch {
-    return NextResponse.json({ error: "Failed to reach OSRM server" }, { status: 502 });
+    return NextResponse.json({ error: "Distance matrix request failed" }, { status: 502 });
   }
 }
