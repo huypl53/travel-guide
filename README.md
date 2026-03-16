@@ -4,7 +4,7 @@ Find the best homestay based on proximity to the places you want to visit. Add h
 
 ## Features
 
-- Interactive map with color-coded markers and actual driving route polylines
+- Interactive map with color-coded markers and actual driving route polylines (Leaflet/OSM or Google Maps)
 - Automatic ranking of homestays by weighted average distance to destinations
 - Real driving distances via OSRM Table API, auto-fetched when locations change (haversine fallback)
 - Priority weighting for destinations (1-5 stars)
@@ -24,7 +24,7 @@ Find the best homestay based on proximity to the places you want to visit. Add h
 
 - **Next.js 16** (App Router)
 - **React 19** with **Zustand** for state management
-- **Leaflet** / react-leaflet for interactive maps
+- **Leaflet** / react-leaflet for interactive maps (default), **Google Maps** via `@vis.gl/react-google-maps` (optional)
 - **Supabase** for persistence (trips, locations, distance cache)
 - **shadcn/ui** + **Tailwind CSS** for styling
 - **Vitest** + Testing Library for tests
@@ -56,6 +56,10 @@ cp .env.local.example .env.local
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+
+# Optional: Google Maps (defaults to Leaflet/OSM if not set)
+NEXT_PUBLIC_MAP_PROVIDER=google
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your-google-maps-api-key
 ```
 
 ### Supabase Setup

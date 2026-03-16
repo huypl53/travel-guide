@@ -11,8 +11,9 @@
 |                                                  |
 |  +-----------+  +--------+  +-----------------+  |
 |  |LocationInput| |MapView |  |RankingList      |  |
-|  |LocationList | |MapInner|  |DistanceMatrix   |  |
-|  +-----------+  +--------+  |ShareExport       |  |
+|  |LocationList | |Leaflet/|  |DistanceMatrix   |  |
+|  +-----------+  |Google  |  |ShareExport       |  |
+|                  +--------+                      |
 |                              +-----------------+  |
 |                                                  |
 |  Zustand Stores                                  |
@@ -33,7 +34,7 @@
 | Framework      | Next.js 16 (App Router)             |
 | UI Library     | React 19                            |
 | State          | Zustand                             |
-| Maps           | Leaflet + react-leaflet             |
+| Maps           | Leaflet + react-leaflet (default), Google Maps via @vis.gl/react-google-maps |
 | Styling        | Tailwind CSS + shadcn/ui            |
 | Database       | Supabase (PostgreSQL)               |
 | Geocoding      | Nominatim (OpenStreetMap)           |
@@ -109,9 +110,17 @@ Retrieves a trip by share slug with all associated locations via Supabase join.
 
 ## Key Components
 
-### MapView / MapInner (`src/components/map-view.tsx`, `map-inner.tsx`)
+### MapView (`src/components/map-view.tsx`)
 
-Interactive Leaflet map loaded client-side via `next/dynamic` (Leaflet requires `window`). Displays blue markers for homestays and red markers for destinations. When a homestay is selected, fetches actual driving route geometries from OSRM and draws them as polylines color-coded by driving distance (green = close, red = far). Falls back to straight lines if route geometry is unavailable. Default center: Da Lat, Vietnam.
+Map toggle component that selects between Leaflet (OSM) and Google Maps based on environment variables `NEXT_PUBLIC_MAP_PROVIDER` and `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`. Both map providers are loaded client-side via `next/dynamic`. Defaults to Leaflet/OSM when no Google config is present.
+
+### LeafletMap (`src/components/map-providers/leaflet-map.tsx`)
+
+Interactive Leaflet map (OSM tiles). Displays blue markers for homestays and red markers for destinations. When a homestay is selected, fetches actual driving route geometries from OSRM and draws them as polylines color-coded by driving distance (green = close, red = far). Falls back to straight lines if route geometry is unavailable. Default center: Da Lat, Vietnam.
+
+### GoogleMap (`src/components/map-providers/google-map.tsx`)
+
+Google Maps equivalent using `@vis.gl/react-google-maps`. Uses `AdvancedMarker` with colored `Pin` components and `google.maps.Polyline` for route visualization. Requires `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` and a Maps JavaScript API key with Map ID configured.
 
 ### LocationInput / LocationList (`src/components/location-input.tsx`, `location-list.tsx`)
 
