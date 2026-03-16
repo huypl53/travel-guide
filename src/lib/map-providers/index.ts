@@ -32,7 +32,8 @@ function isGoogleConfigured(): boolean {
 export function getGeocodingProvider(): GeocodingProvider {
   const osm = new NominatimGeocodingProvider();
   if (isGoogleConfigured()) {
-    const google = new GoogleGeocodingProvider();
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY!;
+    const google = new GoogleGeocodingProvider(apiKey);
     return withFallback.geocoding(google, osm);
   }
   return osm;
@@ -41,7 +42,8 @@ export function getGeocodingProvider(): GeocodingProvider {
 export function getRoutingProvider(): RoutingProvider {
   const osm = new OsrmRoutingProvider();
   if (isGoogleConfigured()) {
-    const google = new GoogleRoutingProvider();
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY!;
+    const google = new GoogleRoutingProvider(apiKey);
     return withFallback.routing(google, osm);
   }
   return osm;
