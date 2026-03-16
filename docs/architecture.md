@@ -233,6 +233,16 @@ Row Level Security is enabled on all tables (`trips`, `locations`, `distance_cac
 - Users can only insert/update/delete their own trips
 - Users can only manage their own saved trips entries
 
+### Auto-Save (`src/hooks/use-auto-save.ts`)
+
+The `useAutoSave(slug)` hook provides automatic trip persistence for logged-in users:
+
+1. **On mount**: checks if the user is authenticated. If so, looks up the trip by `share_slug`. If found, loads its locations into the Zustand store. If not found, creates a new trip in Supabase.
+2. **On store changes**: subscribes to the Zustand store and debounce-saves (2-second delay) to Supabase after each change. A save updates the trip name, deletes all existing locations for the trip, and re-inserts the current locations.
+3. **Anonymous users**: the hook is a no-op -- all DB operations are skipped.
+
+The hook is called from the trip workspace page (`src/app/trip/[slug]/page.tsx`).
+
 ### New API Routes
 
 #### GET /api/auth/callback
