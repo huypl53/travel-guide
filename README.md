@@ -18,7 +18,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the landing page.
    - Add **homestays** and **destinations** using the location input panels (supports Google Maps URLs, CSV, JSON, and manual entry).
    - View all locations on an interactive **map** with color-coded markers and distance polylines.
    - See the **ranking list** showing homestays sorted by average distance to destinations.
-   - Inspect the **distance matrix** for detailed pairwise distances.
+   - Inspect the **distance matrix** for detailed pairwise distances. Click the **"drive?"** button in any cell to fetch on-demand driving distance and time via OSRM.
    - Use **Share** and **Export** buttons in the header.
 
 ## Development

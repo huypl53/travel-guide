@@ -29,7 +29,8 @@ Interactive Leaflet map rendered client-side via `next/dynamic` (SSR disabled si
 ### Ranking & Distance (`src/components/ranking-list.tsx`, `src/components/distance-matrix.tsx`)
 
 - **`RankingList`** - Shows homestays ranked by average distance to all destinations.
-- **`DistanceMatrix`** - Displays a pairwise distance table between homestays and destinations.
+- **`DistanceMatrix`** - Displays a pairwise distance table between homestays and destinations. Each cell includes a `DrivingTimeButton` for on-demand driving distance/time lookup.
+- **`DrivingTimeButton`** (`src/components/driving-time-button.tsx`) - A small button rendered inside each distance matrix cell. When clicked, fetches driving distance and duration from the `/api/directions` endpoint (backed by OSRM) and displays the result inline (e.g., "12.3km / 18min").
 
 ## Pages (`src/app/`)
 
