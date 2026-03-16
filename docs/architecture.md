@@ -12,17 +12,18 @@
 |  +-----------+  +--------+  +-----------------+  |
 |  |LocationInput| |MapView |  |RankingList      |  |
 |  |LocationList | |MapInner|  |DistanceMatrix   |  |
-|  +-----------+  +--------+  |DrivingTimeButton |  |
-|                              |ShareExport       |  |
+|  +-----------+  +--------+  |ShareExport       |  |
 |                              +-----------------+  |
 |                                                  |
-|  Zustand Store (useTripStore)                    |
+|  Zustand Stores                                  |
+|    useTripStore      (locations, selection)       |
+|    useDistanceStore  (driving distances)          |
 +--------------------------------------------------+
          |              |              |
-   /api/geocode   /api/directions  /api/trips
+   /api/geocode   /api/distances   /api/trips
          |              |              |
-   Nominatim OSM     OSRM          Supabase
-   (geocoding)     (routing)    (persistence)
+   Nominatim OSM   OSRM Table      Supabase
+   (geocoding)     (bulk driving)  (persistence)
 ```
 
 ## Tech Stack
@@ -86,9 +87,13 @@ Unique constraint on `(homestay_id, destination_id)`.
 
 Proxies to Nominatim OpenStreetMap search. Returns up to 5 results with `{ name, lat, lon }`. Scoped to Vietnam (`countrycodes=vn`).
 
+### GET /api/distances?sources=lat,lon;lat,lon&destinations=lat,lon;lat,lon
+
+Proxies to the OSRM Table API for bulk driving distance calculation. Returns `{ matrix }` where each entry contains `{ distanceKm, durationMinutes }` or `null` if no route exists. Validates coordinates and enforces a 100-coordinate limit. Uses helper functions from `src/lib/osrm.ts`.
+
 ### GET /api/directions?from=lat,lon&to=lat,lon
 
-Proxies to OSRM for driving route calculation. Returns `{ distanceKm, durationMinutes }`.
+Proxies to OSRM for individual driving route calculation. Returns `{ distanceKm, durationMinutes }`. (Legacy — superseded by `/api/distances` for bulk operations.)
 
 ### POST /api/trips
 
@@ -118,11 +123,7 @@ Displays homestays ranked by weighted average distance to all destinations. Prio
 
 ### DistanceMatrix (`src/components/distance-matrix.tsx`)
 
-Pairwise distance table between homestays and destinations. Each cell shows straight-line distance and contains a DrivingTimeButton.
-
-### DrivingTimeButton (`src/components/driving-time-button.tsx`)
-
-Button rendered inside each distance matrix cell. Fetches driving distance and duration from `/api/directions` on click and displays inline (e.g., "12.3 km / 18 min").
+Pairwise distance table between homestays and destinations. Each cell shows driving distance and duration (with car icon) when available, or haversine distance with a loading spinner while driving distances are being fetched.
 
 ### ShareExport (`src/components/share-export.tsx`)
 
@@ -134,7 +135,7 @@ Star rating input for setting destination priority (1-5), used in the location l
 
 ## State Management
 
-Zustand store at `src/store/trip-store.ts` (`useTripStore`).
+### useTripStore (`src/store/trip-store.ts`)
 
 | Field             | Type              | Description                         |
 |-------------------|-------------------|-------------------------------------|
@@ -145,6 +146,18 @@ Zustand store at `src/store/trip-store.ts` (`useTripStore`).
 Actions: `setTripName`, `addLocation`, `removeLocation`, `updatePriority`, `setSelectedHomestay`, `reset`.
 
 Components read from the store and filter by `type` to get homestays or destinations.
+
+### useDistanceStore (`src/store/distance-store.ts`)
+
+| Field     | Type                           | Description                                  |
+|-----------|--------------------------------|----------------------------------------------|
+| distances | Map\<string, DrivingDistance\> | Driving distances keyed by `homestayId:destId` |
+| loading   | boolean                        | True while fetching from OSRM                |
+| error     | string or null                 | Error message if fetch failed                |
+
+Actions: `fetchDistances(homestays, destinations)`, `clear()`.
+
+The `useAutoFetchDistances` hook (`src/hooks/use-auto-fetch-distances.ts`) watches the trip store's locations and debounces (300ms) a call to `fetchDistances` whenever homestays or destinations change.
 
 ## Utility Libraries
 
@@ -158,9 +171,14 @@ Components read from the store and filter by `type` to get homestays or destinat
 
 Haversine formula for straight-line distance between two coordinates.
 
+### OSRM Helpers (`src/lib/osrm.ts`)
+
+- `buildOsrmTableUrl(sources, destinations)` -- Builds the OSRM Table API URL with proper lon/lat ordering and source/destination indices.
+- `parseTableResponse(response, sourceCount, destCount)` -- Parses the OSRM response into a matrix of `{ distanceKm, durationMinutes }` entries.
+
 ### Ranking (`src/lib/ranking.ts`)
 
-Computes weighted average distance from each homestay to all destinations, using destination priority as weights. Returns sorted `RankedHomestay[]`.
+Computes weighted average distance from each homestay to all destinations, using destination priority as weights. Accepts an optional `drivingDistances` map — when a driving distance is available for a homestay-destination pair, it is used instead of the haversine distance. Returns sorted `RankedHomestay[]`.
 
 ### Types (`src/lib/types.ts`)
 

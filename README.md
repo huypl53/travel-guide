@@ -6,7 +6,7 @@ Find the best homestay based on proximity to the places you want to visit. Add h
 
 - Interactive map with color-coded markers and distance polylines
 - Automatic ranking of homestays by weighted average distance to destinations
-- Pairwise distance matrix with on-demand driving time via OSRM
+- Real driving distances via OSRM Table API, auto-fetched when locations change (haversine fallback)
 - Priority weighting for destinations (1-5 stars)
 - Multiple input methods: Google Maps URLs (full and short links), CSV, JSON, and manual coordinates
 - Share trips via unique URLs backed by Supabase
@@ -91,7 +91,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the landing page.
    - Set **priority** (1-5 stars) on destinations to weight the ranking.
    - View all locations on an interactive **map** with color-coded markers and distance polylines.
    - See the **ranking list** showing homestays sorted by weighted average distance.
-   - Inspect the **distance matrix** for pairwise distances. Click "drive?" in any cell to fetch driving distance and time via OSRM.
+   - Inspect the **distance matrix** for pairwise distances — driving distances and times are fetched automatically via OSRM and shown with a car icon.
    - Click **Share** to save the trip to Supabase and copy a shareable read-only link.
    - Click **Export** to download the trip data as a JSON file.
    - On mobile, rankings and distance matrix appear in a collapsible bottom sheet panel.
