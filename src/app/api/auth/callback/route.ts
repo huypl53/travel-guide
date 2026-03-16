@@ -4,16 +4,20 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const type = searchParams.get("type");
   const next = searchParams.get("next") ?? "/";
 
   if (code) {
     const supabase = await createSupabaseServer();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      // Password recovery flow → redirect to reset page
-      if (type === "recovery") {
-        return NextResponse.redirect(`${origin}/reset-password`);
+      // Detect password recovery: check if recovery was sent recently (within 10 min)
+      const recoverySentAt = data.session?.user?.recovery_sent_at;
+      if (recoverySentAt) {
+        const recoveryTime = new Date(recoverySentAt).getTime();
+        const now = Date.now();
+        if (now - recoveryTime < 10 * 60 * 1000) {
+          return NextResponse.redirect(`${origin}/reset-password`);
+        }
       }
       return NextResponse.redirect(`${origin}${next}`);
     }
