@@ -11,8 +11,9 @@
 |                                                  |
 |  +-----------+  +--------+  +-----------------+  |
 |  |LocationInput| |MapView |  |RankingList      |  |
-|  |LocationList | |MapInner|  |DistanceMatrix   |  |
-|  +-----------+  +--------+  |ShareExport       |  |
+|  |LocationList | |Leaflet/|  |DistanceMatrix   |  |
+|  +-----------+  |Google  |  |ShareExport       |  |
+|                  +--------+                      |
 |                              +-----------------+  |
 |                                                  |
 |  Zustand Stores                                  |
@@ -33,7 +34,7 @@
 | Framework      | Next.js 16 (App Router)             |
 | UI Library     | React 19                            |
 | State          | Zustand                             |
-| Maps           | Leaflet + react-leaflet             |
+| Maps           | Leaflet + react-leaflet (default), Google Maps via @vis.gl/react-google-maps |
 | Styling        | Tailwind CSS + shadcn/ui            |
 | Database       | Supabase (PostgreSQL)               |
 | Geocoding      | Nominatim (OpenStreetMap)           |
@@ -109,9 +110,17 @@ Retrieves a trip by share slug with all associated locations via Supabase join.
 
 ## Key Components
 
-### MapView / MapInner (`src/components/map-view.tsx`, `map-inner.tsx`)
+### MapView (`src/components/map-view.tsx`)
 
-Interactive Leaflet map loaded client-side via `next/dynamic` (Leaflet requires `window`). Displays blue markers for homestays and red markers for destinations. When a homestay is selected, fetches actual driving route geometries from OSRM and draws them as polylines color-coded by driving distance (green = close, red = far). Falls back to straight lines if route geometry is unavailable. Default center: Da Lat, Vietnam.
+Map toggle component that selects between Leaflet (OSM) and Google Maps based on environment variables `NEXT_PUBLIC_MAP_PROVIDER` and `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`. Both map providers are loaded client-side via `next/dynamic`. Defaults to Leaflet/OSM when no Google config is present.
+
+### LeafletMap (`src/components/map-providers/leaflet-map.tsx`)
+
+Interactive Leaflet map (OSM tiles). Displays blue markers for homestays and red markers for destinations. Fetches driving route geometries from OSRM for all homestays and draws them as polylines color-coded by driving distance (green = close, red = far). Falls back to straight lines if route geometry is unavailable. Unselected homestays/destinations have dimmed markers (opacity 0.4) and dimmed routes (opacity 0.15). Default center: Da Lat, Vietnam.
+
+### GoogleMap (`src/components/map-providers/google-map.tsx`)
+
+Google Maps equivalent using `@vis.gl/react-google-maps`. Uses `AdvancedMarker` with colored `Pin` components and `google.maps.Polyline` for route visualization. Renders routes for all homestays with opacity-based dimming for unselected items. Requires `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` and a Maps JavaScript API key with Map ID configured.
 
 ### LocationInput / LocationList (`src/components/location-input.tsx`, `location-list.tsx`)
 
@@ -137,27 +146,37 @@ Star rating input for setting destination priority (1-5), used in the location l
 
 ### useTripStore (`src/store/trip-store.ts`)
 
-| Field             | Type              | Description                         |
-|-------------------|-------------------|-------------------------------------|
-| tripName          | string            | Current trip name                   |
-| locations         | Location[]        | All homestays and destinations      |
-| selectedHomestayId| string or null    | Currently selected homestay for map |
+| Field                | Type              | Description                             |
+|----------------------|-------------------|-----------------------------------------|
+| tripName             | string            | Current trip name                       |
+| locations            | Location[]        | All homestays and destinations          |
+| selectedHomestayId   | string or null    | Currently selected homestay for map     |
+| selectedHomestayIds  | Set\<string\>     | Homestays included in visual comparison |
+| selectedDestinationIds | Set\<string\>   | Destinations included in visual comparison |
 
-Actions: `setTripName`, `addLocation`, `removeLocation`, `updatePriority`, `setSelectedHomestay`, `reset`.
+Actions: `setTripName`, `addLocation`, `removeLocation`, `updatePriority`, `setSelectedHomestay`, `toggleLocationSelection`, `selectAllByType`, `deselectAllByType`, `reset`.
 
 Components read from the store and filter by `type` to get homestays or destinations.
 
+#### Selection & Visual Dimming
+
+New locations are auto-added to their selection set on creation and removed on deletion. All components read `selectedHomestayIds` / `selectedDestinationIds` and apply `opacity-40` (CSS) or `opacity: 0.4` (Leaflet/Google Maps) to unselected items. This propagates across location lists, ranking list, distance matrix, map markers, and route polylines — enabling visual comparison by toggling items on/off.
+
 ### useDistanceStore (`src/store/distance-store.ts`)
 
-| Field     | Type                           | Description                                  |
-|-----------|--------------------------------|----------------------------------------------|
-| distances | Map\<string, DrivingDistance\> | Driving distances keyed by `homestayId:destId` |
-| loading   | boolean                        | True while fetching from OSRM                |
-| error     | string or null                 | Error message if fetch failed                |
+| Field         | Type                               | Description                                       |
+|---------------|------------------------------------|----------------------------------------------------|
+| distances     | Map\<string, DrivingDistance\>     | Driving distances keyed by `homestayId:destId`      |
+| routes        | Map\<string, [number, number][]\>  | Route geometries keyed by `homestayId:destId`       |
+| routesLoading | boolean                            | True while fetching route geometries                |
+| loading       | boolean                            | True while fetching from OSRM                      |
+| error         | string or null                     | Error message if fetch failed                      |
 
-Actions: `fetchDistances(homestays, destinations)`, `clear()`.
+Actions: `fetchDistances(homestays, destinations)`, `fetchRoutes(homestay, destinations)`, `clearDistances()`, `clear()`.
 
-The `useAutoFetchDistances` hook (`src/hooks/use-auto-fetch-distances.ts`) watches the trip store's locations and debounces (300ms) a call to `fetchDistances` whenever homestays or destinations change.
+Route fetching uses a concurrency limiter (max 3 parallel requests) to avoid overwhelming the OSRM server. Routes are cached by `homestayId:destId` key and preserved across distance recalculations — only `clearDistances()` is called when locations change, while `clear()` (which also wipes routes) is reserved for full trip reset.
+
+The `useAutoFetchDistances` hook (`src/hooks/use-auto-fetch-distances.ts`) watches the trip store's locations and debounces (300ms) a call to `fetchDistances` whenever homestays or destinations change. Map components fetch route geometries for all homestays (not just the selected one), rendering selected routes at full opacity and unselected routes dimmed.
 
 ## Utility Libraries
 

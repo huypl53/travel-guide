@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useTripStore } from "@/store/trip-store";
-import { useDistanceStore } from "@/store/distance-store";
+import { useMapData } from "@/hooks/use-map-data";
 import { haversineKm } from "@/lib/distance";
 
 function FlyToLocation() {
@@ -53,49 +53,20 @@ function distanceToColor(km: number, maxKm: number): string {
 }
 
 export default function MapInner() {
-  const locations = useTripStore((s) => s.locations);
-  const selectedId = useTripStore((s) => s.selectedHomestayId);
-  const setSelected = useTripStore((s) => s.setSelectedHomestay);
-
-  const homestays = useMemo(() => locations.filter((l) => l.type === "homestay"), [locations]);
-  const destinations = useMemo(() => locations.filter((l) => l.type === "destination"), [locations]);
-
-  // Default center: Da Lat, Vietnam
-  const center: [number, number] =
-    locations.length > 0
-      ? [
-          locations.reduce((s, l) => s + l.lat, 0) / locations.length,
-          locations.reduce((s, l) => s + l.lon, 0) / locations.length,
-        ]
-      : [11.9404, 108.4583];
-
-  const drivingDistances = useDistanceStore((s) => s.distances);
-  const routes = useDistanceStore((s) => s.routes);
-  const fetchRoutes = useDistanceStore((s) => s.fetchRoutes);
-
-  const selectedHomestay = homestays.find((h) => h.id === selectedId);
-
-  // Fetch route geometries when selected homestay changes
-  useEffect(() => {
-    if (selectedHomestay && destinations.length > 0) {
-      fetchRoutes(selectedHomestay, destinations);
-    }
-  }, [selectedHomestay, destinations, fetchRoutes]);
-
-  // Calculate max distance for color scaling
-  const maxKm =
-    selectedHomestay && destinations.length > 0
-      ? Math.max(
-          ...destinations.map((d) => {
-            const key = `${selectedHomestay.id}:${d.id}`;
-            const driving = drivingDistances.get(key);
-            return driving?.drivingKm ?? haversineKm(selectedHomestay.lat, selectedHomestay.lon, d.lat, d.lon);
-          })
-        )
-      : 10;
+  const {
+    homestays,
+    destinations,
+    center,
+    setSelected,
+    selectedHomestayIds,
+    selectedDestinationIds,
+    drivingDistances,
+    routes,
+    maxKm,
+  } = useMapData();
 
   return (
-    <MapContainer center={center} zoom={13} zoomSnap={0.5} wheelDebounceTime={100} wheelPxPerZoomLevel={120} className="h-[300px] md:h-[500px] w-full rounded-lg z-0">
+    <MapContainer center={[center.lat, center.lon]} zoom={13} zoomSnap={0.5} wheelDebounceTime={100} wheelPxPerZoomLevel={120} className="h-[300px] md:h-[500px] w-full rounded-lg z-0">
       <FlyToLocation />
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -107,6 +78,7 @@ export default function MapInner() {
           key={h.id}
           position={[h.lat, h.lon]}
           icon={homestayIcon}
+          opacity={selectedHomestayIds.has(h.id) ? 1 : 0.4}
           eventHandlers={{ click: () => setSelected(h.id) }}
         >
           <Popup>{h.name}</Popup>
@@ -114,35 +86,44 @@ export default function MapInner() {
       ))}
 
       {destinations.map((d) => (
-        <Marker key={d.id} position={[d.lat, d.lon]} icon={destinationIcon}>
+        <Marker
+          key={d.id}
+          position={[d.lat, d.lon]}
+          icon={destinationIcon}
+          opacity={selectedDestinationIds.has(d.id) ? 1 : 0.4}
+        >
           <Popup>
             {d.name} (priority: {d.priority})
           </Popup>
         </Marker>
       ))}
 
-      {selectedHomestay &&
-        destinations.map((d) => {
-          const key = `${selectedHomestay.id}:${d.id}`;
+      {homestays.map((h) => {
+        const hSelected = selectedHomestayIds.has(h.id);
+        return destinations.map((d) => {
+          const dSelected = selectedDestinationIds.has(d.id);
+          const bothSelected = hSelected && dSelected;
+          const key = `${h.id}:${d.id}`;
           const driving = drivingDistances.get(key);
           const routeGeometry = routes.get(key);
-          const km = driving?.drivingKm ?? haversineKm(selectedHomestay.lat, selectedHomestay.lon, d.lat, d.lon);
+          const km = driving?.drivingKm ?? haversineKm(h.lat, h.lon, d.lat, d.lon);
           const positions: [number, number][] = routeGeometry ?? [
-            [selectedHomestay.lat, selectedHomestay.lon],
+            [h.lat, h.lon],
             [d.lat, d.lon],
           ];
           return (
             <Polyline
-              key={`${selectedHomestay.id}-${d.id}`}
+              key={`${h.id}-${d.id}`}
               positions={positions}
               pathOptions={{
                 color: distanceToColor(km, maxKm),
-                weight: 3,
-                opacity: 0.8,
+                weight: bothSelected ? 3 : 2,
+                opacity: bothSelected ? 0.8 : 0.15,
               }}
             />
           );
-        })}
+        });
+      })}
     </MapContainer>
   );
 }

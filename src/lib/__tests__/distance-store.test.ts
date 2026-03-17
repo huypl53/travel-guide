@@ -53,4 +53,28 @@ describe("useDistanceStore", () => {
     useDistanceStore.getState().clear();
     expect(useDistanceStore.getState().distances.size).toBe(0);
   });
+
+  it("limits concurrent route fetches to 3", async () => {
+    let activeRequests = 0;
+    let maxActive = 0;
+
+    global.fetch = vi.fn(() => {
+      activeRequests++;
+      maxActive = Math.max(maxActive, activeRequests);
+      return new Promise((resolve) =>
+        setTimeout(() => {
+          activeRequests--;
+          resolve(new Response(JSON.stringify({ geometry: [[1, 2]] }), { status: 200 }));
+        }, 50)
+      );
+    }) as unknown as typeof fetch;
+
+    const homestay = { id: "h1", tripId: "", type: "homestay" as const, name: "H", lat: 1, lon: 1, address: null, priority: 3, source: "manual" as const };
+    const dests = Array.from({ length: 6 }, (_, i) => ({
+      id: `d${i}`, tripId: "", type: "destination" as const, name: `D${i}`, lat: i, lon: i, address: null, priority: 3, source: "manual" as const,
+    }));
+
+    await useDistanceStore.getState().fetchRoutes(homestay, dests);
+    expect(maxActive).toBeLessThanOrEqual(3);
+  });
 });

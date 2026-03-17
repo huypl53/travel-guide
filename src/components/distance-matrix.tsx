@@ -11,6 +11,8 @@ export function DistanceMatrix() {
   const [expanded, setExpanded] = useState(false);
   const locations = useTripStore((s) => s.locations);
   const setSelected = useTripStore((s) => s.setSelectedHomestay);
+  const selectedHomestayIds = useTripStore((s) => s.selectedHomestayIds);
+  const selectedDestinationIds = useTripStore((s) => s.selectedDestinationIds);
   const drivingDistances = useDistanceStore((s) => s.distances);
   const distancesLoading = useDistanceStore((s) => s.loading);
 
@@ -41,7 +43,9 @@ export function DistanceMatrix() {
               <tr>
                 <th className="text-left p-2"></th>
                 {destinations.map((d) => (
-                  <th key={d.id} className="p-2 text-center max-w-[80px] truncate">
+                  <th key={d.id} className={`p-2 text-center max-w-[80px] truncate ${
+                    !selectedDestinationIds.has(d.id) ? "opacity-40" : ""
+                  }`}>
                     {d.name}
                   </th>
                 ))}
@@ -63,7 +67,7 @@ export function DistanceMatrix() {
                 return (
                   <tr
                     key={h.id}
-                    className={`hover:bg-muted cursor-pointer border-b border-border/50 ${rowIndex % 2 !== 0 ? "bg-muted/30" : ""}`}
+                    className={`hover:bg-muted cursor-pointer border-b border-border/50 ${rowIndex % 2 !== 0 ? "bg-muted/30" : ""} ${!selectedHomestayIds.has(h.id) ? "opacity-40" : ""}`}
                     onClick={() => setSelected(h.id)}
                   >
                     <td className="p-2 font-medium">{h.name}</td>
@@ -73,7 +77,9 @@ export function DistanceMatrix() {
                       const haversine = dists[i];
 
                       return (
-                        <td key={d.id} className="p-2 text-center">
+                        <td key={d.id} className={`p-2 text-center ${
+                          !selectedDestinationIds.has(d.id) ? "opacity-40" : ""
+                        }`}>
                           {driving ? (
                             <div>
                               <div className="flex items-center justify-center gap-1">

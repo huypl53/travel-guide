@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { buildOsrmRouteUrl } from "@/lib/osrm";
+import { getRoutingProvider } from "@/lib/map-providers";
 
 export async function GET(request: NextRequest) {
   const fromParam = request.nextUrl.searchParams.get("from"); // "lat,lon"
@@ -16,21 +16,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Invalid coordinates" }, { status: 400 });
   }
 
-  const url = buildOsrmRouteUrl({ lat: fromLat, lon: fromLon }, { lat: toLat, lon: toLon });
-
   try {
-    const res = await fetch(url);
-    if (!res.ok) {
-      return NextResponse.json({ error: "OSRM route request failed" }, { status: 502 });
-    }
-
-    const data = await res.json();
-    if (data.code !== "Ok" || !data.routes?.[0]?.geometry) {
+    const provider = getRoutingProvider();
+    const result = await provider.getRoute({ lat: fromLat, lon: fromLon }, { lat: toLat, lon: toLon });
+    if (!result) {
       return NextResponse.json({ error: "No route found" }, { status: 502 });
     }
-
-    return NextResponse.json({ geometry: data.routes[0].geometry });
+    return NextResponse.json({ geometry: result.geometry });
   } catch {
-    return NextResponse.json({ error: "Failed to reach OSRM server" }, { status: 502 });
+    return NextResponse.json({ error: "Route request failed" }, { status: 502 });
   }
 }

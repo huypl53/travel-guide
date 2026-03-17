@@ -2,12 +2,39 @@
 
 Find the best homestay based on proximity to the places you want to visit. Add homestays and destinations on a map, compare distances, and rank options automatically.
 
+## Screenshots
+
+### Landing Page
+
+![Landing Page](/public/screenshots/landing-page.png)
+
+### Trip Workspace
+
+Add homestays and destinations, see them on the map with driving route polylines, and get automatic rankings.
+
+![Trip Workspace](/public/screenshots/trip-workspace.png)
+
+### Distance Matrix
+
+View pairwise driving distances and durations between all homestays and destinations.
+
+![Distance Matrix](/public/screenshots/distance-matrix.png)
+
+### Mobile View
+
+Fully responsive layout with collapsible bottom sheet for rankings.
+
+![Mobile View](/public/screenshots/mobile-view.png)
+
 ## Features
 
-- Interactive map with color-coded markers and actual driving route polylines
+- Interactive map with color-coded markers and actual driving route polylines (Leaflet/OSM or Google Maps)
 - Automatic ranking of homestays by weighted average distance to destinations
 - Real driving distances via OSRM Table API, auto-fetched when locations change (haversine fallback)
 - Priority weighting for destinations (1-5 stars)
+- Multi-select with visual comparison — toggle homestays/destinations on/off to dim unselected items across all views (lists, map markers, routes, ranking, distance matrix)
+- Scrollable location lists for handling many locations
+- Concurrency-limited route fetching (max 3 parallel requests) with persistent route cache
 - Multiple input methods: Google Maps URLs (full and short links), CSV, JSON, and manual coordinates
 - Share trips via unique URLs backed by Supabase
 - Export trip data as JSON
@@ -24,7 +51,7 @@ Find the best homestay based on proximity to the places you want to visit. Add h
 
 - **Next.js 16** (App Router)
 - **React 19** with **Zustand** for state management
-- **Leaflet** / react-leaflet for interactive maps
+- **Leaflet** / react-leaflet for interactive maps (default), **Google Maps** via `@vis.gl/react-google-maps` (optional)
 - **Supabase** for persistence (trips, locations, distance cache)
 - **shadcn/ui** + **Tailwind CSS** for styling
 - **Vitest** + Testing Library for tests
@@ -56,6 +83,10 @@ cp .env.local.example .env.local
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+
+# Optional: Google Maps (defaults to Leaflet/OSM if not set)
+NEXT_PUBLIC_MAP_PROVIDER=google
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your-google-maps-api-key
 ```
 
 ### Supabase Setup

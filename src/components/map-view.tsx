@@ -2,11 +2,24 @@
 
 import dynamic from "next/dynamic";
 
-const MapContainer = dynamic(
-  () => import("./map-inner"),
-  { ssr: false, loading: () => <div className="h-[500px] bg-muted animate-pulse rounded-lg" /> }
+const LeafletMap = dynamic(
+  () => import("./map-providers/leaflet-map"),
+  { ssr: false, loading: () => <div className="h-[300px] md:h-[500px] bg-muted animate-pulse rounded-lg" /> }
 );
 
+const GoogleMap = dynamic(
+  () => import("./map-providers/google-map"),
+  { ssr: false, loading: () => <div className="h-[300px] md:h-[500px] bg-muted animate-pulse rounded-lg" /> }
+);
+
+function getMapProviderType(): "google" | "osm" {
+  const provider = process.env.NEXT_PUBLIC_MAP_PROVIDER;
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  if (provider === "google" && apiKey) return "google";
+  return "osm";
+}
+
 export function MapView() {
-  return <MapContainer />;
+  const provider = getMapProviderType();
+  return provider === "google" ? <GoogleMap /> : <LeafletMap />;
 }

@@ -7,7 +7,7 @@ import { useDistanceStore } from "@/store/distance-store";
 export function useAutoFetchDistances() {
   const locations = useTripStore((s) => s.locations);
   const fetchDistances = useDistanceStore((s) => s.fetchDistances);
-  const clear = useDistanceStore((s) => s.clear);
+  const clearDistances = useDistanceStore((s) => s.clearDistances);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -17,7 +17,7 @@ export function useAutoFetchDistances() {
     const destinations = locations.filter((l) => l.type === "destination");
 
     if (homestays.length === 0 || destinations.length === 0) {
-      clear();
+      clearDistances();
       return;
     }
 
@@ -28,5 +28,5 @@ export function useAutoFetchDistances() {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [locations, fetchDistances, clear]);
+  }, [locations, fetchDistances, clearDistances]);
 }
