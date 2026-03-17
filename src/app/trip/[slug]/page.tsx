@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import { MapPin, Home, Compass, ChevronUp, ChevronDown } from "lucide-react";
+import { useTripStore } from "@/store/trip-store";
+import type { LocationType } from "@/lib/types";
 import { MapView } from "@/components/map-view";
 import { LocationInput } from "@/components/location-input";
 import { LocationList } from "@/components/location-list";
@@ -13,6 +15,21 @@ import { Button } from "@/components/ui/button";
 import { useAutoSave } from "@/hooks/use-auto-save";
 import { useAutoFetchDistances } from "@/hooks/use-auto-fetch-distances";
 import { Card } from "@/components/ui/card";
+
+function SelectAllButtons({ type }: { type: LocationType }) {
+  const selectAll = useTripStore((s) => s.selectAllByType);
+  const deselectAll = useTripStore((s) => s.deselectAllByType);
+  return (
+    <div className="flex gap-1">
+      <Button variant="ghost" size="sm" className="h-6 text-xs px-2" onClick={() => selectAll(type)}>
+        All
+      </Button>
+      <Button variant="ghost" size="sm" className="h-6 text-xs px-2" onClick={() => deselectAll(type)}>
+        None
+      </Button>
+    </div>
+  );
+}
 
 export default function TripPage() {
   const params = useParams();
@@ -34,10 +51,13 @@ export default function TripPage() {
       {/* Data Input */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card className="p-4 space-y-3">
-          <h2 className="font-semibold flex items-center gap-2">
-            <Home className="h-4 w-4 text-muted-foreground" />
-            Homestays
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold flex items-center gap-2">
+              <Home className="h-4 w-4 text-muted-foreground" />
+              Homestays
+            </h2>
+            <SelectAllButtons type="homestay" />
+          </div>
           <LocationInput type="homestay" />
           <LocationList type="homestay" />
         </Card>
@@ -47,7 +67,10 @@ export default function TripPage() {
               <Compass className="h-4 w-4 text-muted-foreground" />
               Destinations
             </h2>
-            <span className="text-[10px] text-muted-foreground">Set priority to weight ranking</span>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-muted-foreground">Set priority to weight ranking</span>
+              <SelectAllButtons type="destination" />
+            </div>
           </div>
           <LocationInput type="destination" />
           <LocationList type="destination" />
