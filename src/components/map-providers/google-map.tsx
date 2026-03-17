@@ -123,7 +123,7 @@ export default function GoogleMapInner({ mapStyle = "default" }: { mapStyle?: Ma
         mapId="homestay-locator"
         gestureHandling="greedy"
         disableDefaultUI={false}
-        mapTypeId={googleMapTypeIds[mapStyle]}
+        mapTypeId={mapStyle !== "dark" ? googleMapTypeIds[mapStyle] : googleMapTypeIds.default}
       >
         <FlyToLocation />
 

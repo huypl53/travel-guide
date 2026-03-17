@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils";
 
 export type MapStyle = "default" | "satellite" | "terrain" | "dark";
 
+export type MapProvider = "google" | "osm";
+
 const styles: { id: MapStyle; label: string; icon: typeof Map }[] = [
   { id: "default", label: "Default", icon: Map },
   { id: "satellite", label: "Satellite", icon: Satellite },
@@ -44,27 +46,42 @@ export const leafletTileUrls: Record<MapStyle, string> = {
   dark: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
 };
 
-/** Google Maps mapTypeId for each style */
-export const googleMapTypeIds: Record<MapStyle, string> = {
-  default: "roadmap",
-  satellite: "satellite",
-  terrain: "terrain",
-  dark: "roadmap",
+/**
+ * Google Maps mapTypeId for each style.
+ * Note: "dark" has no Google Maps equivalent and is excluded — it is a
+ * Leaflet-only style (CartoDB Dark tiles). The switcher hides the Dark
+ * button when the Google provider is active.
+ */
+export const googleMapTypeIds: Record<Exclude<MapStyle, "dark">, google.maps.MapTypeId> = {
+  default: "roadmap" as google.maps.MapTypeId,
+  satellite: "satellite" as google.maps.MapTypeId,
+  terrain: "terrain" as google.maps.MapTypeId,
+};
+
+/** Styles hidden per provider (no Google Maps equivalent for Dark) */
+const hiddenStyles: Partial<Record<MapProvider, Set<MapStyle>>> = {
+  google: new Set(["dark"]),
 };
 
 export function MapStyleSwitcher({
   value,
   onChange,
+  provider = "osm",
 }: {
   value: MapStyle;
   onChange: (style: MapStyle) => void;
+  provider?: MapProvider;
 }) {
+  const hidden = hiddenStyles[provider];
+  const visibleStyles = hidden ? styles.filter((s) => !hidden.has(s.id)) : styles;
+
   return (
     <div className="absolute top-3 right-3 z-[1000] flex gap-0.5 rounded-lg bg-background/80 p-0.5 shadow-md backdrop-blur-sm">
-      {styles.map(({ id, label, icon: Icon }) => (
+      {visibleStyles.map(({ id, label, icon: Icon }) => (
         <button
           key={id}
           type="button"
+          title={label}
           aria-label={`${label} map style`}
           aria-pressed={value === id}
           onClick={() => onChange(id)}

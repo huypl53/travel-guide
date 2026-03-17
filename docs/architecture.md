@@ -116,7 +116,7 @@ Map toggle component that selects between Leaflet (OSM) and Google Maps based on
 
 ### MapStyleSwitcher (`src/components/map-style-switcher.tsx`)
 
-Floating button group rendered in the top-right corner of the map. Provides four style options — Default (`Map` icon), Satellite, Terrain (`Mountain` icon), and Dark (`Moon` icon). For Leaflet, each style maps to a different tile URL (OSM, Esri World Imagery, OpenTopoMap, CartoDB Dark). For Google Maps, each style maps to a `mapTypeId` value (`roadmap`, `satellite`, `terrain`, `hybrid`). Respects `prefers-reduced-motion` for transitions.
+Floating button group rendered in the top-right corner of the map. Provides style options — Default (`Map` icon), Satellite, Terrain (`Mountain` icon), and Dark (`Moon` icon, Leaflet only). For Leaflet, each style maps to a different tile URL (OSM, Esri World Imagery, OpenTopoMap, CartoDB Dark). For Google Maps, styles map to `mapTypeId` values (`roadmap`, `satellite`, `terrain`); the Dark option is hidden since Google Maps has no dark tile equivalent. Accepts a `provider` prop to filter out unsupported styles. Respects `prefers-reduced-motion` for transitions.
 
 ### LeafletMap (`src/components/map-providers/leaflet-map.tsx`)
 

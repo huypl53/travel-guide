@@ -41,7 +41,7 @@ export function MapView() {
 
   return (
     <div className="relative">
-      <MapStyleSwitcher value={mapStyle} onChange={handleStyleChange} />
+      <MapStyleSwitcher value={mapStyle} onChange={handleStyleChange} provider={provider} />
       {provider === "google" ? (
         <GoogleMap mapStyle={mapStyle} />
       ) : (
