@@ -29,11 +29,11 @@ export function buildOverpassQuery(
 ): string {
   const unions = categories.flatMap((cat) =>
     categoryTags[cat].map(
-      (tag) => `node(around:${radius},${lat},${lon})[${tag}];`,
+      (tag) => `nwr(around:${radius},${lat},${lon})[${tag}];`,
     ),
   );
 
-  return `[out:json][timeout:10];(${unions.join("")});out body;`;
+  return `[out:json][timeout:10];(${unions.join("")});out center;`;
 }
 
 /**

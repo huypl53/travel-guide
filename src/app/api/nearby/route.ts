@@ -20,6 +20,7 @@ const cache = new Map<string, CacheEntry>();
 
 // Simple mutex to avoid concurrent Overpass requests (rate limit policy)
 let pending: Promise<unknown> = Promise.resolve();
+let lastRequestTime = 0;
 
 function cacheKey(lat: number, lon: number, radius: number, categories: string): string {
   // Round coords to ~11m precision to improve cache hits
@@ -32,6 +33,14 @@ async function queryOverpass(
   radius: number,
   categories: PoiCategory[],
 ): Promise<PoiResult[]> {
+  // Enforce 2-second gap between Overpass requests
+  const now = Date.now();
+  const elapsed = now - lastRequestTime;
+  if (elapsed < 2000) {
+    await new Promise((resolve) => setTimeout(resolve, 2000 - elapsed));
+  }
+  lastRequestTime = Date.now();
+
   const query = buildOverpassQuery(lat, lon, radius, categories);
 
   const res = await fetch(OVERPASS_URL, {
@@ -45,19 +54,23 @@ async function queryOverpass(
   }
 
   const json = await res.json();
-  const elements: { lat: number; lon: number; tags?: Record<string, string> }[] =
+  const elements: { type: string; lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: Record<string, string> }[] =
     json.elements ?? [];
 
   return elements
     .map((el) => {
       const category = classifyElement(el.tags ?? {});
       if (!category) return null;
+      // For ways/relations, use the centroid from `out center`
+      const elLat = el.lat ?? el.center?.lat;
+      const elLon = el.lon ?? el.center?.lon;
+      if (elLat == null || elLon == null) return null;
       return {
         category,
         name: el.tags?.name || el.tags?.["name:en"] || category,
-        lat: el.lat,
-        lon: el.lon,
-        distance: Math.round(haversineMeters(lat, lon, el.lat, el.lon)),
+        lat: elLat,
+        lon: elLon,
+        distance: Math.round(haversineMeters(lat, lon, elLat, elLon)),
       };
     })
     .filter((p): p is PoiResult => p !== null)
@@ -94,9 +107,9 @@ export async function GET(request: NextRequest) {
 
   try {
     // Serialize requests to respect Overpass rate limits
-    const result = await (pending = pending.then(() =>
-      queryOverpass(lat, lon, radius, categories),
-    ));
+    const result = await (pending = pending
+      .catch(() => {})
+      .then(() => queryOverpass(lat, lon, radius, categories)));
 
     const pois = result as PoiResult[];
     cache.set(key, { data: pois, timestamp: Date.now() });

@@ -53,7 +53,7 @@ export function NearbyPoi({ onPoisChange }: NearbyPoiProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pois, setPois] = useState<PoiResult[]>([]);
-  const prevHomestayIdRef = useRef<string | null>(null);
+  const radiusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const selectedHomestay = locations.find(
     (l) => l.id === selectedHomestayId && l.type === "homestay",
@@ -61,12 +61,10 @@ export function NearbyPoi({ onPoisChange }: NearbyPoiProps) {
 
   // Clear POIs when selected homestay changes
   useEffect(() => {
-    if (prevHomestayIdRef.current !== selectedHomestayId) {
-      prevHomestayIdRef.current = selectedHomestayId;
-      setPois([]);
-      onPoisChange([]);
-      setError(null);
-    }
+    setPois([]);
+    onPoisChange([]);
+    setEnabledCategories(new Set());
+    setError(null);
   }, [selectedHomestayId, onPoisChange]);
 
   const fetchPois = useCallback(
@@ -122,12 +120,22 @@ export function NearbyPoi({ onPoisChange }: NearbyPoiProps) {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const val = parseInt(e.target.value, 10);
       setRadius(val);
+      if (radiusTimerRef.current) clearTimeout(radiusTimerRef.current);
       if (enabledCategories.size > 0) {
-        fetchPois(Array.from(enabledCategories), val);
+        radiusTimerRef.current = setTimeout(() => {
+          fetchPois(Array.from(enabledCategories), val);
+        }, 300);
       }
     },
     [fetchPois, enabledCategories],
   );
+
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (radiusTimerRef.current) clearTimeout(radiusTimerRef.current);
+    };
+  }, []);
 
   if (!selectedHomestay) return null;
 
