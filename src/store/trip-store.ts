@@ -21,6 +21,7 @@ interface TripState {
   focusedLocation: { lat: number; lon: number } | null;
   selectedHomestayIds: Set<string>;
   selectedDestinationIds: Set<string>;
+  comparisonIds: string[];
   setTripName: (name: string) => void;
   addLocation: (input: AddLocationInput) => void;
   removeLocation: (id: string) => void;
@@ -32,6 +33,8 @@ interface TripState {
   toggleLocationSelection: (id: string) => void;
   selectAllByType: (type: LocationType) => void;
   deselectAllByType: (type: LocationType) => void;
+  toggleComparison: (id: string) => void;
+  clearComparison: () => void;
   reset: () => void;
 }
 
@@ -42,6 +45,7 @@ export const useTripStore = create<TripState>((set) => ({
   focusedLocation: null,
   selectedHomestayIds: new Set<string>(),
   selectedDestinationIds: new Set<string>(),
+  comparisonIds: [],
 
   setTripName: (name) => set({ tripName: name }),
 
@@ -77,6 +81,7 @@ export const useTripStore = create<TripState>((set) => ({
       return {
         locations: state.locations.filter((l) => l.id !== id),
         [setKey]: newSet,
+        comparisonIds: state.comparisonIds.filter((cid) => cid !== id),
       };
     }),
 
@@ -129,5 +134,17 @@ export const useTripStore = create<TripState>((set) => ({
       return { [setKey]: new Set<string>() };
     }),
 
-  reset: () => set({ tripName: "", locations: [], selectedHomestayId: null, focusedLocation: null, selectedHomestayIds: new Set(), selectedDestinationIds: new Set() }),
+  toggleComparison: (id) =>
+    set((state) => {
+      const idx = state.comparisonIds.indexOf(id);
+      if (idx >= 0) {
+        return { comparisonIds: state.comparisonIds.filter((cid) => cid !== id) };
+      }
+      if (state.comparisonIds.length >= 3) return {};
+      return { comparisonIds: [...state.comparisonIds, id] };
+    }),
+
+  clearComparison: () => set({ comparisonIds: [] }),
+
+  reset: () => set({ tripName: "", locations: [], selectedHomestayId: null, focusedLocation: null, selectedHomestayIds: new Set(), selectedDestinationIds: new Set(), comparisonIds: [] }),
 }));

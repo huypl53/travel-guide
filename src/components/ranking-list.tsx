@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Trophy, Loader2 } from "lucide-react";
+import { Trophy, Loader2, GitCompareArrows } from "lucide-react";
 import { useTripStore } from "@/store/trip-store";
 import { useDistanceStore } from "@/store/distance-store";
 import { useCostStore } from "@/store/cost-store";
@@ -104,6 +104,8 @@ export function RankingList() {
   const selectedId = useTripStore((s) => s.selectedHomestayId);
   const selectedHomestayIds = useTripStore((s) => s.selectedHomestayIds);
   const setFocusedLocation = useTripStore((s) => s.setFocusedLocation);
+  const comparisonIds = useTripStore((s) => s.comparisonIds);
+  const toggleComparison = useTripStore((s) => s.toggleComparison);
 
   const distances = useDistanceStore((s) => s.distances);
   const distancesLoading = useDistanceStore((s) => s.loading);
@@ -160,41 +162,60 @@ export function RankingList() {
       </h3>
       {ranked.map((r, i) => {
         const cost = costData[r.homestay.id];
+        const isComparing = comparisonIds.includes(r.homestay.id);
+        const atMax = comparisonIds.length >= 3 && !isComparing;
 
         return (
           <div key={r.homestay.id} className="space-y-1">
-            <Button
-              variant={r.homestay.id === selectedId ? "secondary" : "ghost"}
-              className={`w-full justify-between h-auto py-3 sm:py-2 ${
-                !selectedHomestayIds.has(r.homestay.id) ? "opacity-40" : ""
-              }`}
-              onClick={() => {
-                setSelected(r.homestay.id);
-                setFocusedLocation({ lat: r.homestay.lat, lon: r.homestay.lon });
-              }}
-            >
-              <span className="flex items-center gap-2">
-                <RankBadge rank={i + 1} />
-                <span className="truncate">{r.homestay.name}</span>
-              </span>
-              <span className="flex items-center gap-2 shrink-0">
-                {cost && (
-                  <CostBadge
-                    totalCost={cost.totalCost}
-                    transportCost={cost.transportCost}
-                    accommodationCost={cost.accommodationCost}
-                    isCheapest={r.homestay.id === cheapestId}
-                    isMostExpensive={r.homestay.id === mostExpensiveId}
-                  />
-                )}
-                <span className="text-muted-foreground text-xs flex items-center gap-1">
-                  {distancesLoading && (
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                  )}
-                  avg {r.weightedAvgKm.toFixed(1)} km
+            <div className="flex items-center gap-1">
+              <button
+                title={atMax ? "Max 3 homestays" : isComparing ? "Remove from comparison" : "Add to comparison"}
+                disabled={atMax}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleComparison(r.homestay.id);
+                }}
+                className={`shrink-0 flex items-center justify-center h-6 w-6 rounded border transition-colors ${
+                  isComparing
+                    ? "bg-primary border-primary text-primary-foreground"
+                    : "border-border hover:border-primary/50"
+                } ${atMax ? "opacity-30 cursor-not-allowed" : "cursor-pointer"}`}
+              >
+                {isComparing && <GitCompareArrows className="h-3.5 w-3.5" />}
+              </button>
+              <Button
+                variant={r.homestay.id === selectedId ? "secondary" : "ghost"}
+                className={`flex-1 justify-between h-auto py-3 sm:py-2 ${
+                  !selectedHomestayIds.has(r.homestay.id) ? "opacity-40" : ""
+                }`}
+                onClick={() => {
+                  setSelected(r.homestay.id);
+                  setFocusedLocation({ lat: r.homestay.lat, lon: r.homestay.lon });
+                }}
+              >
+                <span className="flex items-center gap-2">
+                  <RankBadge rank={i + 1} />
+                  <span className="truncate">{r.homestay.name}</span>
                 </span>
-              </span>
-            </Button>
+                <span className="flex items-center gap-2 shrink-0">
+                  {cost && (
+                    <CostBadge
+                      totalCost={cost.totalCost}
+                      transportCost={cost.transportCost}
+                      accommodationCost={cost.accommodationCost}
+                      isCheapest={r.homestay.id === cheapestId}
+                      isMostExpensive={r.homestay.id === mostExpensiveId}
+                    />
+                  )}
+                  <span className="text-muted-foreground text-xs flex items-center gap-1">
+                    {distancesLoading && (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    )}
+                    avg {r.weightedAvgKm.toFixed(1)} km
+                  </span>
+                </span>
+              </Button>
+            </div>
             <div className="flex justify-end pr-2">
               <NightlyRateInput homestayId={r.homestay.id} homestayName={r.homestay.name} />
             </div>

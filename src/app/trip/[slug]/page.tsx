@@ -11,6 +11,8 @@ import { LocationList } from "@/components/location-list";
 import { RankingList } from "@/components/ranking-list";
 import { DistanceMatrix } from "@/components/distance-matrix";
 import { CostEstimator } from "@/components/cost-estimator";
+import { ComparisonView } from "@/components/comparison-view";
+import { ComparisonBar } from "@/components/comparison-bar";
 import { ShareExport } from "@/components/share-export";
 import { WeatherWidget } from "@/components/weather-widget";
 import { Button } from "@/components/ui/button";
@@ -99,6 +101,7 @@ export default function TripPage() {
   useAutoFetchDistances();
   const [bottomSheetOpen, setBottomSheetOpen] = useState(false);
   const locations = useTripStore((s) => s.locations);
+  const comparisonRef = useRef<HTMLDivElement>(null);
 
   const weatherCenter = useMemo(() => {
     if (locations.length === 0) return null;
@@ -107,6 +110,10 @@ export default function TripPage() {
       lon: locations.reduce((s, l) => s + l.lon, 0) / locations.length,
     };
   }, [locations]);
+
+  function scrollToComparison() {
+    comparisonRef.current?.scrollIntoView({ behavior: "smooth" });
+  }
 
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-4 pb-16 md:pb-0">
@@ -164,6 +171,14 @@ export default function TripPage() {
         </Card>
       </div>
 
+      {/* Comparison View */}
+      <div ref={comparisonRef} className="hidden md:block">
+        <ComparisonView wrapped />
+      </div>
+
+      {/* Floating comparison bar */}
+      <ComparisonBar onView={scrollToComparison} />
+
       {/* Ranking + Matrix: Mobile bottom sheet */}
       <div className="fixed bottom-0 left-0 right-0 md:hidden bg-background border-t shadow-lg z-50">
         <div className="flex justify-center pt-2">
@@ -194,6 +209,7 @@ export default function TripPage() {
         >
           <CostEstimator />
           <RankingList />
+          <ComparisonView />
           <DistanceMatrix />
         </div>
       </div>
