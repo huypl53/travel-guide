@@ -54,7 +54,6 @@ function distanceToColor(km: number, maxKm: number): string {
 
 export default function MapInner() {
   const locations = useTripStore((s) => s.locations);
-  const selectedId = useTripStore((s) => s.selectedHomestayId);
   const setSelected = useTripStore((s) => s.setSelectedHomestay);
   const selectedHomestayIds = useTripStore((s) => s.selectedHomestayIds);
   const selectedDestinationIds = useTripStore((s) => s.selectedDestinationIds);
