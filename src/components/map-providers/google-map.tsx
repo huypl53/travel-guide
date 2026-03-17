@@ -30,14 +30,16 @@ function distanceToColor(km: number, maxKm: number): string {
 }
 
 function RoutePolylines({
-  selectedHomestay,
+  homestays,
   destinations,
+  selectedHomestayIds,
   drivingDistances,
   routes,
   maxKm,
 }: {
-  selectedHomestay: { id: string; lat: number; lon: number };
+  homestays: { id: string; lat: number; lon: number }[];
   destinations: { id: string; lat: number; lon: number }[];
+  selectedHomestayIds: Set<string>;
   drivingDistances: Map<string, { drivingKm: number }>;
   routes: Map<string, [number, number][]>;
   maxKm: number;
@@ -48,41 +50,45 @@ function RoutePolylines({
     if (!map) return;
     const polylines: google.maps.Polyline[] = [];
 
-    for (const d of destinations) {
-      const key = `${selectedHomestay.id}:${d.id}`;
-      const driving = drivingDistances.get(key);
-      const routeGeometry = routes.get(key);
-      const km = driving?.drivingKm ?? haversineKm(selectedHomestay.lat, selectedHomestay.lon, d.lat, d.lon);
+    for (const h of homestays) {
+      const isSelected = selectedHomestayIds.has(h.id);
+      for (const d of destinations) {
+        const key = `${h.id}:${d.id}`;
+        const driving = drivingDistances.get(key);
+        const routeGeometry = routes.get(key);
+        const km = driving?.drivingKm ?? haversineKm(h.lat, h.lon, d.lat, d.lon);
 
-      const path = routeGeometry
-        ? routeGeometry.map(([lat, lon]) => ({ lat, lng: lon }))
-        : [
-            { lat: selectedHomestay.lat, lng: selectedHomestay.lon },
-            { lat: d.lat, lng: d.lon },
-          ];
+        const path = routeGeometry
+          ? routeGeometry.map(([lat, lon]) => ({ lat, lng: lon }))
+          : [
+              { lat: h.lat, lng: h.lon },
+              { lat: d.lat, lng: d.lon },
+            ];
 
-      const polyline = new google.maps.Polyline({
-        path,
-        strokeColor: distanceToColor(km, maxKm),
-        strokeWeight: 3,
-        strokeOpacity: 0.8,
-        map,
-      });
-      polylines.push(polyline);
+        const polyline = new google.maps.Polyline({
+          path,
+          strokeColor: distanceToColor(km, maxKm),
+          strokeWeight: isSelected ? 3 : 2,
+          strokeOpacity: isSelected ? 0.8 : 0.15,
+          map,
+        });
+        polylines.push(polyline);
+      }
     }
 
     return () => {
       polylines.forEach((p) => p.setMap(null));
     };
-  }, [map, selectedHomestay, destinations, drivingDistances, routes, maxKm]);
+  }, [map, homestays, destinations, selectedHomestayIds, drivingDistances, routes, maxKm]);
 
   return null;
 }
 
 export default function GoogleMapInner() {
   const locations = useTripStore((s) => s.locations);
-  const selectedId = useTripStore((s) => s.selectedHomestayId);
   const setSelected = useTripStore((s) => s.setSelectedHomestay);
+  const selectedHomestayIds = useTripStore((s) => s.selectedHomestayIds);
+  const selectedDestinationIds = useTripStore((s) => s.selectedDestinationIds);
 
   const homestays = useMemo(() => locations.filter((l) => l.type === "homestay"), [locations]);
   const destinations = useMemo(() => locations.filter((l) => l.type === "destination"), [locations]);
@@ -101,24 +107,26 @@ export default function GoogleMapInner() {
   const routes = useDistanceStore((s) => s.routes);
   const fetchRoutes = useDistanceStore((s) => s.fetchRoutes);
 
-  const selectedHomestay = homestays.find((h) => h.id === selectedId);
-
+  // Fetch route geometries for all homestays
   useEffect(() => {
-    if (selectedHomestay && destinations.length > 0) {
-      fetchRoutes(selectedHomestay, destinations);
+    if (destinations.length > 0) {
+      homestays.forEach((h) => fetchRoutes(h, destinations));
     }
-  }, [selectedHomestay, destinations, fetchRoutes]);
+  }, [homestays, destinations, fetchRoutes]);
 
   const maxKm = useMemo(() => {
-    if (!selectedHomestay || destinations.length === 0) return 10;
-    return Math.max(
-      ...destinations.map((d) => {
-        const key = `${selectedHomestay.id}:${d.id}`;
+    if (homestays.length === 0 || destinations.length === 0) return 10;
+    let max = 0;
+    for (const h of homestays) {
+      for (const d of destinations) {
+        const key = `${h.id}:${d.id}`;
         const driving = drivingDistances.get(key);
-        return driving?.drivingKm ?? haversineKm(selectedHomestay.lat, selectedHomestay.lon, d.lat, d.lon);
-      })
-    );
-  }, [selectedHomestay, destinations, drivingDistances]);
+        const km = driving?.drivingKm ?? haversineKm(h.lat, h.lon, d.lat, d.lon);
+        if (km > max) max = km;
+      }
+    }
+    return max || 10;
+  }, [homestays, destinations, drivingDistances]);
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!;
 
@@ -146,7 +154,9 @@ export default function GoogleMapInner() {
             title={h.name}
             onClick={handleMarkerClick(h.id)}
           >
-            <Pin background="#3b82f6" borderColor="#1e40af" glyphColor="#fff" />
+            <div style={{ opacity: selectedHomestayIds.has(h.id) ? 1 : 0.4 }}>
+              <Pin background="#3b82f6" borderColor="#1e40af" glyphColor="#fff" />
+            </div>
           </AdvancedMarker>
         ))}
 
@@ -156,14 +166,17 @@ export default function GoogleMapInner() {
             position={{ lat: d.lat, lng: d.lon }}
             title={`${d.name} (priority: ${d.priority})`}
           >
-            <Pin background="#ef4444" borderColor="#991b1b" glyphColor="#fff" />
+            <div style={{ opacity: selectedDestinationIds.has(d.id) ? 1 : 0.4 }}>
+              <Pin background="#ef4444" borderColor="#991b1b" glyphColor="#fff" />
+            </div>
           </AdvancedMarker>
         ))}
 
-        {selectedHomestay && (
+        {homestays.length > 0 && destinations.length > 0 && (
           <RoutePolylines
-            selectedHomestay={selectedHomestay}
+            homestays={homestays}
             destinations={destinations}
+            selectedHomestayIds={selectedHomestayIds}
             drivingDistances={drivingDistances}
             routes={routes}
             maxKm={maxKm}
