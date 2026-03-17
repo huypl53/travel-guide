@@ -4,12 +4,12 @@ import dynamic from "next/dynamic";
 
 const LeafletMap = dynamic(
   () => import("./map-providers/leaflet-map"),
-  { ssr: false, loading: () => <div className="h-[300px] md:h-[500px] bg-muted animate-pulse rounded-lg" /> }
+  { ssr: false, loading: () => <div className="h-[250px] sm:h-[350px] md:h-[500px] bg-muted animate-pulse rounded-lg" /> }
 );
 
 const GoogleMap = dynamic(
   () => import("./map-providers/google-map"),
-  { ssr: false, loading: () => <div className="h-[300px] md:h-[500px] bg-muted animate-pulse rounded-lg" /> }
+  { ssr: false, loading: () => <div className="h-[250px] sm:h-[350px] md:h-[500px] bg-muted animate-pulse rounded-lg" /> }
 );
 
 function getMapProviderType(): "google" | "osm" {

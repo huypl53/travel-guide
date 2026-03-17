@@ -181,27 +181,27 @@ export function AuthDialog() {
                 </Button>
               )}
 
-              <div className="flex flex-col gap-1 text-center text-sm text-muted-foreground">
+              <div className="flex flex-col gap-2 sm:gap-1 text-center text-sm text-muted-foreground">
                 {mode === "sign-in" && (
                   <>
-                    <button className="underline hover:text-foreground" onClick={() => { setMode("forgot-password"); resetState(); }}>
+                    <button className="underline hover:text-foreground py-2 sm:py-0" onClick={() => { setMode("forgot-password"); resetState(); }}>
                       Forgot password?
                     </button>
-                    <button className="underline hover:text-foreground" onClick={() => { setMode("sign-up"); resetState(); }}>
+                    <button className="underline hover:text-foreground py-2 sm:py-0" onClick={() => { setMode("sign-up"); resetState(); }}>
                       Don&apos;t have an account? Sign up
                     </button>
-                    <button className="underline hover:text-foreground" onClick={() => { setMode("magic-link"); resetState(); }}>
+                    <button className="underline hover:text-foreground py-2 sm:py-0" onClick={() => { setMode("magic-link"); resetState(); }}>
                       Sign in with magic link instead
                     </button>
                   </>
                 )}
                 {mode === "sign-up" && (
-                  <button className="underline hover:text-foreground" onClick={() => { setMode("sign-in"); resetState(); }}>
+                  <button className="underline hover:text-foreground py-2 sm:py-0" onClick={() => { setMode("sign-in"); resetState(); }}>
                     Already have an account? Sign in
                   </button>
                 )}
                 {(mode === "magic-link" || mode === "forgot-password") && (
-                  <button className="underline hover:text-foreground" onClick={() => { setMode("sign-in"); resetState(); }}>
+                  <button className="underline hover:text-foreground py-2 sm:py-0" onClick={() => { setMode("sign-in"); resetState(); }}>
                     Back to sign in
                   </button>
                 )}

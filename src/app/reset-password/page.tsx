@@ -44,8 +44,8 @@ export default function ResetPasswordPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
-        <CardContent className="p-6 space-y-4">
-          <h1 className="text-xl font-bold">Set new password</h1>
+        <CardContent className="px-3 sm:px-4 py-4 sm:p-6 space-y-4">
+          <h1 className="text-lg sm:text-xl font-bold">Set new password</h1>
 
           {done ? (
             <p className="text-sm text-muted-foreground">

@@ -14,8 +14,8 @@ export function PriorityStars({ value, onChange }: PriorityStarsProps) {
     <TooltipProvider delay={300}>
       <Tooltip>
         <TooltipTrigger>
-          <div className="flex items-center gap-1" role="group" aria-label="Priority">
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Priority</span>
+          <div className="flex items-center gap-1.5 sm:gap-1" role="group" aria-label="Priority">
+            <span className="text-xs text-muted-foreground uppercase tracking-wide">Priority</span>
             <div className="flex gap-0.5">
               {[1, 2, 3, 4, 5].map((level) => (
                 <span
@@ -33,7 +33,7 @@ export function PriorityStars({ value, onChange }: PriorityStarsProps) {
                       onChange(level);
                     }
                   }}
-                  className={`text-xs leading-none cursor-pointer select-none ${level <= value ? "text-primary" : "text-muted-foreground/40"} hover:text-primary/70`}
+                  className={`inline-flex items-center justify-center w-7 h-7 sm:w-5 sm:h-5 text-xs leading-none cursor-pointer select-none ${level <= value ? "text-primary" : "text-muted-foreground/40"} hover:text-primary/70`}
                 >
                   ●
                 </span>
