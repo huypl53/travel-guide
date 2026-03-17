@@ -37,7 +37,10 @@ export function LocationList({ type }: LocationListProps) {
             className={`flex items-center justify-between py-1 px-2 rounded hover:bg-muted border-l-2 cursor-pointer ${
               loc.type === "destination" ? "border-l-red-400" : "border-l-blue-400"
             } ${!selectedIds.has(loc.id) ? "opacity-40" : ""}`}
-            onClick={() => setFocusedLocation({ lat: loc.lat, lon: loc.lon })}
+            onClick={(e) => {
+              if ((e.target as HTMLElement).closest("button")) return;
+              setFocusedLocation({ lat: loc.lat, lon: loc.lon });
+            }}
           >
             <button
               className="mr-1.5 flex-shrink-0"
