@@ -47,6 +47,8 @@ export function useAutoSave(slug: string) {
               lon: loc.lon,
               priority: loc.priority,
               source: loc.source,
+              notes: loc.notes,
+              photo_url: loc.photoUrl,
             }))
           );
 
@@ -100,6 +102,8 @@ export function useAutoSave(slug: string) {
               address: loc.address,
               source: loc.source,
               priority: loc.priority,
+              notes: loc.notes,
+              photoUrl: loc.photo_url,
             });
           }
         }

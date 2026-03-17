@@ -131,7 +131,7 @@ export default function GoogleMapInner({ mapStyle = "default" }: { mapStyle?: Ma
           <AdvancedMarker
             key={h.id}
             position={{ lat: h.lat, lng: h.lon }}
-            title={h.name}
+            title={[h.name, h.notes?.split("\n")[0]].filter(Boolean).join(" — ")}
             onClick={handleMarkerClick(h.id)}
           >
             <div style={{ opacity: selectedHomestayIds.has(h.id) ? 1 : 0.4 }}>
@@ -144,7 +144,7 @@ export default function GoogleMapInner({ mapStyle = "default" }: { mapStyle?: Ma
           <AdvancedMarker
             key={d.id}
             position={{ lat: d.lat, lng: d.lon }}
-            title={`${d.name} (priority: ${d.priority})`}
+            title={[`${d.name} (priority: ${d.priority})`, d.notes?.split("\n")[0]].filter(Boolean).join(" — ")}
           >
             <div style={{ opacity: selectedDestinationIds.has(d.id) ? 1 : 0.4 }}>
               <Pin background="#ef4444" borderColor="#991b1b" glyphColor="#fff" />

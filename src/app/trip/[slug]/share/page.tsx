@@ -52,9 +52,15 @@ export default async function SharePage({
           <ul className="space-y-1">
             {trip.locations
               ?.filter((l: { type: string }) => l.type === "homestay")
-              .map((l: { id: string; name: string }) => (
+              .map((l: { id: string; name: string; notes: string | null; photo_url: string | null }) => (
                 <li key={l.id} className="text-sm">
-                  {l.name}
+                  <span>{l.name}</span>
+                  {l.notes && (
+                    <p className="text-xs text-muted-foreground mt-0.5">{l.notes}</p>
+                  )}
+                  {l.photo_url && (
+                    <img src={l.photo_url} alt="" className="mt-1 h-16 w-16 rounded object-cover" />
+                  )}
                 </li>
               ))}
           </ul>
@@ -65,9 +71,15 @@ export default async function SharePage({
             {trip.locations
               ?.filter((l: { type: string }) => l.type === "destination")
               .map(
-                (l: { id: string; name: string; priority: number }) => (
+                (l: { id: string; name: string; priority: number; notes: string | null; photo_url: string | null }) => (
                   <li key={l.id} className="text-sm">
-                    {l.name} (priority: {l.priority})
+                    <span>{l.name} (priority: {l.priority})</span>
+                    {l.notes && (
+                      <p className="text-xs text-muted-foreground mt-0.5">{l.notes}</p>
+                    )}
+                    {l.photo_url && (
+                      <img src={l.photo_url} alt="" className="mt-1 h-16 w-16 rounded object-cover" />
+                    )}
                   </li>
                 )
               )}

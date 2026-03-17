@@ -11,6 +11,8 @@ export interface Location {
   lon: number;
   priority: number; // 1-5, meaningful for destinations
   source: LocationSource;
+  notes: string | null;
+  photoUrl: string | null;
 }
 
 export interface DistanceEntry {

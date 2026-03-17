@@ -83,7 +83,17 @@ export default function MapInner({ mapStyle = "default" }: { mapStyle?: MapStyle
           opacity={selectedHomestayIds.has(h.id) ? 1 : 0.4}
           eventHandlers={{ click: () => setSelected(h.id) }}
         >
-          <Popup>{h.name}</Popup>
+          <Popup>
+            <div>
+              <strong>{h.name}</strong>
+              {h.photoUrl && (
+                <img src={h.photoUrl} alt="" className="mt-1 w-24 h-16 object-cover rounded" />
+              )}
+              {h.notes && (
+                <p className="mt-1 text-xs text-gray-600 line-clamp-2">{h.notes}</p>
+              )}
+            </div>
+          </Popup>
         </Marker>
       ))}
 
@@ -95,7 +105,15 @@ export default function MapInner({ mapStyle = "default" }: { mapStyle?: MapStyle
           opacity={selectedDestinationIds.has(d.id) ? 1 : 0.4}
         >
           <Popup>
-            {d.name} (priority: {d.priority})
+            <div>
+              <strong>{d.name}</strong> (priority: {d.priority})
+              {d.photoUrl && (
+                <img src={d.photoUrl} alt="" className="mt-1 w-24 h-16 object-cover rounded" />
+              )}
+              {d.notes && (
+                <p className="mt-1 text-xs text-gray-600 line-clamp-2">{d.notes}</p>
+              )}
+            </div>
           </Popup>
         </Marker>
       ))}

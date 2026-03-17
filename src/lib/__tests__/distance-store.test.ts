@@ -3,11 +3,11 @@ import { useDistanceStore } from "@/store/distance-store";
 import type { Location } from "@/lib/types";
 
 const homestays: Location[] = [
-  { id: "h1", tripId: "t1", type: "homestay", name: "H1", address: null, lat: 11.94, lon: 108.45, priority: 3, source: "manual" },
+  { id: "h1", tripId: "t1", type: "homestay", name: "H1", address: null, lat: 11.94, lon: 108.45, priority: 3, source: "manual", notes: null, photoUrl: null },
 ];
 
 const destinations: Location[] = [
-  { id: "d1", tripId: "t1", type: "destination", name: "D1", address: null, lat: 11.95, lon: 108.46, priority: 5, source: "manual" },
+  { id: "d1", tripId: "t1", type: "destination", name: "D1", address: null, lat: 11.95, lon: 108.46, priority: 5, source: "manual", notes: null, photoUrl: null },
 ];
 
 const originalFetch = global.fetch;
@@ -69,9 +69,9 @@ describe("useDistanceStore", () => {
       );
     }) as unknown as typeof fetch;
 
-    const homestay = { id: "h1", tripId: "", type: "homestay" as const, name: "H", lat: 1, lon: 1, address: null, priority: 3, source: "manual" as const };
+    const homestay = { id: "h1", tripId: "", type: "homestay" as const, name: "H", lat: 1, lon: 1, address: null, priority: 3, source: "manual" as const, notes: null, photoUrl: null };
     const dests = Array.from({ length: 6 }, (_, i) => ({
-      id: `d${i}`, tripId: "", type: "destination" as const, name: `D${i}`, lat: i, lon: i, address: null, priority: 3, source: "manual" as const,
+      id: `d${i}`, tripId: "", type: "destination" as const, name: `D${i}`, lat: i, lon: i, address: null, priority: 3, source: "manual" as const, notes: null, photoUrl: null,
     }));
 
     await useDistanceStore.getState().fetchRoutes(homestay, dests);
