@@ -45,6 +45,7 @@ Fully responsive layout with collapsible bottom sheet for rankings.
 - Mobile-responsive layout with collapsible bottom sheet
 - Pre-built Vietnam trip templates -- browse curated itineraries and clone one as a starting point
 - 5-day weather forecast widget — inline weather strip powered by Open-Meteo API (no key needed), cached for 1 hour, collapsible on mobile
+- **Nearby POI layer** — select a homestay and toggle nearby points of interest (restaurants, stores, ATMs, gas stations, medical facilities) via OpenStreetMap Overpass API; adjustable radius (500m–2km), category-colored circle markers with click-to-view name and distance
 
 ## Authentication
 
@@ -128,6 +129,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the landing page.
    - Set **priority** (1-5 stars) on destinations to weight the ranking.
    - Expand a location row to add **notes** and a **photo URL** — notes auto-save on blur, photos display as thumbnails with broken-image fallback.
    - View all locations on an interactive **map** with color-coded markers and distance polylines.
+   - Click a homestay marker to reveal the **Nearby POI** panel — toggle categories (Restaurant, Store, ATM/Bank, Gas Station, Medical) and adjust the search radius to see nearby amenities as colored circles on the map.
    - See the **ranking list** showing homestays sorted by weighted average distance. Enter **nightly rates** (VND) per homestay, set **trip nights** and **transport mode** (motorbike at 3,000 VND/km or car at 6,000 VND/km) to see total cost badges with breakdown tooltips. Settings persist in localStorage. Use the compare toggle on each row to select 2-3 homestays for **side-by-side comparison**.
    - Inspect the **distance matrix** for pairwise distances — driving distances and times are fetched automatically via OSRM and shown with a car icon.
    - Click **Share** to save the trip to Supabase and copy a shareable read-only link.

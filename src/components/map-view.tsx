@@ -8,6 +8,7 @@ import {
   persistMapStyle,
   MapStyleSwitcher,
 } from "./map-style-switcher";
+import { NearbyPoi, type PoiResult } from "./nearby-poi";
 
 const LeafletMap = dynamic(
   () => import("./map-providers/leaflet-map"),
@@ -29,20 +30,26 @@ function getMapProviderType(): "google" | "osm" {
 export function MapView() {
   const provider = getMapProviderType();
   const [mapStyle, setMapStyle] = useState<MapStyle>(getPersistedMapStyle);
+  const [pois, setPois] = useState<PoiResult[]>([]);
 
   const handleStyleChange = useCallback((style: MapStyle) => {
     setMapStyle(style);
     persistMapStyle(style);
   }, []);
 
+  const handlePoisChange = useCallback((newPois: PoiResult[]) => {
+    setPois(newPois);
+  }, []);
+
   return (
     <div className="relative">
       <MapStyleSwitcher value={mapStyle} onChange={handleStyleChange} provider={provider} />
       {provider === "google" ? (
-        <GoogleMap mapStyle={mapStyle} />
+        <GoogleMap mapStyle={mapStyle} pois={pois} />
       ) : (
-        <LeafletMap mapStyle={mapStyle} />
+        <LeafletMap mapStyle={mapStyle} pois={pois} />
       )}
+      <NearbyPoi onPoisChange={handlePoisChange} />
     </div>
   );
 }
