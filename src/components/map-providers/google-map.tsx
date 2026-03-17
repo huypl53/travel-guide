@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback, useRef, useState } from "react";
+import { useEffect, useCallback, useRef, useState, useMemo } from "react";
 import { APIProvider, Map, AdvancedMarker, Pin, InfoWindow, useMap } from "@vis.gl/react-google-maps";
 import { useTripStore } from "@/store/trip-store";
 import { useMapData } from "@/hooks/use-map-data";
@@ -109,7 +109,7 @@ function MarkerInfoWindow({ location, label }: { location: Location; label?: str
         />
       )}
       {location.notes && (
-        <p className="mt-1 text-xs text-gray-600 line-clamp-2">{location.notes.split("\n")[0]}</p>
+        <p className="mt-1 text-xs text-gray-600 line-clamp-2">{location.notes}</p>
       )}
     </div>
   );
@@ -142,9 +142,12 @@ export default function GoogleMapInner({ mapStyle = "default" }: { mapStyle?: Ma
 
   const handleInfoClose = useCallback(() => setOpenInfoId(null), []);
 
-  const allLocations: Record<string, Location> = {};
-  for (const h of homestays) allLocations[h.id] = h;
-  for (const d of destinations) allLocations[d.id] = d;
+  const allLocations = useMemo(() => {
+    const map: Record<string, Location> = {};
+    for (const h of homestays) map[h.id] = h;
+    for (const d of destinations) map[d.id] = d;
+    return map;
+  }, [homestays, destinations]);
 
   return (
     <APIProvider apiKey={apiKey}>

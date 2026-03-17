@@ -56,7 +56,7 @@ export function LocationList({ type }: LocationListProps) {
                 )}
               </button>
               <button
-                className="mr-1 flex-shrink-0 inline-flex items-center justify-center"
+                className="mr-1 flex-shrink-0 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 inline-flex items-center justify-center"
                 onClick={(e) => {
                   e.stopPropagation();
                   setExpandedId(expandedId === loc.id ? null : loc.id);
@@ -70,7 +70,7 @@ export function LocationList({ type }: LocationListProps) {
                 )}
               </button>
               {loc.notes && (
-                <StickyNote className="h-3 w-3 text-amber-500 mr-1 flex-shrink-0" />
+                <StickyNote className="h-3 w-3 text-amber-500 mr-1 flex-shrink-0" aria-label="Has notes" />
               )}
               <Tooltip>
                 <TooltipTrigger className="flex-1 truncate text-sm text-left">

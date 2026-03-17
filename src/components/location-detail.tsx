@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import { ImageOff } from "lucide-react";
 import { useTripStore } from "@/store/trip-store";
 import { Input } from "@/components/ui/input";
@@ -30,6 +29,7 @@ export function LocationDetail({ location }: LocationDetailProps) {
       <textarea
         className="w-full text-sm rounded border border-border bg-background px-2 py-1.5 resize-none focus:outline-none focus:ring-1 focus:ring-ring"
         rows={2}
+        maxLength={2000}
         placeholder="Add notes..."
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
@@ -38,6 +38,7 @@ export function LocationDetail({ location }: LocationDetailProps) {
       <div className="flex items-center gap-2">
         <Input
           className="text-sm h-8"
+          maxLength={500}
           placeholder="Photo URL"
           value={photoUrl}
           onChange={(e) => {
@@ -47,12 +48,9 @@ export function LocationDetail({ location }: LocationDetailProps) {
           onBlur={() => updateLocationPhoto(location.id, photoUrl)}
         />
         {showImage ? (
-          <Image
+          <img
             src={photoUrl}
             alt={location.name}
-            width={64}
-            height={64}
-            unoptimized
             className="h-16 w-16 rounded object-cover flex-shrink-0"
             onError={() => setImgError(true)}
           />
