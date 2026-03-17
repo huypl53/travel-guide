@@ -7,6 +7,7 @@ import "leaflet/dist/leaflet.css";
 import { useTripStore } from "@/store/trip-store";
 import { useMapData } from "@/hooks/use-map-data";
 import { haversineKm } from "@/lib/distance";
+import { type MapStyle, leafletTileUrls, leafletAttributions } from "@/components/map-style-switcher";
 
 function FlyToLocation() {
   const map = useMap();
@@ -52,7 +53,7 @@ function distanceToColor(km: number, maxKm: number): string {
   return `rgb(${r},${g},0)`;
 }
 
-export default function MapInner() {
+export default function MapInner({ mapStyle = "default" }: { mapStyle?: MapStyle }) {
   const {
     homestays,
     destinations,
@@ -69,8 +70,9 @@ export default function MapInner() {
     <MapContainer center={[center.lat, center.lon]} zoom={13} zoomSnap={0.5} wheelDebounceTime={100} wheelPxPerZoomLevel={120} className="h-[250px] sm:h-[350px] md:h-[500px] w-full rounded-lg z-0">
       <FlyToLocation />
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        key={mapStyle}
+        attribution={leafletAttributions[mapStyle]}
+        url={leafletTileUrls[mapStyle]}
       />
 
       {homestays.map((h) => (
