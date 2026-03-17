@@ -12,41 +12,43 @@ export class GoogleGeocodingProvider implements GeocodingProvider {
     query: string,
     options?: { country?: string }
   ): Promise<GeocodingResult[]> {
-    const url = new URL(
-      "https://maps.googleapis.com/maps/api/geocode/json"
-    );
-    url.searchParams.set("address", query);
-    url.searchParams.set("key", this.apiKey);
+    try {
+      const url = new URL(
+        "https://maps.googleapis.com/maps/api/geocode/json"
+      );
+      url.searchParams.set("address", query);
+      url.searchParams.set("key", this.apiKey);
 
-    if (options?.country) {
-      url.searchParams.set("components", `country:${options.country}`);
-    }
+      if (options?.country) {
+        url.searchParams.set("components", `country:${options.country}`);
+      }
 
-    const response = await fetch(url.toString());
-    if (!response.ok) {
-      throw new Error(`Google Geocoding API HTTP error: ${response.status}`);
-    }
-    const data = await response.json();
+      const response = await fetch(url.toString());
+      if (!response.ok) {
+        return [];
+      }
+      const data = await response.json();
 
-    if (data.status === "ZERO_RESULTS") {
+      if (data.status === "ZERO_RESULTS") {
+        return [];
+      }
+
+      if (data.status !== "OK") {
+        return [];
+      }
+
+      return data.results.map(
+        (result: {
+          formatted_address: string;
+          geometry: { location: { lat: number; lng: number } };
+        }) => ({
+          name: result.formatted_address,
+          lat: result.geometry.location.lat,
+          lon: result.geometry.location.lng,
+        })
+      );
+    } catch {
       return [];
     }
-
-    if (data.status !== "OK") {
-      throw new Error(
-        `Google Geocoding API error: ${data.status} - ${data.error_message ?? "Unknown error"}`
-      );
-    }
-
-    return data.results.map(
-      (result: {
-        formatted_address: string;
-        geometry: { location: { lat: number; lng: number } };
-      }) => ({
-        name: result.formatted_address,
-        lat: result.geometry.location.lat,
-        lon: result.geometry.location.lng,
-      })
-    );
   }
 }

@@ -13,40 +13,60 @@ export type {
   RouteResult,
 } from "./types";
 
+let _googleConfigured: boolean | null = null;
+
 function isGoogleConfigured(): boolean {
+  if (_googleConfigured !== null) return _googleConfigured;
+
   const wantsGoogle =
     process.env.NEXT_PUBLIC_MAP_PROVIDER === "google";
-  if (!wantsGoogle) return false;
+  if (!wantsGoogle) {
+    _googleConfigured = false;
+    return false;
+  }
 
   const hasKey = !!process.env.GOOGLE_MAPS_API_KEY;
   if (!hasKey) {
     console.warn(
       "NEXT_PUBLIC_MAP_PROVIDER is set to 'google' but GOOGLE_MAPS_API_KEY is not set. Falling back to OSM providers."
     );
+    _googleConfigured = false;
     return false;
   }
 
+  _googleConfigured = true;
   return true;
 }
 
+let _geocodingProvider: GeocodingProvider | null = null;
+let _routingProvider: RoutingProvider | null = null;
+
 export function getGeocodingProvider(): GeocodingProvider {
+  if (_geocodingProvider) return _geocodingProvider;
+
   const osm = new NominatimGeocodingProvider();
   if (isGoogleConfigured()) {
     const apiKey = process.env.GOOGLE_MAPS_API_KEY!;
     const google = new GoogleGeocodingProvider(apiKey);
-    return withFallback.geocoding(google, osm);
+    _geocodingProvider = withFallback.geocoding(google, osm);
+  } else {
+    _geocodingProvider = osm;
   }
-  return osm;
+  return _geocodingProvider;
 }
 
 export function getRoutingProvider(): RoutingProvider {
+  if (_routingProvider) return _routingProvider;
+
   const osm = new OsrmRoutingProvider();
   if (isGoogleConfigured()) {
     const apiKey = process.env.GOOGLE_MAPS_API_KEY!;
     const google = new GoogleRoutingProvider(apiKey);
-    return withFallback.routing(google, osm);
+    _routingProvider = withFallback.routing(google, osm);
+  } else {
+    _routingProvider = osm;
   }
-  return osm;
+  return _routingProvider;
 }
 
 export function getMapProvider(): "google" | "osm" {

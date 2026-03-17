@@ -52,7 +52,7 @@ describe("GoogleGeocodingProvider", () => {
     expect(results).toEqual([]);
   });
 
-  it("throws on REQUEST_DENIED status", async () => {
+  it("returns empty array on REQUEST_DENIED status", async () => {
     const mockResponse = {
       status: "REQUEST_DENIED",
       results: [],
@@ -64,17 +64,17 @@ describe("GoogleGeocodingProvider", () => {
     );
 
     const provider = new GoogleGeocodingProvider("bad-key");
-    await expect(provider.search("test")).rejects.toThrow(
-      /REQUEST_DENIED.*The provided API key is invalid/
-    );
+    const results = await provider.search("test");
+    expect(results).toEqual([]);
   });
 
-  it("throws on network failure", async () => {
+  it("returns empty array on network failure", async () => {
     vi.spyOn(globalThis, "fetch").mockRejectedValue(
       new Error("Network error")
     );
 
     const provider = new GoogleGeocodingProvider("test-api-key");
-    await expect(provider.search("test")).rejects.toThrow("Network error");
+    const results = await provider.search("test");
+    expect(results).toEqual([]);
   });
 });
