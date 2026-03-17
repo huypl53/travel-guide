@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronUp, CloudOff } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getWeatherInfo } from "@/lib/weather-codes";
@@ -33,7 +33,7 @@ function parseForecast(data: OpenMeteoResponse): DayForecast[] {
   const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   return time.map((date, i) => {
-    const d = new Date(date + "T00:00:00");
+    const d = new Date(date + "T00:00:00+07:00");
     return {
       date,
       dayName: dayNames[d.getDay()],
@@ -136,7 +136,6 @@ export function WeatherWidget({ center }: WeatherWidgetProps) {
         <>
           {/* Desktop view */}
           <div className="hidden sm:flex items-center gap-2 overflow-x-auto">
-            <CloudOff className="h-4 w-4 text-muted-foreground shrink-0 hidden" />
             {forecast.map((day, i) => (
               <DayCard key={day.date} day={day} isToday={i === 0} />
             ))}
@@ -144,7 +143,7 @@ export function WeatherWidget({ center }: WeatherWidgetProps) {
 
           {/* Mobile view: today + expand */}
           <div className="sm:hidden">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 overflow-x-auto">
               <DayCard day={forecast[0]} isToday />
               {expanded &&
                 forecast.slice(1).map((day) => (
@@ -155,6 +154,8 @@ export function WeatherWidget({ center }: WeatherWidgetProps) {
                 size="sm"
                 className="ml-auto shrink-0"
                 onClick={() => setExpanded(!expanded)}
+                aria-expanded={expanded}
+                aria-label={expanded ? "Collapse forecast" : "Show 5-day forecast"}
               >
                 {expanded ? (
                   <ChevronUp className="h-4 w-4" />
