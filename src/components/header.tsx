@@ -35,6 +35,7 @@ export function Header() {
 
   async function handleSignOut() {
     await supabase.auth.signOut();
+    router.push("/");
     router.refresh();
   }
 
