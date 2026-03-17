@@ -16,6 +16,28 @@ function coordHash(homestays: Location[], destinations: Location[]): string {
   return coords.join(";");
 }
 
+async function limitConcurrency<T>(
+  tasks: (() => Promise<T>)[],
+  maxConcurrent: number
+): Promise<T[]> {
+  const results: T[] = new Array(tasks.length);
+  let index = 0;
+
+  async function runNext(): Promise<void> {
+    while (index < tasks.length) {
+      const currentIndex = index++;
+      results[currentIndex] = await tasks[currentIndex]();
+    }
+  }
+
+  const workers = Array.from(
+    { length: Math.min(maxConcurrent, tasks.length) },
+    () => runNext()
+  );
+  await Promise.all(workers);
+  return results;
+}
+
 interface DistanceState {
   distances: Map<string, DrivingDistance>;
   routes: Map<string, [number, number][]>;
@@ -84,19 +106,19 @@ export const useDistanceStore = create<DistanceState>((set, get) => ({
 
     set({ routesLoading: true });
 
-    const results = await Promise.all(
-      needed.map(async (dest) => {
-        try {
-          const res = await fetch(`/api/routes?from=${homestay.lat},${homestay.lon}&to=${dest.lat},${dest.lon}`);
-          if (!res.ok) return null;
-          const data = await res.json();
-          if (!data.geometry) return null;
-          return { key: `${homestay.id}:${dest.id}`, points: data.geometry };
-        } catch {
-          return null;
-        }
-      })
-    );
+    const tasks = needed.map((dest) => async () => {
+      try {
+        const res = await fetch(`/api/routes?from=${homestay.lat},${homestay.lon}&to=${dest.lat},${dest.lon}`);
+        if (!res.ok) return null;
+        const data = await res.json();
+        if (!data.geometry) return null;
+        return { key: `${homestay.id}:${dest.id}`, points: data.geometry as [number, number][] };
+      } catch {
+        return null;
+      }
+    });
+
+    const results = await limitConcurrency(tasks, 3);
 
     // Merge with current state at write time to avoid race condition
     const merged = new Map(get().routes);
