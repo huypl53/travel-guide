@@ -76,8 +76,7 @@ export function useAutoSave(slug: string) {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) return;
-      userRef.current = user;
+      userRef.current = user ?? null;
 
       // Try to load existing trip
       const { data: existing } = await supabase
@@ -87,11 +86,8 @@ export function useAutoSave(slug: string) {
         .maybeSingle();
 
       if (existing) {
-        // Only auto-save if the current user owns this trip
-        if (existing.user_id !== user.id) return;
-
+        // Load trip data into store for any user (authenticated or anonymous)
         tripIdRef.current = existing.id;
-        // Load into store if it has data
         const store = useTripStore.getState();
         if (existing.name) store.setTripName(existing.name);
         if (existing.locations?.length > 0 && store.locations.length === 0) {
@@ -107,8 +103,13 @@ export function useAutoSave(slug: string) {
             });
           }
         }
-      } else {
-        // Create new trip
+
+        // Only enable auto-save if the current user owns this trip
+        if (!user || existing.user_id !== user.id) {
+          tripIdRef.current = null;
+        }
+      } else if (user) {
+        // Create new trip (only for authenticated users)
         const { data: newTrip } = await supabase
           .from("trips")
           .insert({

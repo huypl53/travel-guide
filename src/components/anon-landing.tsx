@@ -13,6 +13,7 @@ import {
   Globe,
   Shield,
 } from "lucide-react";
+import { TemplateBrowser } from "@/components/template-browser";
 
 const features = [
   {
@@ -129,6 +130,9 @@ export function AnonLanding() {
           </div>
         </div>
       </section>
+
+      {/* ── Trip Templates ── */}
+      <TemplateBrowser />
 
       {/* ── Features ── */}
       <section className="px-4 py-16 sm:py-20">

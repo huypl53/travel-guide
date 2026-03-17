@@ -39,6 +39,7 @@ Fully responsive layout with collapsible bottom sheet for rankings.
 - Share trips via unique URLs backed by Supabase
 - Export trip data as JSON
 - Mobile-responsive layout with collapsible bottom sheet
+- Pre-built Vietnam trip templates -- browse curated itineraries and clone one as a starting point
 
 ## Authentication
 
@@ -116,7 +117,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the landing page.
 
 ## Usage
 
-1. **Landing page** (`/`) -- Click "New Trip" to create a trip workspace with a unique URL.
+1. **Landing page** (`/`) -- Click "New Trip" to create a trip workspace with a unique URL, or browse **Trip Templates** to start from a curated Vietnam itinerary with pre-populated homestays and destinations.
 2. **Trip page** (`/trip/[slug]`) -- The main workspace where you:
    - Add **homestays** and **destinations** using the input panels (supports Google Maps URLs, CSV, JSON, and manual entry).
    - Set **priority** (1-5 stars) on destinations to weight the ranking.
