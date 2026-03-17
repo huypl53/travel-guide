@@ -56,6 +56,8 @@ export default function MapInner() {
   const locations = useTripStore((s) => s.locations);
   const selectedId = useTripStore((s) => s.selectedHomestayId);
   const setSelected = useTripStore((s) => s.setSelectedHomestay);
+  const selectedHomestayIds = useTripStore((s) => s.selectedHomestayIds);
+  const selectedDestinationIds = useTripStore((s) => s.selectedDestinationIds);
 
   const homestays = useMemo(() => locations.filter((l) => l.type === "homestay"), [locations]);
   const destinations = useMemo(() => locations.filter((l) => l.type === "destination"), [locations]);
@@ -73,26 +75,27 @@ export default function MapInner() {
   const routes = useDistanceStore((s) => s.routes);
   const fetchRoutes = useDistanceStore((s) => s.fetchRoutes);
 
-  const selectedHomestay = homestays.find((h) => h.id === selectedId);
-
-  // Fetch route geometries when selected homestay changes
+  // Fetch route geometries for all homestays
   useEffect(() => {
-    if (selectedHomestay && destinations.length > 0) {
-      fetchRoutes(selectedHomestay, destinations);
+    if (destinations.length > 0) {
+      homestays.forEach((h) => fetchRoutes(h, destinations));
     }
-  }, [selectedHomestay, destinations, fetchRoutes]);
+  }, [homestays, destinations, fetchRoutes]);
 
-  // Calculate max distance for color scaling
-  const maxKm =
-    selectedHomestay && destinations.length > 0
-      ? Math.max(
-          ...destinations.map((d) => {
-            const key = `${selectedHomestay.id}:${d.id}`;
-            const driving = drivingDistances.get(key);
-            return driving?.drivingKm ?? haversineKm(selectedHomestay.lat, selectedHomestay.lon, d.lat, d.lon);
-          })
-        )
-      : 10;
+  // Calculate max distance for color scaling across all homestays
+  const maxKm = useMemo(() => {
+    if (homestays.length === 0 || destinations.length === 0) return 10;
+    let max = 0;
+    for (const h of homestays) {
+      for (const d of destinations) {
+        const key = `${h.id}:${d.id}`;
+        const driving = drivingDistances.get(key);
+        const km = driving?.drivingKm ?? haversineKm(h.lat, h.lon, d.lat, d.lon);
+        if (km > max) max = km;
+      }
+    }
+    return max || 10;
+  }, [homestays, destinations, drivingDistances]);
 
   return (
     <MapContainer center={center} zoom={13} zoomSnap={0.5} wheelDebounceTime={100} wheelPxPerZoomLevel={120} className="h-[300px] md:h-[500px] w-full rounded-lg z-0">
@@ -107,6 +110,7 @@ export default function MapInner() {
           key={h.id}
           position={[h.lat, h.lon]}
           icon={homestayIcon}
+          opacity={selectedHomestayIds.has(h.id) ? 1 : 0.4}
           eventHandlers={{ click: () => setSelected(h.id) }}
         >
           <Popup>{h.name}</Popup>
@@ -114,35 +118,42 @@ export default function MapInner() {
       ))}
 
       {destinations.map((d) => (
-        <Marker key={d.id} position={[d.lat, d.lon]} icon={destinationIcon}>
+        <Marker
+          key={d.id}
+          position={[d.lat, d.lon]}
+          icon={destinationIcon}
+          opacity={selectedDestinationIds.has(d.id) ? 1 : 0.4}
+        >
           <Popup>
             {d.name} (priority: {d.priority})
           </Popup>
         </Marker>
       ))}
 
-      {selectedHomestay &&
-        destinations.map((d) => {
-          const key = `${selectedHomestay.id}:${d.id}`;
+      {homestays.map((h) => {
+        const isSelected = selectedHomestayIds.has(h.id);
+        return destinations.map((d) => {
+          const key = `${h.id}:${d.id}`;
           const driving = drivingDistances.get(key);
           const routeGeometry = routes.get(key);
-          const km = driving?.drivingKm ?? haversineKm(selectedHomestay.lat, selectedHomestay.lon, d.lat, d.lon);
+          const km = driving?.drivingKm ?? haversineKm(h.lat, h.lon, d.lat, d.lon);
           const positions: [number, number][] = routeGeometry ?? [
-            [selectedHomestay.lat, selectedHomestay.lon],
+            [h.lat, h.lon],
             [d.lat, d.lon],
           ];
           return (
             <Polyline
-              key={`${selectedHomestay.id}-${d.id}`}
+              key={`${h.id}-${d.id}`}
               positions={positions}
               pathOptions={{
                 color: distanceToColor(km, maxKm),
-                weight: 3,
-                opacity: 0.8,
+                weight: isSelected ? 3 : 2,
+                opacity: isSelected ? 0.8 : 0.15,
               }}
             />
           );
-        })}
+        });
+      })}
     </MapContainer>
   );
 }
