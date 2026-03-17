@@ -3,13 +3,13 @@ import { rankHomestays } from "@/lib/ranking";
 import type { Location } from "@/lib/types";
 
 const homestays: Location[] = [
-  { id: "h1", tripId: "t1", type: "homestay", name: "Close", address: null, lat: 11.94, lon: 108.45, priority: 3, source: "manual" },
-  { id: "h2", tripId: "t1", type: "homestay", name: "Far", address: null, lat: 12.24, lon: 109.19, priority: 3, source: "manual" },
+  { id: "h1", tripId: "t1", type: "homestay", name: "Close", address: null, lat: 11.94, lon: 108.45, priority: 3, source: "manual", notes: null, photoUrl: null },
+  { id: "h2", tripId: "t1", type: "homestay", name: "Far", address: null, lat: 12.24, lon: 109.19, priority: 3, source: "manual", notes: null, photoUrl: null },
 ];
 
 const destinations: Location[] = [
-  { id: "d1", tripId: "t1", type: "destination", name: "Dest A", address: null, lat: 11.95, lon: 108.46, priority: 5, source: "manual" },
-  { id: "d2", tripId: "t1", type: "destination", name: "Dest B", address: null, lat: 11.93, lon: 108.44, priority: 1, source: "manual" },
+  { id: "d1", tripId: "t1", type: "destination", name: "Dest A", address: null, lat: 11.95, lon: 108.46, priority: 5, source: "manual", notes: null, photoUrl: null },
+  { id: "d2", tripId: "t1", type: "destination", name: "Dest B", address: null, lat: 11.93, lon: 108.44, priority: 1, source: "manual", notes: null, photoUrl: null },
 ];
 
 describe("rankHomestays", () => {

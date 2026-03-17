@@ -36,6 +36,7 @@ Fully responsive layout with collapsible bottom sheet for rankings.
 - Multi-select with visual comparison — toggle homestays/destinations on/off to dim unselected items across all views (lists, map markers, routes, ranking, distance matrix)
 - Scrollable location lists for handling many locations
 - Concurrency-limited route fetching (max 3 parallel requests) with persistent route cache
+- Location notes and photo URLs — add context per location, visible in lists and map popups
 - Multiple input methods: Google Maps URLs (full and short links), CSV, JSON, and manual coordinates
 - Share trips via unique URLs backed by Supabase
 - Export trip data as JSON
@@ -122,6 +123,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the landing page.
 2. **Trip page** (`/trip/[slug]`) -- The main workspace where you:
    - Add **homestays** and **destinations** using the input panels (supports Google Maps URLs, CSV, JSON, and manual entry).
    - Set **priority** (1-5 stars) on destinations to weight the ranking.
+   - Expand a location row to add **notes** and a **photo URL** — notes auto-save on blur, photos display as thumbnails with broken-image fallback.
    - View all locations on an interactive **map** with color-coded markers and distance polylines.
    - See the **ranking list** showing homestays sorted by weighted average distance.
    - Inspect the **distance matrix** for pairwise distances — driving distances and times are fetched automatically via OSRM and shown with a car icon.

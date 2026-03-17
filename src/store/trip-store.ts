@@ -10,6 +10,8 @@ interface AddLocationInput {
   address: string | null;
   source: LocationSource;
   priority?: number;
+  notes?: string | null;
+  photoUrl?: string | null;
 }
 
 interface TripState {
@@ -23,6 +25,8 @@ interface TripState {
   addLocation: (input: AddLocationInput) => void;
   removeLocation: (id: string) => void;
   updatePriority: (id: string, priority: number) => void;
+  updateLocationNotes: (id: string, notes: string) => void;
+  updateLocationPhoto: (id: string, photoUrl: string) => void;
   setSelectedHomestay: (id: string | null) => void;
   setFocusedLocation: (loc: { lat: number; lon: number } | null) => void;
   toggleLocationSelection: (id: string) => void;
@@ -52,6 +56,8 @@ export const useTripStore = create<TripState>((set) => ({
       lon: input.lon,
       priority: input.priority ?? 3,
       source: input.source,
+      notes: input.notes ?? null,
+      photoUrl: input.photoUrl ?? null,
     };
     set((state) => {
       const setKey = input.type === "homestay" ? "selectedHomestayIds" : "selectedDestinationIds";
@@ -78,6 +84,20 @@ export const useTripStore = create<TripState>((set) => ({
     set((state) => ({
       locations: state.locations.map((l) =>
         l.id === id ? { ...l, priority } : l,
+      ),
+    })),
+
+  updateLocationNotes: (id, notes) =>
+    set((state) => ({
+      locations: state.locations.map((l) =>
+        l.id === id ? { ...l, notes: notes || null } : l,
+      ),
+    })),
+
+  updateLocationPhoto: (id, photoUrl) =>
+    set((state) => ({
+      locations: state.locations.map((l) =>
+        l.id === id ? { ...l, photoUrl: photoUrl || null } : l,
       ),
     })),
 

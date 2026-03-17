@@ -43,7 +43,7 @@
 
 ## Data Model
 
-Defined in `supabase/migrations/001_initial.sql`.
+Defined in `supabase/migrations/001_initial.sql`, with additions in `003_location_notes_photos.sql`.
 
 ### trips
 
@@ -67,6 +67,8 @@ Defined in `supabase/migrations/001_initial.sql`.
 | lon      | double precision | Longitude                                |
 | priority | integer          | 1-5, default 3, used for ranking weight  |
 | source   | text             | 'manual', 'google_maps', or 'csv'        |
+| notes    | text (nullable)  | Free-text notes about the location       |
+| photo_url| text (nullable)  | External image URL for the location      |
 
 ### distance_cache
 
@@ -128,7 +130,11 @@ Google Maps equivalent using `@vis.gl/react-google-maps`. Uses `AdvancedMarker` 
 
 ### LocationInput / LocationList (`src/components/location-input.tsx`, `location-list.tsx`)
 
-Input panels for adding locations. Supports Google Maps URL pasting, CSV/JSON upload, and manual coordinate entry. LocationList renders added locations with remove actions. Both accept a `type` prop (`"homestay"` or `"destination"`).
+Input panels for adding locations. Supports Google Maps URL pasting, CSV/JSON upload, and manual coordinate entry. LocationList renders added locations with remove actions, an expand/collapse toggle per row, and a StickyNote icon when notes exist. Both accept a `type` prop (`"homestay"` or `"destination"`).
+
+### LocationDetail (`src/components/location-detail.tsx`)
+
+Expandable detail panel rendered below a location row when expanded. Contains a textarea for notes (auto-saves to the store on blur) and a URL input for a photo. Displays the photo as a 64x64 thumbnail with an `ImageOff` fallback icon when the URL fails to load.
 
 ### RankingList (`src/components/ranking-list.tsx`)
 
@@ -158,7 +164,7 @@ Star rating input for setting destination priority (1-5), used in the location l
 | selectedHomestayIds  | Set\<string\>     | Homestays included in visual comparison |
 | selectedDestinationIds | Set\<string\>   | Destinations included in visual comparison |
 
-Actions: `setTripName`, `addLocation`, `removeLocation`, `updatePriority`, `setSelectedHomestay`, `toggleLocationSelection`, `selectAllByType`, `deselectAllByType`, `reset`.
+Actions: `setTripName`, `addLocation`, `removeLocation`, `updatePriority`, `updateLocationNotes`, `updateLocationPhoto`, `setSelectedHomestay`, `toggleLocationSelection`, `selectAllByType`, `deselectAllByType`, `reset`.
 
 Components read from the store and filter by `type` to get homestays or destinations.
 

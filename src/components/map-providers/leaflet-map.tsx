@@ -8,6 +8,7 @@ import { useTripStore } from "@/store/trip-store";
 import { useMapData } from "@/hooks/use-map-data";
 import { haversineKm } from "@/lib/distance";
 import { type MapStyle, leafletTileUrls, leafletAttributions } from "@/components/map-style-switcher";
+import { isSafeImageUrl } from "@/lib/utils";
 
 function FlyToLocation() {
   const map = useMap();
@@ -83,7 +84,17 @@ export default function MapInner({ mapStyle = "default" }: { mapStyle?: MapStyle
           opacity={selectedHomestayIds.has(h.id) ? 1 : 0.4}
           eventHandlers={{ click: () => setSelected(h.id) }}
         >
-          <Popup>{h.name}</Popup>
+          <Popup>
+            <div>
+              <strong>{h.name}</strong>
+              {h.photoUrl && isSafeImageUrl(h.photoUrl) && (
+                <img src={h.photoUrl} alt="" className="mt-1 w-24 h-16 object-cover rounded" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+              )}
+              {h.notes && (
+                <p className="mt-1 text-xs text-gray-600 line-clamp-2">{h.notes}</p>
+              )}
+            </div>
+          </Popup>
         </Marker>
       ))}
 
@@ -95,7 +106,15 @@ export default function MapInner({ mapStyle = "default" }: { mapStyle?: MapStyle
           opacity={selectedDestinationIds.has(d.id) ? 1 : 0.4}
         >
           <Popup>
-            {d.name} (priority: {d.priority})
+            <div>
+              <strong>{d.name}</strong> (priority: {d.priority})
+              {d.photoUrl && isSafeImageUrl(d.photoUrl) && (
+                <img src={d.photoUrl} alt="" className="mt-1 w-24 h-16 object-cover rounded" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+              )}
+              {d.notes && (
+                <p className="mt-1 text-xs text-gray-600 line-clamp-2">{d.notes}</p>
+              )}
+            </div>
           </Popup>
         </Marker>
       ))}

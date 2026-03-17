@@ -49,12 +49,12 @@ export default async function HomePage() {
         homestays.map((h, i) => ({
           id: `h${i}`, tripId: "", type: "homestay" as const,
           name: h.name, address: null, lat: h.lat, lon: h.lon,
-          priority: 3, source: "manual" as const,
+          priority: 3, source: "manual" as const, notes: null, photoUrl: null,
         })),
         destinations.map((d, i) => ({
           id: `d${i}`, tripId: "", type: "destination" as const,
           name: d.name, address: null, lat: d.lat, lon: d.lon,
-          priority: d.priority, source: "manual" as const,
+          priority: d.priority, source: "manual" as const, notes: null, photoUrl: null,
         }))
       );
       topHomestay = ranked[0]?.homestay.name ?? null;
