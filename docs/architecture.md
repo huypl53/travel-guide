@@ -199,6 +199,10 @@ Haversine formula for straight-line distance between two coordinates.
 
 Computes weighted average distance from each homestay to all destinations, using destination priority as weights. Accepts an optional `drivingDistances` map — when a driving distance is available for a homestay-destination pair, it is used instead of the haversine distance. Returns sorted `RankedHomestay[]`.
 
+### Templates (`src/lib/templates.ts`)
+
+Static data for 6 curated Vietnam trip templates (Da Lat, Hoi An & Da Nang, Phu Quoc, Ha Noi, Ho Chi Minh City, Ninh Binh). Each template defines a `TripTemplate` with `id`, `name`, `description`, `region`, `duration`, `coverEmoji`, and an array of `TemplateLocation` objects (2-3 homestays + 4-6 destinations with real GPS coordinates). Exported as `TRIP_TEMPLATES` array.
+
 ### Types (`src/lib/types.ts`)
 
 TypeScript interfaces: `Location`, `DistanceEntry`, `RankedHomestay`.
@@ -241,6 +245,8 @@ Refreshes the Supabase auth session on every request using `@supabase/ssr`. This
 | TripCard         | `src/components/trip-card.tsx`        | Card displaying a saved trip summary (name, date, locations) |
 | MyTripsList      | `src/components/my-trips-list.tsx`    | Grid of TripCards for the logged-in user's saved trips       |
 | AnonLanding      | `src/components/anon-landing.tsx`     | Landing page content shown to anonymous (non-authenticated) users |
+| TemplateBrowser  | `src/components/template-browser.tsx` | Grid of template cards on landing page ("Popular Trip Templates") |
+| TemplateCard     | `src/components/template-card.tsx`    | Individual template preview card with "Use Template" clone action |
 | SaveTripButton   | `src/components/save-trip-button.tsx` | Button on shared trip pages to save a trip to the user's account |
 
 ### Database Changes
