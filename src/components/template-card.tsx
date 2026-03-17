@@ -31,6 +31,7 @@ export function TemplateCard({ template }: TemplateCardProps) {
   ).length;
 
   async function handleUseTemplate() {
+    if (loading) return;
     setLoading(true);
     setError(null);
     try {
@@ -53,7 +54,6 @@ export function TemplateCard({ template }: TemplateCardProps) {
 
       if (!res.ok) {
         setError("Failed to create trip. Please try again.");
-        setLoading(false);
         return;
       }
 
@@ -62,6 +62,7 @@ export function TemplateCard({ template }: TemplateCardProps) {
     } catch (err) {
       console.error("Error creating trip from template:", err);
       setError("Failed to create trip. Please try again.");
+    } finally {
       setLoading(false);
     }
   }
@@ -124,7 +125,7 @@ export function TemplateCard({ template }: TemplateCardProps) {
             </>
           )}
         </Button>
-        {error && <p className="text-destructive text-sm">{error}</p>}
+        {error && <p className="text-destructive text-sm mt-1">{error}</p>}
       </CardFooter>
     </Card>
   );
