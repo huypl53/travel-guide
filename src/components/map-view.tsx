@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import {
   type MapStyle,
@@ -28,11 +28,7 @@ function getMapProviderType(): "google" | "osm" {
 
 export function MapView() {
   const provider = getMapProviderType();
-  const [mapStyle, setMapStyle] = useState<MapStyle>("default");
-
-  useEffect(() => {
-    setMapStyle(getPersistedMapStyle());
-  }, []);
+  const [mapStyle, setMapStyle] = useState<MapStyle>(getPersistedMapStyle);
 
   const handleStyleChange = useCallback((style: MapStyle) => {
     setMapStyle(style);
