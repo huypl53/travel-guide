@@ -27,6 +27,7 @@ export function ComparisonBar({ onView }: ComparisonBarProps) {
         View
       </Button>
       <button
+        aria-label="Clear comparison"
         onClick={clearComparison}
         className="hover:bg-primary-foreground/20 rounded-full p-1 transition-colors"
       >

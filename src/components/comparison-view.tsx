@@ -79,7 +79,7 @@ export function ComparisonView({ wrapped }: { wrapped?: boolean } = {}) {
       const id = c.ranked.homestay.id;
 
       // Check if best weighted average
-      if (Math.abs(c.ranked.weightedAvgKm - bestValues.weightedAvgKm) < 0.01) {
+      if (bestValues.weightedAvgKm > 0 && Math.abs(c.ranked.weightedAvgKm - bestValues.weightedAvgKm) < 0.01) {
         labels.push("Best overall average");
       }
 
@@ -88,7 +88,7 @@ export function ComparisonView({ wrapped }: { wrapped?: boolean } = {}) {
         const best = bestValues.perDestination.get(d.destination.id);
         if (best) {
           const km = d.drivingKm ?? d.km;
-          if (Math.abs(km - best.km) < 0.01) {
+          if (best.km > 0 && Math.abs(km - best.km) < 0.01) {
             labels.push(`Closest to ${d.destination.name}`);
           }
         }
@@ -99,7 +99,7 @@ export function ComparisonView({ wrapped }: { wrapped?: boolean } = {}) {
         (sum, d) => sum + (d.drivingMinutes ?? 0),
         0
       );
-      if (totalMin > 0 && Math.abs(totalMin - bestValues.totalMinutes) < 0.01) {
+      if (totalMin > 0 && bestValues.totalMinutes > 0 && Math.abs(totalMin - bestValues.totalMinutes) < 0.01) {
         labels.push("Shortest total drive");
       }
 

@@ -170,6 +170,8 @@ export function RankingList() {
             <div className="flex items-center gap-1">
               <button
                 title={atMax ? "Max 3 homestays" : isComparing ? "Remove from comparison" : "Add to comparison"}
+                aria-label={atMax ? "Max 3 homestays" : isComparing ? "Remove from comparison" : "Add to comparison"}
+                aria-pressed={isComparing}
                 disabled={atMax}
                 onClick={(e) => {
                   e.stopPropagation();
