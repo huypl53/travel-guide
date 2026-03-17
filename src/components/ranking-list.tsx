@@ -19,6 +19,7 @@ export function RankingList() {
   const locations = useTripStore((s) => s.locations);
   const setSelected = useTripStore((s) => s.setSelectedHomestay);
   const selectedId = useTripStore((s) => s.selectedHomestayId);
+  const selectedHomestayIds = useTripStore((s) => s.selectedHomestayIds);
 
   const distances = useDistanceStore((s) => s.distances);
   const distancesLoading = useDistanceStore((s) => s.loading);
@@ -42,7 +43,9 @@ export function RankingList() {
         <Button
           key={r.homestay.id}
           variant={r.homestay.id === selectedId ? "secondary" : "ghost"}
-          className="w-full justify-between h-auto py-2"
+          className={`w-full justify-between h-auto py-2 ${
+            !selectedHomestayIds.has(r.homestay.id) ? "opacity-40 blur-[0.5px]" : ""
+          }`}
           onClick={() => setSelected(r.homestay.id)}
         >
           <span className="flex items-center gap-2">
