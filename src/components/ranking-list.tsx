@@ -23,8 +23,18 @@ function NightlyRateInput({ homestayId }: { homestayId: string }) {
   const setNightlyRate = useCostStore((s) => s.setNightlyRate);
   const removeNightlyRate = useCostStore((s) => s.removeNightlyRate);
   const [draft, setDraft] = useState(rate ? String(rate) : "");
+  const [isFocused, setIsFocused] = useState(false);
+
+  // When not focused, derive display value from store (handles loadFromStorage)
+  const displayValue = isFocused ? draft : (rate ? String(rate) : "");
+
+  function handleFocus() {
+    setIsFocused(true);
+    setDraft(rate ? String(rate) : "");
+  }
 
   function handleBlur() {
+    setIsFocused(false);
     const num = Number(draft.replace(/\D/g, ""));
     if (num > 0) {
       setNightlyRate(homestayId, num);
@@ -47,8 +57,9 @@ function NightlyRateInput({ homestayId }: { homestayId: string }) {
     <Input
       type="text"
       inputMode="numeric"
-      value={draft ? formatVND(Number(draft)) : ""}
+      value={displayValue ? formatVND(Number(displayValue)) : ""}
       onChange={handleChange}
+      onFocus={handleFocus}
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
       placeholder="VND/night"
