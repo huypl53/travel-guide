@@ -1,6 +1,13 @@
 "use client";
 
+import { useState, useCallback } from "react";
 import dynamic from "next/dynamic";
+import {
+  type MapStyle,
+  getPersistedMapStyle,
+  persistMapStyle,
+  MapStyleSwitcher,
+} from "./map-style-switcher";
 
 const LeafletMap = dynamic(
   () => import("./map-providers/leaflet-map"),
@@ -21,5 +28,21 @@ function getMapProviderType(): "google" | "osm" {
 
 export function MapView() {
   const provider = getMapProviderType();
-  return provider === "google" ? <GoogleMap /> : <LeafletMap />;
+  const [mapStyle, setMapStyle] = useState<MapStyle>(getPersistedMapStyle);
+
+  const handleStyleChange = useCallback((style: MapStyle) => {
+    setMapStyle(style);
+    persistMapStyle(style);
+  }, []);
+
+  return (
+    <div className="relative">
+      <MapStyleSwitcher value={mapStyle} onChange={handleStyleChange} provider={provider} />
+      {provider === "google" ? (
+        <GoogleMap mapStyle={mapStyle} />
+      ) : (
+        <LeafletMap mapStyle={mapStyle} />
+      )}
+    </div>
+  );
 }

@@ -112,7 +112,11 @@ Retrieves a trip by share slug with all associated locations via Supabase join.
 
 ### MapView (`src/components/map-view.tsx`)
 
-Map toggle component that selects between Leaflet (OSM) and Google Maps based on environment variables `NEXT_PUBLIC_MAP_PROVIDER` and `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`. Both map providers are loaded client-side via `next/dynamic`. Defaults to Leaflet/OSM when no Google config is present.
+Map toggle component that selects between Leaflet (OSM) and Google Maps based on environment variables `NEXT_PUBLIC_MAP_PROVIDER` and `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`. Both map providers are loaded client-side via `next/dynamic`. Defaults to Leaflet/OSM when no Google config is present. Manages map style state (default/satellite/terrain/dark) and passes it to the active map provider. Persists the user's style preference to `localStorage` under the `map-style` key.
+
+### MapStyleSwitcher (`src/components/map-style-switcher.tsx`)
+
+Floating button group rendered in the top-right corner of the map. Provides style options — Default (`Map` icon), Satellite, Terrain (`Mountain` icon), and Dark (`Moon` icon, Leaflet only). For Leaflet, each style maps to a different tile URL (OSM, Esri World Imagery, OpenTopoMap, CartoDB Dark). For Google Maps, styles map to `mapTypeId` values (`roadmap`, `satellite`, `terrain`); the Dark option is hidden since Google Maps has no dark tile equivalent. Accepts a `provider` prop to filter out unsupported styles. Respects `prefers-reduced-motion` for transitions.
 
 ### LeafletMap (`src/components/map-providers/leaflet-map.tsx`)
 

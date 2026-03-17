@@ -29,6 +29,7 @@ Fully responsive layout with collapsible bottom sheet for rankings.
 ## Features
 
 - Interactive map with color-coded markers and actual driving route polylines (Leaflet/OSM or Google Maps)
+- Map style switcher — toggle between Default, Satellite, Terrain, and Dark map styles (persists across reloads)
 - Automatic ranking of homestays by weighted average distance to destinations
 - Real driving distances via OSRM Table API, auto-fetched when locations change (haversine fallback)
 - Priority weighting for destinations (1-5 stars)

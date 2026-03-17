@@ -5,6 +5,7 @@ import { APIProvider, Map, AdvancedMarker, Pin, useMap } from "@vis.gl/react-goo
 import { useTripStore } from "@/store/trip-store";
 import { useMapData } from "@/hooks/use-map-data";
 import { haversineKm } from "@/lib/distance";
+import { type MapStyle, googleMapTypeIds } from "@/components/map-style-switcher";
 
 function FlyToLocation() {
   const map = useMap();
@@ -93,7 +94,7 @@ function RoutePolylines({
   return null;
 }
 
-export default function GoogleMapInner() {
+export default function GoogleMapInner({ mapStyle = "default" }: { mapStyle?: MapStyle }) {
   const {
     homestays,
     destinations,
@@ -122,6 +123,7 @@ export default function GoogleMapInner() {
         mapId="homestay-locator"
         gestureHandling="greedy"
         disableDefaultUI={false}
+        mapTypeId={mapStyle !== "dark" ? googleMapTypeIds[mapStyle] : googleMapTypeIds.default}
       >
         <FlyToLocation />
 
