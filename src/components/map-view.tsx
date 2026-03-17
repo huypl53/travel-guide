@@ -12,7 +12,7 @@ const GoogleMap = dynamic(
   { ssr: false, loading: () => <div className="h-[300px] md:h-[500px] bg-muted animate-pulse rounded-lg" /> }
 );
 
-function useMapProvider(): "google" | "osm" {
+function getMapProviderType(): "google" | "osm" {
   const provider = process.env.NEXT_PUBLIC_MAP_PROVIDER;
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
   if (provider === "google" && apiKey) return "google";
@@ -20,6 +20,6 @@ function useMapProvider(): "google" | "osm" {
 }
 
 export function MapView() {
-  const provider = useMapProvider();
+  const provider = getMapProviderType();
   return provider === "google" ? <GoogleMap /> : <LeafletMap />;
 }

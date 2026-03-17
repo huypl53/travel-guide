@@ -44,7 +44,7 @@ export function RankingList() {
           key={r.homestay.id}
           variant={r.homestay.id === selectedId ? "secondary" : "ghost"}
           className={`w-full justify-between h-auto py-2 ${
-            !selectedHomestayIds.has(r.homestay.id) ? "opacity-40 blur-[0.5px]" : ""
+            !selectedHomestayIds.has(r.homestay.id) ? "opacity-40" : ""
           }`}
           onClick={() => setSelected(r.homestay.id)}
         >
