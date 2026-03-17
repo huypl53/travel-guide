@@ -4,6 +4,8 @@ import { AnonLanding } from "@/components/anon-landing";
 import type { TripCardData } from "@/lib/types";
 import { rankHomestays } from "@/lib/ranking";
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const supabase = await createSupabaseServer();
   const {
