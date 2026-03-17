@@ -28,7 +28,7 @@ export function LocationList({ type }: LocationListProps) {
 
   return (
     <TooltipProvider delay={300}>
-      <ul className="space-y-1">
+      <ul className="space-y-1 max-h-[300px] overflow-y-auto">
         {locations.map((loc) => (
           <li
             key={loc.id}
