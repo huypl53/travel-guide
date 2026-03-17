@@ -34,10 +34,10 @@ export default async function SharePage({
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex items-center justify-between mb-4">
+    <div className="container mx-auto px-3 sm:px-4 py-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4">
         <div>
-          <h1 className="text-xl font-bold">{trip.name}</h1>
+          <h1 className="text-lg sm:text-xl font-bold">{trip.name}</h1>
           <p className="text-sm text-muted-foreground">
             Shared trip — read only
           </p>
@@ -46,7 +46,7 @@ export default async function SharePage({
           <SaveTripButton tripId={trip.id} initialSaved={alreadySaved} />
         )}
       </div>
-      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
         <div>
           <h2 className="font-semibold mb-2">Homestays</h2>
           <ul className="space-y-1">

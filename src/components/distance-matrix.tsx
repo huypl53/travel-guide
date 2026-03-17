@@ -11,6 +11,7 @@ export function DistanceMatrix() {
   const [expanded, setExpanded] = useState(false);
   const locations = useTripStore((s) => s.locations);
   const setSelected = useTripStore((s) => s.setSelectedHomestay);
+  const setFocusedLocation = useTripStore((s) => s.setFocusedLocation);
   const selectedHomestayIds = useTripStore((s) => s.selectedHomestayIds);
   const selectedDestinationIds = useTripStore((s) => s.selectedDestinationIds);
   const drivingDistances = useDistanceStore((s) => s.distances);
@@ -29,7 +30,7 @@ export function DistanceMatrix() {
         onClick={() => setExpanded(!expanded)}
         className="w-full justify-between"
       >
-        <span className="font-semibold text-sm flex items-center gap-1.5">
+        <span className="font-semibold text-xs sm:text-sm flex items-center gap-1.5">
           <Table2 className="h-4 w-4" />
           Distance Matrix
         </span>
@@ -38,18 +39,18 @@ export function DistanceMatrix() {
 
       {expanded && (
         <div className="overflow-x-auto mt-2">
-          <table className="text-sm w-full">
+          <table className="text-xs sm:text-sm w-full">
             <thead>
               <tr>
-                <th className="text-left p-2"></th>
+                <th className="text-left p-1.5 sm:p-2"></th>
                 {destinations.map((d) => (
-                  <th key={d.id} className={`p-2 text-center max-w-[80px] truncate ${
+                  <th key={d.id} className={`p-1.5 sm:p-2 text-center max-w-[60px] sm:max-w-[80px] truncate ${
                     !selectedDestinationIds.has(d.id) ? "opacity-40" : ""
                   }`}>
                     {d.name}
                   </th>
                 ))}
-                <th className="p-2 text-center font-bold">Avg</th>
+                <th className="p-1.5 sm:p-2 text-center font-bold">Avg</th>
               </tr>
             </thead>
             <tbody>
@@ -68,16 +69,19 @@ export function DistanceMatrix() {
                   <tr
                     key={h.id}
                     className={`hover:bg-muted cursor-pointer border-b border-border/50 ${rowIndex % 2 !== 0 ? "bg-muted/30" : ""} ${!selectedHomestayIds.has(h.id) ? "opacity-40" : ""}`}
-                    onClick={() => setSelected(h.id)}
+                    onClick={() => {
+                      setSelected(h.id);
+                      setFocusedLocation({ lat: h.lat, lon: h.lon });
+                    }}
                   >
-                    <td className="p-2 font-medium">{h.name}</td>
+                    <td className="p-1.5 sm:p-2 font-medium">{h.name}</td>
                     {destinations.map((d, i) => {
                       const key = `${h.id}:${d.id}`;
                       const driving = drivingDistances.get(key);
                       const haversine = dists[i];
 
                       return (
-                        <td key={d.id} className={`p-2 text-center ${
+                        <td key={d.id} className={`p-1.5 sm:p-2 text-center ${
                           !selectedDestinationIds.has(d.id) ? "opacity-40" : ""
                         }`}>
                           {driving ? (
@@ -101,7 +105,7 @@ export function DistanceMatrix() {
                         </td>
                       );
                     })}
-                    <td className="p-2 text-center font-bold">{avg.toFixed(1)}</td>
+                    <td className="p-1.5 sm:p-2 text-center font-bold">{avg.toFixed(1)}</td>
                   </tr>
                 );
               })}

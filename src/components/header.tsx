@@ -40,8 +40,8 @@ export function Header() {
   }
 
   return (
-    <header className="border-b px-4 py-2 flex items-center justify-between">
-      <Link href="/" className="flex items-center gap-2 font-semibold text-lg">
+    <header className="sticky top-0 z-50 border-b bg-background px-3 py-2 sm:px-4 flex items-center justify-between">
+      <Link href="/" className="flex items-center gap-2 font-semibold text-base sm:text-lg">
         <MapPin className="h-5 w-5" />
         Homestay Locator
       </Link>
@@ -50,7 +50,7 @@ export function Header() {
         <DropdownMenu>
           <DropdownMenuTrigger render={<Button variant="ghost" size="sm" className="gap-2" />}>
             <UserIcon className="h-4 w-4" />
-            <span className="max-w-[150px] truncate text-sm">
+            <span className="max-w-[100px] sm:max-w-[150px] truncate text-sm">
               {user.email}
             </span>
           </DropdownMenuTrigger>

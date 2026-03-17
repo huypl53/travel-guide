@@ -118,7 +118,7 @@ export default function GoogleMapInner() {
       <Map
         defaultCenter={{ lat: center.lat, lng: center.lon }}
         defaultZoom={13}
-        className="h-[300px] md:h-[500px] w-full rounded-lg"
+        className="h-[250px] sm:h-[350px] md:h-[500px] w-full rounded-lg"
         mapId="homestay-locator"
         gestureHandling="greedy"
         disableDefaultUI={false}

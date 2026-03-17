@@ -47,9 +47,9 @@ export function MyTripsList({ initialTrips }: MyTripsListProps) {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">My Trips</h1>
+    <div className="max-w-2xl mx-auto px-3 sm:px-4 py-4">
+      <div className="flex items-center justify-between gap-2 mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold">My Trips</h1>
         <Button onClick={handleNewTrip}>New Trip</Button>
       </div>
 

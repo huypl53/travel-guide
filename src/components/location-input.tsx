@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Link, Search, Upload, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,25 +17,37 @@ export function LocationInput({ type }: LocationInputProps) {
   const [mode, setMode] = useState<"paste" | "manual">("paste");
   const [geocoding, setGeocoding] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
   const addLocation = useTripStore((s) => s.addLocation);
 
   const label = type === "homestay" ? "Homestay" : "Destination";
+
+  const cancelPending = useCallback(() => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+  }, []);
 
   async function handlePaste() {
     let url = input.trim();
 
     // Resolve short URLs (maps.app.goo.gl) via server
     if (isShortMapsUrl(url)) {
+      cancelPending();
+      const controller = new AbortController();
+      abortRef.current = controller;
       setGeocoding(true);
       try {
-        const res = await fetch(`/api/resolve-url?url=${encodeURIComponent(url)}`);
+        const res = await fetch(`/api/resolve-url?url=${encodeURIComponent(url)}`, {
+          signal: controller.signal,
+        });
         const data = await res.json();
         if (data.resolvedUrl) {
           url = data.resolvedUrl;
         } else {
           return;
         }
-      } catch {
+      } catch (e) {
+        if (e instanceof DOMException && e.name === "AbortError") return;
         return;
       } finally {
         setGeocoding(false);
@@ -58,9 +70,14 @@ export function LocationInput({ type }: LocationInputProps) {
 
   async function handleManual() {
     if (!input.trim()) return;
+    cancelPending();
+    const controller = new AbortController();
+    abortRef.current = controller;
     setGeocoding(true);
     try {
-      const res = await fetch(`/api/geocode?q=${encodeURIComponent(input)}`);
+      const res = await fetch(`/api/geocode?q=${encodeURIComponent(input)}`, {
+        signal: controller.signal,
+      });
       const data = await res.json();
       if (data.length > 0) {
         addLocation({
@@ -73,6 +90,8 @@ export function LocationInput({ type }: LocationInputProps) {
         });
         setInput("");
       }
+    } catch (e) {
+      if (e instanceof DOMException && e.name === "AbortError") return;
     } finally {
       setGeocoding(false);
     }
@@ -106,15 +125,15 @@ export function LocationInput({ type }: LocationInputProps) {
 
   return (
     <div className="space-y-2">
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Button
           variant={mode === "paste" ? "default" : "outline"}
           size="sm"
           onClick={() => setMode("paste")}
           aria-label="Paste Link"
         >
-          <Link className="h-3.5 w-3.5 mr-1" />
-          Paste Link
+          <Link className="h-3.5 w-3.5 sm:mr-1" />
+          <span className="hidden sm:inline">Paste Link</span>
         </Button>
         <Button
           variant={mode === "manual" ? "default" : "outline"}
@@ -122,8 +141,8 @@ export function LocationInput({ type }: LocationInputProps) {
           onClick={() => setMode("manual")}
           aria-label="Search Address"
         >
-          <Search className="h-3.5 w-3.5 mr-1" />
-          Search Address
+          <Search className="h-3.5 w-3.5 sm:mr-1" />
+          <span className="hidden sm:inline">Search Address</span>
         </Button>
         <Button
           variant="outline"
@@ -131,8 +150,8 @@ export function LocationInput({ type }: LocationInputProps) {
           onClick={() => fileRef.current?.click()}
           aria-label="Upload File"
         >
-          <Upload className="h-3.5 w-3.5 mr-1" />
-          Upload File
+          <Upload className="h-3.5 w-3.5 sm:mr-1" />
+          <span className="hidden sm:inline">Upload File</span>
         </Button>
         <input
           ref={fileRef}

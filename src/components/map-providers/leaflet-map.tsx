@@ -66,7 +66,7 @@ export default function MapInner() {
   } = useMapData();
 
   return (
-    <MapContainer center={[center.lat, center.lon]} zoom={13} zoomSnap={0.5} wheelDebounceTime={100} wheelPxPerZoomLevel={120} className="h-[300px] md:h-[500px] w-full rounded-lg z-0">
+    <MapContainer center={[center.lat, center.lon]} zoom={13} zoomSnap={0.5} wheelDebounceTime={100} wheelPxPerZoomLevel={120} className="h-[250px] sm:h-[350px] md:h-[500px] w-full rounded-lg z-0">
       <FlyToLocation />
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

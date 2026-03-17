@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { Trophy, Loader2 } from "lucide-react";
 import { useTripStore } from "@/store/trip-store";
 import { useDistanceStore } from "@/store/distance-store";
@@ -8,7 +8,7 @@ import { rankHomestays } from "@/lib/ranking";
 import { Button } from "@/components/ui/button";
 
 function RankBadge({ rank }: { rank: number }) {
-  const base = "inline-flex items-center justify-center h-6 w-6 rounded-full text-xs font-bold";
+  const base = "inline-flex items-center justify-center h-8 w-8 sm:h-6 sm:w-6 rounded-full text-xs font-bold";
   if (rank === 1) return <div className={`${base} bg-amber-500 text-white`}>1</div>;
   if (rank === 2) return <div className={`${base} bg-gray-400 text-white`}>2</div>;
   if (rank === 3) return <div className={`${base} bg-amber-700 text-white`}>3</div>;
@@ -20,6 +20,7 @@ export function RankingList() {
   const setSelected = useTripStore((s) => s.setSelectedHomestay);
   const selectedId = useTripStore((s) => s.selectedHomestayId);
   const selectedHomestayIds = useTripStore((s) => s.selectedHomestayIds);
+  const setFocusedLocation = useTripStore((s) => s.setFocusedLocation);
 
   const distances = useDistanceStore((s) => s.distances);
   const distancesLoading = useDistanceStore((s) => s.loading);
@@ -43,10 +44,13 @@ export function RankingList() {
         <Button
           key={r.homestay.id}
           variant={r.homestay.id === selectedId ? "secondary" : "ghost"}
-          className={`w-full justify-between h-auto py-2 ${
+          className={`w-full justify-between h-auto py-3 sm:py-2 ${
             !selectedHomestayIds.has(r.homestay.id) ? "opacity-40" : ""
           }`}
-          onClick={() => setSelected(r.homestay.id)}
+          onClick={() => {
+            setSelected(r.homestay.id);
+            setFocusedLocation({ lat: r.homestay.lat, lon: r.homestay.lon });
+          }}
         >
           <span className="flex items-center gap-2">
             <RankBadge rank={i + 1} />
