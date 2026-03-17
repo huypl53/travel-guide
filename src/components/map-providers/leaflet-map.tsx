@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useTripStore } from "@/store/trip-store";
-import { useDistanceStore } from "@/store/distance-store";
+import { useMapData } from "@/hooks/use-map-data";
 import { haversineKm } from "@/lib/distance";
 
 function FlyToLocation() {
@@ -53,51 +53,20 @@ function distanceToColor(km: number, maxKm: number): string {
 }
 
 export default function MapInner() {
-  const locations = useTripStore((s) => s.locations);
-  const setSelected = useTripStore((s) => s.setSelectedHomestay);
-  const selectedHomestayIds = useTripStore((s) => s.selectedHomestayIds);
-  const selectedDestinationIds = useTripStore((s) => s.selectedDestinationIds);
-
-  const homestays = useMemo(() => locations.filter((l) => l.type === "homestay"), [locations]);
-  const destinations = useMemo(() => locations.filter((l) => l.type === "destination"), [locations]);
-
-  // Default center: Da Lat, Vietnam
-  const center: [number, number] =
-    locations.length > 0
-      ? [
-          locations.reduce((s, l) => s + l.lat, 0) / locations.length,
-          locations.reduce((s, l) => s + l.lon, 0) / locations.length,
-        ]
-      : [11.9404, 108.4583];
-
-  const drivingDistances = useDistanceStore((s) => s.distances);
-  const routes = useDistanceStore((s) => s.routes);
-  const fetchRoutes = useDistanceStore((s) => s.fetchRoutes);
-
-  // Fetch route geometries for all homestays
-  useEffect(() => {
-    if (destinations.length > 0) {
-      homestays.forEach((h) => fetchRoutes(h, destinations));
-    }
-  }, [homestays, destinations, fetchRoutes]);
-
-  // Calculate max distance for color scaling across all homestays
-  const maxKm = useMemo(() => {
-    if (homestays.length === 0 || destinations.length === 0) return 10;
-    let max = 0;
-    for (const h of homestays) {
-      for (const d of destinations) {
-        const key = `${h.id}:${d.id}`;
-        const driving = drivingDistances.get(key);
-        const km = driving?.drivingKm ?? haversineKm(h.lat, h.lon, d.lat, d.lon);
-        if (km > max) max = km;
-      }
-    }
-    return max || 10;
-  }, [homestays, destinations, drivingDistances]);
+  const {
+    homestays,
+    destinations,
+    center,
+    setSelected,
+    selectedHomestayIds,
+    selectedDestinationIds,
+    drivingDistances,
+    routes,
+    maxKm,
+  } = useMapData();
 
   return (
-    <MapContainer center={center} zoom={13} zoomSnap={0.5} wheelDebounceTime={100} wheelPxPerZoomLevel={120} className="h-[300px] md:h-[500px] w-full rounded-lg z-0">
+    <MapContainer center={[center.lat, center.lon]} zoom={13} zoomSnap={0.5} wheelDebounceTime={100} wheelPxPerZoomLevel={120} className="h-[300px] md:h-[500px] w-full rounded-lg z-0">
       <FlyToLocation />
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -130,8 +99,10 @@ export default function MapInner() {
       ))}
 
       {homestays.map((h) => {
-        const isSelected = selectedHomestayIds.has(h.id);
+        const hSelected = selectedHomestayIds.has(h.id);
         return destinations.map((d) => {
+          const dSelected = selectedDestinationIds.has(d.id);
+          const bothSelected = hSelected && dSelected;
           const key = `${h.id}:${d.id}`;
           const driving = drivingDistances.get(key);
           const routeGeometry = routes.get(key);
@@ -146,8 +117,8 @@ export default function MapInner() {
               positions={positions}
               pathOptions={{
                 color: distanceToColor(km, maxKm),
-                weight: isSelected ? 3 : 2,
-                opacity: isSelected ? 0.8 : 0.15,
+                weight: bothSelected ? 3 : 2,
+                opacity: bothSelected ? 0.8 : 0.15,
               }}
             />
           );
