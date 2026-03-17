@@ -106,6 +106,10 @@ Creates a new trip. Accepts `{ name, locations? }`. Generates a `nanoid` share s
 
 Follows short URL redirects (e.g., `maps.app.goo.gl/...`) server-side and returns the resolved full URL. Used by the location input to support short Google Maps links.
 
+### GET /api/weather?lat=X&lon=Y
+
+Proxies to the Open-Meteo free forecast API. Returns 5-day daily forecast with `temperature_2m_max`, `temperature_2m_min`, `precipitation_sum`, and `weathercode`. Responses are cached in-memory for 1 hour keyed by coordinates rounded to 2 decimal places (~1km precision). No API key required.
+
 ### GET /api/trips/[slug]
 
 Retrieves a trip by share slug with all associated locations via Supabase join.
@@ -147,6 +151,10 @@ Pairwise distance table between homestays and destinations. Each cell shows driv
 ### ShareExport (`src/components/share-export.tsx`)
 
 Share button saves the trip via `POST /api/trips` and copies the read-only URL (`/trip/[slug]/share`) to clipboard. Export button downloads trip data as `.json`.
+
+### WeatherWidget (`src/components/weather-widget.tsx`)
+
+Compact 5-day weather forecast strip rendered on the trip page between the header and data input sections. Fetches forecast from `/api/weather` using the trip's center coordinates (average lat/lon of all locations). Each day card shows the day name, a weather icon (mapped from WMO codes via `src/lib/weather-codes.ts`), and high/low temperatures in Celsius. Rainy days get a subtle blue background. On mobile (<640px), only today is shown with a "5-day" expand button. Hides itself when there are no locations or if the API fails. Uses component-local state (no Zustand store).
 
 ### PriorityStars (`src/components/priority-stars.tsx`)
 
@@ -229,7 +237,9 @@ Initializes the Supabase client using `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLI
 | OSRM       | Driving route distance | Public demo server, best-effort   |
 | Supabase   | Database persistence   | Free tier: 500 MB, 2 GB transfer  |
 
-All three are free and require no API keys (Supabase uses project URL + anon key).
+| Open-Meteo | Weather forecast       | Free, no API key, 10k req/day     |
+
+All four are free and require no API keys (Supabase uses project URL + anon key).
 
 ## Authentication
 

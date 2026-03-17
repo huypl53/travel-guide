@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useParams } from "next/navigation";
 import { MapPin, Home, Compass, ChevronUp, ChevronDown, Pencil } from "lucide-react";
 import { useTripStore } from "@/store/trip-store";
@@ -11,6 +11,7 @@ import { LocationList } from "@/components/location-list";
 import { RankingList } from "@/components/ranking-list";
 import { DistanceMatrix } from "@/components/distance-matrix";
 import { ShareExport } from "@/components/share-export";
+import { WeatherWidget } from "@/components/weather-widget";
 import { Button } from "@/components/ui/button";
 import { useAutoSave } from "@/hooks/use-auto-save";
 import { useAutoFetchDistances } from "@/hooks/use-auto-fetch-distances";
@@ -96,6 +97,15 @@ export default function TripPage() {
   useAutoSave(slug);
   useAutoFetchDistances();
   const [bottomSheetOpen, setBottomSheetOpen] = useState(false);
+  const locations = useTripStore((s) => s.locations);
+
+  const weatherCenter = useMemo(() => {
+    if (locations.length === 0) return null;
+    return {
+      lat: locations.reduce((s, l) => s + l.lat, 0) / locations.length,
+      lon: locations.reduce((s, l) => s + l.lon, 0) / locations.length,
+    };
+  }, [locations]);
 
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-4 pb-16 md:pb-0">
@@ -106,6 +116,9 @@ export default function TripPage() {
         </h1>
         <ShareExport slug={slug} />
       </header>
+
+      {/* Weather Forecast */}
+      <WeatherWidget center={weatherCenter} />
 
       {/* Data Input */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
