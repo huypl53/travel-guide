@@ -1,6 +1,8 @@
+import Image from "next/image";
 import { createSupabaseServer } from "@/lib/supabase-server";
 import { notFound } from "next/navigation";
 import { SaveTripButton } from "@/components/save-trip-button";
+import { isSafeImageUrl } from "@/lib/utils";
 
 export default async function SharePage({
   params,
@@ -58,8 +60,8 @@ export default async function SharePage({
                   {l.notes && (
                     <p className="text-xs text-muted-foreground mt-0.5">{l.notes}</p>
                   )}
-                  {l.photo_url && (
-                    <img src={l.photo_url} alt="" className="mt-1 h-16 w-16 rounded object-cover" />
+                  {l.photo_url && isSafeImageUrl(l.photo_url) && (
+                    <Image src={l.photo_url} alt={l.name} width={64} height={64} unoptimized className="mt-1 h-16 w-16 rounded object-cover" />
                   )}
                 </li>
               ))}
@@ -77,8 +79,8 @@ export default async function SharePage({
                     {l.notes && (
                       <p className="text-xs text-muted-foreground mt-0.5">{l.notes}</p>
                     )}
-                    {l.photo_url && (
-                      <img src={l.photo_url} alt="" className="mt-1 h-16 w-16 rounded object-cover" />
+                    {l.photo_url && isSafeImageUrl(l.photo_url) && (
+                      <Image src={l.photo_url} alt={l.name} width={64} height={64} unoptimized className="mt-1 h-16 w-16 rounded object-cover" />
                     )}
                   </li>
                 )

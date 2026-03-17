@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Image from "next/image";
 import { ImageOff } from "lucide-react";
 import { useTripStore } from "@/store/trip-store";
 import { Input } from "@/components/ui/input";
+import { isSafeImageUrl } from "@/lib/utils";
 import type { Location } from "@/lib/types";
 
 interface LocationDetailProps {
@@ -16,6 +18,12 @@ export function LocationDetail({ location }: LocationDetailProps) {
   const [notes, setNotes] = useState(location.notes ?? "");
   const [photoUrl, setPhotoUrl] = useState(location.photoUrl ?? "");
   const [imgError, setImgError] = useState(false);
+
+  useEffect(() => { setNotes(location.notes ?? ""); }, [location.notes]);
+  useEffect(() => { setPhotoUrl(location.photoUrl ?? ""); setImgError(false); }, [location.photoUrl]);
+
+  const showImage = photoUrl && isSafeImageUrl(photoUrl) && !imgError;
+  const showError = photoUrl && isSafeImageUrl(photoUrl) && imgError;
 
   return (
     <div className="mt-1 pl-6 pr-2 pb-2 space-y-2">
@@ -38,14 +46,17 @@ export function LocationDetail({ location }: LocationDetailProps) {
           }}
           onBlur={() => updateLocationPhoto(location.id, photoUrl)}
         />
-        {photoUrl && !imgError ? (
-          <img
+        {showImage ? (
+          <Image
             src={photoUrl}
-            alt="Location photo"
+            alt={location.name}
+            width={64}
+            height={64}
+            unoptimized
             className="h-16 w-16 rounded object-cover flex-shrink-0"
             onError={() => setImgError(true)}
           />
-        ) : photoUrl && imgError ? (
+        ) : showError ? (
           <div className="h-16 w-16 rounded bg-muted flex items-center justify-center flex-shrink-0">
             <ImageOff className="h-5 w-5 text-muted-foreground" />
           </div>

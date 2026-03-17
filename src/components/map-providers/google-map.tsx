@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useCallback, useRef } from "react";
-import { APIProvider, Map, AdvancedMarker, Pin, useMap } from "@vis.gl/react-google-maps";
+import { useEffect, useCallback, useRef, useState } from "react";
+import { APIProvider, Map, AdvancedMarker, Pin, InfoWindow, useMap } from "@vis.gl/react-google-maps";
 import { useTripStore } from "@/store/trip-store";
 import { useMapData } from "@/hooks/use-map-data";
 import { haversineKm } from "@/lib/distance";
 import { type MapStyle, googleMapTypeIds } from "@/components/map-style-switcher";
+import { isSafeImageUrl } from "@/lib/utils";
+import type { Location } from "@/lib/types";
 
 function FlyToLocation() {
   const map = useMap();
@@ -94,6 +96,25 @@ function RoutePolylines({
   return null;
 }
 
+function MarkerInfoWindow({ location, label }: { location: Location; label?: string }) {
+  return (
+    <div className="max-w-[200px]">
+      <strong className="text-sm">{location.name}{label ? ` ${label}` : ""}</strong>
+      {location.photoUrl && isSafeImageUrl(location.photoUrl) && (
+        <img
+          src={location.photoUrl}
+          alt=""
+          className="mt-1 w-24 h-16 object-cover rounded"
+          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+        />
+      )}
+      {location.notes && (
+        <p className="mt-1 text-xs text-gray-600 line-clamp-2">{location.notes.split("\n")[0]}</p>
+      )}
+    </div>
+  );
+}
+
 export default function GoogleMapInner({ mapStyle = "default" }: { mapStyle?: MapStyle }) {
   const {
     homestays,
@@ -107,12 +128,23 @@ export default function GoogleMapInner({ mapStyle = "default" }: { mapStyle?: Ma
     maxKm,
   } = useMapData();
 
+  const [openInfoId, setOpenInfoId] = useState<string | null>(null);
+
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
 
   const handleMarkerClick = useCallback(
-    (id: string) => () => setSelected(id),
+    (id: string) => () => {
+      setSelected(id);
+      setOpenInfoId(id);
+    },
     [setSelected]
   );
+
+  const handleInfoClose = useCallback(() => setOpenInfoId(null), []);
+
+  const allLocations: Record<string, Location> = {};
+  for (const h of homestays) allLocations[h.id] = h;
+  for (const d of destinations) allLocations[d.id] = d;
 
   return (
     <APIProvider apiKey={apiKey}>
@@ -131,7 +163,6 @@ export default function GoogleMapInner({ mapStyle = "default" }: { mapStyle?: Ma
           <AdvancedMarker
             key={h.id}
             position={{ lat: h.lat, lng: h.lon }}
-            title={[h.name, h.notes?.split("\n")[0]].filter(Boolean).join(" — ")}
             onClick={handleMarkerClick(h.id)}
           >
             <div style={{ opacity: selectedHomestayIds.has(h.id) ? 1 : 0.4 }}>
@@ -144,13 +175,28 @@ export default function GoogleMapInner({ mapStyle = "default" }: { mapStyle?: Ma
           <AdvancedMarker
             key={d.id}
             position={{ lat: d.lat, lng: d.lon }}
-            title={[`${d.name} (priority: ${d.priority})`, d.notes?.split("\n")[0]].filter(Boolean).join(" — ")}
+            onClick={handleMarkerClick(d.id)}
           >
             <div style={{ opacity: selectedDestinationIds.has(d.id) ? 1 : 0.4 }}>
               <Pin background="#ef4444" borderColor="#991b1b" glyphColor="#fff" />
             </div>
           </AdvancedMarker>
         ))}
+
+        {openInfoId && allLocations[openInfoId] && (
+          <InfoWindow
+            position={{
+              lat: allLocations[openInfoId].lat,
+              lng: allLocations[openInfoId].lon,
+            }}
+            onCloseClick={handleInfoClose}
+          >
+            <MarkerInfoWindow
+              location={allLocations[openInfoId]}
+              label={allLocations[openInfoId].type === "destination" ? `(priority: ${allLocations[openInfoId].priority})` : undefined}
+            />
+          </InfoWindow>
+        )}
 
         {homestays.length > 0 && destinations.length > 0 && (
           <RoutePolylines
