@@ -32,6 +32,9 @@ Fully responsive layout with collapsible bottom sheet for rankings.
 - Automatic ranking of homestays by weighted average distance to destinations
 - Real driving distances via OSRM Table API, auto-fetched when locations change (haversine fallback)
 - Priority weighting for destinations (1-5 stars)
+- Multi-select with visual comparison — toggle homestays/destinations on/off to dim unselected items across all views (lists, map markers, routes, ranking, distance matrix)
+- Scrollable location lists for handling many locations
+- Concurrency-limited route fetching (max 3 parallel requests) with persistent route cache
 - Multiple input methods: Google Maps URLs (full and short links), CSV, JSON, and manual coordinates
 - Share trips via unique URLs backed by Supabase
 - Export trip data as JSON
