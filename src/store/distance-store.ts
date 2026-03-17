@@ -47,6 +47,7 @@ interface DistanceState {
   _lastCoordHash: string;
   fetchDistances: (homestays: Location[], destinations: Location[]) => Promise<void>;
   fetchRoutes: (homestay: Location, destinations: Location[]) => Promise<void>;
+  clearDistances: () => void;
   clear: () => void;
 }
 
@@ -128,6 +129,8 @@ export const useDistanceStore = create<DistanceState>((set, get) => ({
 
     set({ routes: merged, routesLoading: false });
   },
+
+  clearDistances: () => set({ distances: new Map(), loading: false, error: null, _lastCoordHash: "" }),
 
   clear: () => set({ distances: new Map(), routes: new Map(), loading: false, routesLoading: false, error: null, _lastCoordHash: "" }),
 }));
