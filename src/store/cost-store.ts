@@ -34,7 +34,7 @@ export const useCostStore = create<CostState>((set, get) => ({
 
   removeNightlyRate: (homestayId) => {
     set((state) => {
-      const { [homestayId]: _, ...rest } = state.nightlyRates;
+      const { [homestayId]: _removed, ...rest } = state.nightlyRates;
       return { nightlyRates: rest };
     });
   },
