@@ -60,6 +60,7 @@ export function LocationInput({ type }: LocationInputProps) {
         }
       } catch (e) {
         if (e instanceof DOMException && e.name === "AbortError") return;
+        setImportPreview({ locations: [], errors: ["Network error — could not extract locations"] });
       } finally {
         setExtracting(false);
       }
@@ -237,9 +238,15 @@ export function LocationInput({ type }: LocationInputProps) {
         </Button>
       </div>
 
-      {mode === "paste" && (
+      {mode === "paste" && !extracting && (
         <p className="text-xs text-muted-foreground">
           Tip: Paste a Google Maps directions link to import all stops at once, or paste multiple links separated by spaces.
+        </p>
+      )}
+      {extracting && (
+        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Loader2 className="h-3 w-3 animate-spin" />
+          Extracting locations...
         </p>
       )}
 

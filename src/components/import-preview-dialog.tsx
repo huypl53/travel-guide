@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -37,13 +37,18 @@ export function ImportPreviewDialog({
   errors,
   onConfirm,
 }: ImportPreviewDialogProps) {
-  const [selected, setSelected] = useState<Set<number>>(
-    () => new Set(locations.map((_, i) => i))
-  );
+  const [selected, setSelected] = useState<Set<number>>(new Set());
   const [bulkType, setBulkType] = useState<LocationType>("destination");
   const [typeOverrides, setTypeOverrides] = useState<Map<number, LocationType>>(
     new Map()
   );
+
+  // Reset state when locations change (dialog re-opened with new data)
+  useEffect(() => {
+    setSelected(new Set(locations.map((_, i) => i)));
+    setBulkType("destination");
+    setTypeOverrides(new Map());
+  }, [locations]);
 
   const selectedCount = selected.size;
   const allSelected = selectedCount === locations.length;
