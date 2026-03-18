@@ -61,7 +61,9 @@ export function useCollabBridge() {
         const delta: CollabDelta = { action: "set-trip-name", name: state.tripName };
         broadcast(delta);
         // Also update collab-store directly (without re-broadcasting)
+        isRemoteUpdate.current = true;
         useCollabStore.setState({ tripName: state.tripName });
+        isRemoteUpdate.current = false;
         prevTripName = state.tripName;
       }
 
@@ -102,7 +104,9 @@ export function useCollabBridge() {
         }
 
         // Sync back to collab-store
+        isRemoteUpdate.current = true;
         useCollabStore.setState({ locations: state.locations });
+        isRemoteUpdate.current = false;
         prevLocations = state.locations;
       }
     });

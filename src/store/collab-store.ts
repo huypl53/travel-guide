@@ -94,6 +94,7 @@ export const useCollabStore = create<CollabState>((set, get) => ({
   addLocation: (input) => {
     const location: Location = {
       id: nanoid(),
+      // tripId is not used in collab mode — empty string avoids null issues in downstream components that expect a string
       tripId: "",
       type: input.type,
       name: input.name,
@@ -202,6 +203,9 @@ export const useCollabStore = create<CollabState>((set, get) => ({
           ),
         }));
         break;
+      // full-sync is handled for forward-compatibility but not currently broadcast.
+      // New participants receive state from the DB snapshot on join.
+      // The 3-second debounced persist ensures the DB stays reasonably fresh.
       case "full-sync":
         set({
           tripName: delta.tripName,

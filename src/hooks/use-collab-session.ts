@@ -21,7 +21,7 @@ function randomColor() {
 }
 
 export function useCollabSession(slug: string) {
-  const supabase = createSupabaseBrowser();
+  const supabaseRef = useRef(createSupabaseBrowser());
   const channelRef = useRef<RealtimeChannel | null>(null);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const myIdRef = useRef(crypto.randomUUID());
@@ -46,16 +46,19 @@ export function useCollabSession(slug: string) {
 
   const persistToDb = useCallback(async () => {
     const { tripName, locations } = useCollabStore.getState();
+    setSyncStatus("syncing");
     try {
       await fetch(`/api/collab/${slug}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tripName, tripData: locations }),
       });
+      setSyncStatus("connected");
     } catch (err) {
       console.error("Failed to persist collab session:", err);
+      setSyncStatus("connected");
     }
-  }, [slug]);
+  }, [slug, setSyncStatus]);
 
   const debouncedSave = useCallback(() => {
     clearTimeout(saveTimeoutRef.current);
@@ -78,7 +81,7 @@ export function useCollabSession(slug: string) {
       initSession(slug, data.tripName, data.tripData ?? []);
 
       // 2. Set up Supabase Realtime channel
-      const channel = supabase.channel(`collab:${slug}`);
+      const channel = supabaseRef.current.channel(`collab:${slug}`);
       channelRef.current = channel;
 
       // Listen for deltas from other users
@@ -92,7 +95,10 @@ export function useCollabSession(slug: string) {
         const state = channel.presenceState();
         const participants: CollabParticipant[] = Object.values(state)
           .flat()
-          .map((p: Record<string, string>) => ({
+          .filter((p: Record<string, unknown>) =>
+            typeof p.id === "string" && typeof p.nickname === "string" && typeof p.color === "string"
+          )
+          .map((p: Record<string, unknown>) => ({
             id: p.id as string,
             nickname: p.nickname as string,
             color: p.color as string,
@@ -111,7 +117,7 @@ export function useCollabSession(slug: string) {
           });
           // Wire broadcast into store
           setBroadcast(broadcast);
-        } else if (status === "CHANNEL_ERROR") {
+        } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
           setSyncStatus("offline");
         }
       });
@@ -126,7 +132,7 @@ export function useCollabSession(slug: string) {
       setBroadcast(null);
       clearTimeout(saveTimeoutRef.current);
     };
-  }, [slug, supabase, initSession, setSyncStatus, setParticipants, applyRemoteDelta, setBroadcast, broadcast]);
+  }, [slug, initSession, setSyncStatus, setParticipants, applyRemoteDelta, setBroadcast, broadcast]);
 
   // Subscribe to store changes for debounced persistence (only on data changes)
   useEffect(() => {
@@ -143,10 +149,25 @@ export function useCollabSession(slug: string) {
 
   // Save on tab close using sendBeacon for reliability
   useEffect(() => {
+    const MAX_BEACON_SIZE = 60 * 1024; // 60KB safe margin (browser limit ~64KB)
+
     const handleBeforeUnload = () => {
       const { tripName, locations } = useCollabStore.getState();
-      const body = JSON.stringify({ tripName, tripData: locations });
-      navigator.sendBeacon(`/api/collab/${slug}`, new Blob([body], { type: "application/json" }));
+      let body = JSON.stringify({ tripName, tripData: locations });
+
+      // If payload exceeds safe limit, strip notes and photoUrl to reduce size
+      if (new Blob([body]).size > MAX_BEACON_SIZE) {
+        const trimmedLocations = locations.map(({ notes, photoUrl, ...rest }) => rest);
+        body = JSON.stringify({ tripName, tripData: trimmedLocations });
+      }
+
+      const sent = navigator.sendBeacon(
+        `/api/collab/${slug}`,
+        new Blob([body], { type: "application/json" })
+      );
+      if (!sent) {
+        console.warn("sendBeacon failed — payload may exceed browser limit or page already unloaded");
+      }
     };
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);

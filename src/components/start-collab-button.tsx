@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useTripStore } from "@/store/trip-store";
 import { Users } from "lucide-react";
 
 export function StartCollabButton() {
+  const router = useRouter();
   const [creating, setCreating] = useState(false);
   const [copied, setCopied] = useState(false);
   const locations = useTripStore((s) => s.locations);
@@ -25,6 +27,7 @@ export function StartCollabButton() {
         await navigator.clipboard.writeText(url);
         setCopied(true);
         setTimeout(() => setCopied(false), 3000);
+        router.push(`/collab/${data.slug}`);
       }
     } finally {
       setCreating(false);

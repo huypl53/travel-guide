@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServer } from "@/lib/supabase-server";
+import { validateLocations } from "@/lib/validate-location";
 
 const MAX_LOCATIONS = 200;
 const MAX_NAME_LENGTH = 200;
@@ -63,20 +64,30 @@ export async function PATCH(
     if (!Array.isArray(body.tripData) || body.tripData.length > MAX_LOCATIONS) {
       return NextResponse.json({ error: `tripData must be an array with max ${MAX_LOCATIONS} items` }, { status: 400 });
     }
+
+    const locError = validateLocations(body.tripData);
+    if (locError) {
+      return NextResponse.json({ error: locError }, { status: 400 });
+    }
   }
 
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
   if (body.tripName !== undefined) updates.trip_name = body.tripName;
   if (body.tripData !== undefined) updates.trip_data = body.tripData;
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("collaborative_sessions")
     .update(updates)
     .eq("slug", slug)
-    .gt("expires_at", new Date().toISOString());
+    .gt("expires_at", new Date().toISOString())
+    .select("slug");
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  if (!data || data.length === 0) {
+    return NextResponse.json({ error: "Session not found or expired" }, { status: 404 });
   }
 
   return NextResponse.json({ ok: true });

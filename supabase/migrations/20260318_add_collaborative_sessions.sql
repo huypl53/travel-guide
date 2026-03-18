@@ -25,3 +25,26 @@ CREATE POLICY "Allow public insert collaborative sessions"
 CREATE POLICY "Allow public update collaborative sessions"
   ON collaborative_sessions FOR UPDATE TO anon, authenticated
   USING (expires_at > now());
+
+-- Cleanup function for expired sessions
+CREATE OR REPLACE FUNCTION cleanup_expired_collab_sessions()
+RETURNS void AS $$
+BEGIN
+  DELETE FROM collaborative_sessions WHERE expires_at < now();
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Schedule daily cleanup at 3:00 AM UTC (requires pg_cron extension)
+-- Run this manually if pg_cron is not available:
+--   SELECT cleanup_expired_collab_sessions();
+-- To enable pg_cron in Supabase, go to Database > Extensions > pg_cron
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron') THEN
+    PERFORM cron.schedule(
+      'cleanup-expired-collab-sessions',
+      '0 3 * * *',
+      'SELECT cleanup_expired_collab_sessions()'
+    );
+  END IF;
+END $$;
