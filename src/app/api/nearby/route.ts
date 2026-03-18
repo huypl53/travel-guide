@@ -1,3 +1,5 @@
+export const maxDuration = 5;
+
 import { NextRequest, NextResponse } from "next/server";
 import {
   type PoiCategory,
@@ -7,6 +9,7 @@ import {
   classifyElement,
   haversineMeters,
 } from "@/lib/overpass";
+import { withApiSecurity, nearbyLimiter } from "@/lib/api-security";
 
 const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
@@ -77,7 +80,7 @@ async function queryOverpass(
     .sort((a, b) => a.distance - b.distance);
 }
 
-export async function GET(request: NextRequest) {
+async function handleGet(request: NextRequest) {
   const sp = request.nextUrl.searchParams;
 
   const lat = parseFloat(sp.get("lat") ?? "");
@@ -134,3 +137,5 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+export const GET = withApiSecurity({ rateLimiter: nearbyLimiter }, handleGet);

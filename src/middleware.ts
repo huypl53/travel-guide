@@ -1,7 +1,36 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+const ALLOWED_ORIGINS: string[] = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
+  : ["http://localhost:3000"];
+
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const origin = request.headers.get("origin");
+
+  // CORS protection for API routes
+  if (pathname.startsWith("/api/")) {
+    // Block requests with a disallowed origin
+    if (origin && !ALLOWED_ORIGINS.includes(origin)) {
+      return new NextResponse("Forbidden", { status: 403 });
+    }
+
+    // Handle preflight OPTIONS requests
+    if (request.method === "OPTIONS") {
+      const preflightHeaders: Record<string, string> = {
+        "Access-Control-Allow-Methods": "GET,POST,PATCH,DELETE,OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type,Authorization",
+        "Access-Control-Allow-Credentials": "true",
+        "Access-Control-Max-Age": "86400",
+      };
+      if (origin) {
+        preflightHeaders["Access-Control-Allow-Origin"] = origin;
+      }
+      return new NextResponse(null, { status: 204, headers: preflightHeaders });
+    }
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -35,6 +64,11 @@ export async function middleware(request: NextRequest) {
     const callbackUrl = request.nextUrl.clone();
     callbackUrl.pathname = "/api/auth/callback";
     return NextResponse.redirect(callbackUrl);
+  }
+
+  // Add CORS header for allowed origins on API responses
+  if (pathname.startsWith("/api/") && origin && ALLOWED_ORIGINS.includes(origin)) {
+    supabaseResponse.headers.set("Access-Control-Allow-Origin", origin);
   }
 
   return supabaseResponse;

@@ -1,16 +1,18 @@
+export const maxDuration = 10;
+
 import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseServer } from "@/lib/supabase-server";
+import {
+  withApiSecurity,
+  authLimiter,
+  type AuthenticatedContext,
+} from "@/lib/api-security";
 
-export async function POST(request: NextRequest) {
-  const supabase = await createSupabaseServer();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+async function handlePost(
+  request: NextRequest,
+  _context: unknown,
+  auth: AuthenticatedContext,
+) {
+  const { user, supabase } = auth;
   const { tripId } = await request.json();
 
   const { error } = await supabase
@@ -24,16 +26,12 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ ok: true });
 }
 
-export async function DELETE(request: NextRequest) {
-  const supabase = await createSupabaseServer();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+async function handleDelete(
+  request: NextRequest,
+  _context: unknown,
+  auth: AuthenticatedContext,
+) {
+  const { user, supabase } = auth;
   const { tripId } = await request.json();
 
   const { error } = await supabase
@@ -48,3 +46,13 @@ export async function DELETE(request: NextRequest) {
 
   return NextResponse.json({ ok: true });
 }
+
+export const POST = withApiSecurity(
+  { requireAuth: true, rateLimiter: authLimiter },
+  handlePost,
+);
+
+export const DELETE = withApiSecurity(
+  { requireAuth: true, rateLimiter: authLimiter },
+  handleDelete,
+);

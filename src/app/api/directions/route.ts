@@ -1,6 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+export const maxDuration = 5;
 
-export async function GET(request: NextRequest) {
+import { NextRequest, NextResponse } from "next/server";
+import { withApiSecurity, publicProxyLimiter } from "@/lib/api-security";
+
+async function handleGet(request: NextRequest) {
   const from = request.nextUrl.searchParams.get("from"); // "lat,lon"
   const to = request.nextUrl.searchParams.get("to"); // "lat,lon"
 
@@ -30,3 +33,5 @@ export async function GET(request: NextRequest) {
     durationMinutes: route.duration / 60,
   });
 }
+
+export const GET = withApiSecurity({ rateLimiter: publicProxyLimiter }, handleGet);
