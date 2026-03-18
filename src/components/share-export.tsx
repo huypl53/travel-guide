@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useTripStore } from "@/store/trip-store";
+import { StartCollabButton } from "@/components/start-collab-button";
 
 interface ShareExportProps {
   slug: string;
@@ -48,6 +49,7 @@ export function ShareExport({ slug }: ShareExportProps) {
       <Button variant="outline" size="sm" onClick={handleShare} disabled={saving}>
         {shared ? "Link copied!" : "Share"}
       </Button>
+      <StartCollabButton />
       <Button variant="outline" size="sm" onClick={handleExport}>
         Export
       </Button>

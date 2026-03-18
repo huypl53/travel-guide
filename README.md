@@ -46,6 +46,7 @@ Fully responsive layout with collapsible bottom sheet for rankings.
 - Pre-built Vietnam trip templates -- browse curated itineraries and clone one as a starting point
 - 5-day weather forecast widget — inline weather strip powered by Open-Meteo API (no key needed), cached for 1 hour, collapsible on mobile
 - **Nearby POI layer** — select a homestay and toggle nearby points of interest (restaurants, stores, ATMs, gas stations, medical facilities) via OpenStreetMap Overpass API; adjustable radius (500m–2km), category-colored circle markers with click-to-view name and distance
+- **Collaborative sessions** — Excalidraw-style real-time collaboration. Click "Collaborate" on any trip to create a shareable session link. Anyone with the link can add/edit homestays and destinations simultaneously. Uses Supabase Realtime Broadcast for delta sync and Presence for live participant indicators. No login required. Sessions auto-expire after 30 days
 
 ## Authentication
 
@@ -133,6 +134,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the landing page.
    - See the **ranking list** showing homestays sorted by weighted average distance. Enter **nightly rates** (VND) per homestay, set **trip nights** and **transport mode** (motorbike at 3,000 VND/km or car at 6,000 VND/km) to see total cost badges with breakdown tooltips. Settings persist in localStorage. Use the compare toggle on each row to select 2-3 homestays for **side-by-side comparison**.
    - Inspect the **distance matrix** for pairwise distances — driving distances and times are fetched automatically via OSRM and shown with a car icon.
    - Click **Share** to save the trip to Supabase and copy a shareable read-only link.
+   - Click **Collaborate** to create a real-time collaborative session — copies a `/collab/[slug]` link. Anyone opening it can add/edit locations simultaneously with live presence indicators.
    - Click **Export** to download the trip data as a JSON file.
    - On mobile, rankings and distance matrix appear in a collapsible bottom sheet panel.
 

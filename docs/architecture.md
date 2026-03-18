@@ -18,13 +18,14 @@
 |                                                  |
 |  Zustand Stores                                  |
 |    useTripStore      (locations, selection)       |
+|    useCollabStore    (collab state + broadcast)   |
 |    useDistanceStore  (driving distances)          |
 +--------------------------------------------------+
          |              |              |
-   /api/geocode   /api/distances   /api/trips   /api/nearby
+   /api/geocode   /api/distances   /api/trips   /api/nearby  /api/collab
          |              |              |             |
-   Nominatim OSM   OSRM Table      Supabase    Overpass API
-   (geocoding)     (bulk driving)  (persistence)  (POIs)
+   Nominatim OSM   OSRM Table      Supabase    Overpass API  Supabase Realtime
+   (geocoding)     (bulk driving)  (persistence)  (POIs)     (Broadcast+Presence)
 ```
 
 ## Tech Stack
@@ -43,7 +44,7 @@
 
 ## Data Model
 
-Defined in `supabase/migrations/001_initial.sql`, with additions in `003_location_notes_photos.sql`.
+Defined in `supabase/migrations/001_initial.sql`, with additions in `003_location_notes_photos.sql` and `20260318_add_collaborative_sessions.sql`.
 
 ### trips
 
@@ -83,6 +84,20 @@ Defined in `supabase/migrations/001_initial.sql`, with additions in `003_locatio
 | driving_minutes | double precision (nullable) | From OSRM              |
 
 Unique constraint on `(homestay_id, destination_id)`.
+
+### collaborative_sessions
+
+| Column     | Type        | Notes                                |
+|------------|-------------|--------------------------------------|
+| id         | uuid (PK)   | Auto-generated                       |
+| slug       | text (UQ)   | Unique session identifier (nanoid)   |
+| trip_name  | text        | Default 'Untitled Trip'              |
+| trip_data  | jsonb       | Full Location[] array as JSON        |
+| created_at | timestamptz | Defaults to now()                    |
+| updated_at | timestamptz | Defaults to now()                    |
+| expires_at | timestamptz | Default now() + 30 days, auto-expiry |
+
+RLS enabled with public SELECT/INSERT/UPDATE policies for anon and authenticated roles. Non-expired sessions only.
 
 ## API Routes
 
@@ -125,6 +140,18 @@ Renames a trip. Accepts `{ name: string }`. Requires authentication and trip own
 ### DELETE /api/trips/[slug]
 
 Deletes a trip (if owner) or removes it from saved trips (if not owner). Requires authentication.
+
+### POST /api/collab
+
+Creates a new collaborative session. Accepts `{ tripName, locations }`. Generates a nanoid slug. Validates tripName (max 200 chars) and locations (max 200 items). Returns `{ slug }`.
+
+### GET /api/collab/[slug]
+
+Retrieves a collaborative session by slug. Returns `{ slug, tripName, tripData, updatedAt }`. Returns 404 if session not found or expired.
+
+### PATCH /api/collab/[slug]
+
+Updates a collaborative session. Accepts `{ tripName?, tripData? }` with validation. Sets `updated_at` to now. Returns `{ ok: true }`.
 
 ## Key Components
 
@@ -182,7 +209,7 @@ Pairwise distance table between homestays and destinations. Each cell shows driv
 
 ### ShareExport (`src/components/share-export.tsx`)
 
-Share button saves the trip via `POST /api/trips` and copies the read-only URL (`/trip/[slug]/share`) to clipboard. Export button downloads trip data as `.json`.
+Share button saves the trip via `POST /api/trips` and copies the read-only URL (`/trip/[slug]/share`) to clipboard. Collaborate button creates a real-time session via `POST /api/collab` and copies the `/collab/[slug]` URL. Export button downloads trip data as `.json`.
 
 ### WeatherWidget (`src/components/weather-widget.tsx`)
 
@@ -206,6 +233,23 @@ Star rating input for setting destination priority (1-5), used in the location l
 | comparisonIds        | string[]          | Up to 3 homestay IDs for side-by-side comparison |
 
 Actions: `setTripName`, `addLocation`, `removeLocation`, `updatePriority`, `updateLocationNotes`, `updateLocationPhoto`, `setSelectedHomestay`, `toggleLocationSelection`, `selectAllByType`, `deselectAllByType`, `toggleComparison`, `clearComparison`, `reset`.
+
+### useCollabStore (`src/store/collab-store.ts`)
+
+Mirrors useTripStore's interface but adds collaborative features:
+
+| Field        | Type               | Description                              |
+|--------------|--------------------|------------------------------------------|
+| sessionSlug  | string             | Current collab session identifier        |
+| participants | CollabParticipant[]| Active users with nickname + color       |
+| syncStatus   | SyncStatus         | 'connecting' / 'connected' / 'syncing' / 'offline' |
+| _broadcast   | function or null   | Callback to send deltas via Realtime     |
+
+All mutation actions (setTripName, addLocation, etc.) broadcast a `CollabDelta` via the `_broadcast` callback after updating local state. `applyRemoteDelta(delta)` applies incoming deltas from other users without re-broadcasting, preventing infinite loops.
+
+The `useCollabBridge` hook (`src/hooks/use-collab-bridge.ts`) bidirectionally syncs collab-store with trip-store, allowing all existing trip components to work unchanged on the collab page.
+
+The `useCollabSession` hook (`src/hooks/use-collab-session.ts`) manages the Supabase Realtime channel lifecycle: subscribes to Broadcast events for delta sync, tracks Presence for participant awareness, debounce-persists to DB every 3 seconds on data changes, and uses `navigator.sendBeacon` for reliable save on tab close.
 
 Components read from the store and filter by `type` to get homestays or destinations.
 
@@ -288,7 +332,7 @@ Initializes the Supabase client using `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLI
 |------------|------------------------|-----------------------------------|
 | Nominatim  | Address geocoding      | 1 req/sec (OSM usage policy)      |
 | OSRM       | Driving route distance | Public demo server, best-effort   |
-| Supabase   | Database persistence   | Free tier: 500 MB, 2 GB transfer  |
+| Supabase   | Database + Realtime    | Free tier: 500 MB, 200 RT connections |
 | Overpass   | POI queries (OSM)      | 1 req/sec, 10k elements/query     |
 
 | Open-Meteo | Weather forecast       | Free, no API key, 10k req/day     |
