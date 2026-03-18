@@ -1,6 +1,9 @@
+export const maxDuration = 10;
+
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServer } from "@/lib/supabase-server";
 import { validateLocations } from "@/lib/validate-location";
+import { withApiSecurity, collabAccessLimiter } from "@/lib/api-security";
 
 const MAX_LOCATIONS = 200;
 const MAX_NAME_LENGTH = 200;
@@ -10,11 +13,11 @@ function validateSlug(slug: string) {
   return SLUG_PATTERN.test(slug);
 }
 
-export async function GET(
+async function handleGet(
   _request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  context: unknown,
 ) {
-  const { slug } = await params;
+  const { slug } = await (context as { params: Promise<{ slug: string }> }).params;
   if (!validateSlug(slug)) {
     return NextResponse.json({ error: "Invalid slug" }, { status: 400 });
   }
@@ -43,11 +46,11 @@ export async function GET(
   });
 }
 
-export async function PATCH(
+async function handlePatch(
   request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  context: unknown,
 ) {
-  const { slug } = await params;
+  const { slug } = await (context as { params: Promise<{ slug: string }> }).params;
   if (!validateSlug(slug)) {
     return NextResponse.json({ error: "Invalid slug" }, { status: 400 });
   }
@@ -92,3 +95,13 @@ export async function PATCH(
 
   return NextResponse.json({ ok: true });
 }
+
+export const GET = withApiSecurity(
+  { rateLimiter: collabAccessLimiter },
+  handleGet,
+);
+
+export const PATCH = withApiSecurity(
+  { rateLimiter: collabAccessLimiter, maxBodySize: 524288 },
+  handlePatch,
+);

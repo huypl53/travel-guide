@@ -1,7 +1,10 @@
+export const maxDuration = 5;
+
 import { NextRequest, NextResponse } from "next/server";
 import { getRoutingProvider } from "@/lib/map-providers";
+import { withApiSecurity, publicProxyLimiter } from "@/lib/api-security";
 
-export async function GET(request: NextRequest) {
+async function handleGet(request: NextRequest) {
   const fromParam = request.nextUrl.searchParams.get("from"); // "lat,lon"
   const toParam = request.nextUrl.searchParams.get("to");
 
@@ -27,3 +30,5 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Route request failed" }, { status: 502 });
   }
 }
+
+export const GET = withApiSecurity({ rateLimiter: publicProxyLimiter }, handleGet);

@@ -1,9 +1,19 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseServer } from "@/lib/supabase-server";
-import { nanoid } from "nanoid";
+export const maxDuration = 10;
 
-export async function POST(request: NextRequest) {
-  const supabase = await createSupabaseServer();
+import { NextRequest, NextResponse } from "next/server";
+import { nanoid } from "nanoid";
+import {
+  withApiSecurity,
+  authLimiter,
+  type AuthenticatedContext,
+} from "@/lib/api-security";
+
+async function handlePost(
+  request: NextRequest,
+  _context: unknown,
+  auth: AuthenticatedContext,
+) {
+  const { user, supabase } = auth;
   const body = await request.json();
   const { name, locations } = body;
 
@@ -11,15 +21,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Missing trip name" }, { status: 400 });
   }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
   const slug = nanoid(10);
 
   const { data: trip, error: tripError } = await supabase
     .from("trips")
-    .insert({ name, share_slug: slug, user_id: user?.id ?? null })
+    .insert({ name, share_slug: slug, user_id: user.id })
     .select()
     .single();
 
@@ -57,3 +63,8 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({ slug: trip.share_slug, id: trip.id });
 }
+
+export const POST = withApiSecurity(
+  { requireAuth: true, rateLimiter: authLimiter },
+  handlePost,
+);

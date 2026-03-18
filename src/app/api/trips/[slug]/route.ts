@@ -1,5 +1,12 @@
+export const maxDuration = 10;
+
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServer } from "@/lib/supabase-server";
+import {
+  withApiSecurity,
+  authLimiter,
+  type AuthenticatedContext,
+} from "@/lib/api-security";
 
 export async function GET(
   _request: NextRequest,
@@ -21,20 +28,13 @@ export async function GET(
   return NextResponse.json(trip);
 }
 
-export async function PATCH(
+async function handlePatch(
   request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  context: unknown,
+  auth: AuthenticatedContext,
 ) {
-  const { slug } = await params;
-  const supabase = await createSupabaseServer();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const { slug } = await (context as { params: Promise<{ slug: string }> }).params;
+  const { user, supabase } = auth;
 
   const { name } = await request.json();
   if (!name || typeof name !== "string" || name.trim().length === 0 || name.length > 200) {
@@ -68,20 +68,13 @@ export async function PATCH(
   return NextResponse.json({ ok: true, name: trimmed });
 }
 
-export async function DELETE(
+async function handleDelete(
   _request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  context: unknown,
+  auth: AuthenticatedContext,
 ) {
-  const { slug } = await params;
-  const supabase = await createSupabaseServer();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const { slug } = await (context as { params: Promise<{ slug: string }> }).params;
+  const { user, supabase } = auth;
 
   const { data: trip } = await supabase
     .from("trips")
@@ -111,3 +104,13 @@ export async function DELETE(
 
   return NextResponse.json({ ok: true });
 }
+
+export const PATCH = withApiSecurity(
+  { requireAuth: true, rateLimiter: authLimiter },
+  handlePatch,
+);
+
+export const DELETE = withApiSecurity(
+  { requireAuth: true, rateLimiter: authLimiter },
+  handleDelete,
+);

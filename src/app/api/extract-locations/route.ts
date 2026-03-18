@@ -1,3 +1,5 @@
+export const maxDuration = 10;
+
 import { NextRequest, NextResponse } from "next/server";
 import {
   extractUrlsFromText,
@@ -7,6 +9,7 @@ import {
   parseGoogleMapsUrl,
 } from "@/lib/parsers";
 import { getGeocodingProvider } from "@/lib/map-providers";
+import { withApiSecurity, extractLimiter } from "@/lib/api-security";
 
 interface ExtractedLocation {
   name: string;
@@ -82,7 +85,7 @@ async function processUrl(
   return { locations, errors };
 }
 
-export async function POST(request: NextRequest) {
+async function handlePost(request: NextRequest) {
   let body: { text?: string };
   try {
     body = await request.json();
@@ -149,3 +152,8 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({ locations: allLocations, errors: allErrors });
 }
+
+export const POST = withApiSecurity(
+  { rateLimiter: extractLimiter, maxBodySize: 102400 },
+  handlePost,
+);
