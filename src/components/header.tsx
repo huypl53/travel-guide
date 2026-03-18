@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
@@ -19,17 +19,24 @@ export function Header() {
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
   const supabase = createSupabaseBrowser();
+  const prevUserRef = useRef<User | null>(null);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+      prevUserRef.current = user;
+    });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-      if (event === "SIGNED_IN") {
+      const newUser = session?.user ?? null;
+      setUser(newUser);
+      // Only redirect on actual sign-in (null → user), not token refresh
+      if (event === "SIGNED_IN" && prevUserRef.current === null) {
         router.push("/trips");
       }
+      prevUserRef.current = newUser;
       router.refresh();
     });
 
