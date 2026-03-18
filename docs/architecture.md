@@ -125,6 +125,10 @@ Proxies to the Overpass API (OpenStreetMap) for nearby POI queries. Accepts comm
 
 Follows short URL redirects (e.g., `maps.app.goo.gl/...`) server-side and returns the resolved full URL. Used by the location input to support short Google Maps links.
 
+### POST /api/extract-locations
+
+Extracts multiple locations from Google Maps URLs. Accepts `{ text: string }` containing one or more Google Maps URLs (directions URLs with waypoints, single place URLs, or short URLs). Resolves short URLs in parallel, then processes sequentially to respect Nominatim rate limits. For directions URLs, parses waypoints from the path and geocodes named ones. Returns `{ locations: Array<{ name, lat, lon, address }>, errors: string[] }`. Limits: max 10 URLs, max 20 locations per request.
+
 ### GET /api/weather?lat=X&lon=Y
 
 Proxies to the Open-Meteo free forecast API. Returns 5-day daily forecast with `temperature_2m_max`, `temperature_2m_min`, `precipitation_sum`, and `weathercode`. Responses are cached in-memory for 1 hour keyed by coordinates rounded to 2 decimal places (~1km precision). No API key required.
@@ -177,7 +181,11 @@ Google Maps equivalent using `@vis.gl/react-google-maps`. Uses `AdvancedMarker` 
 
 ### LocationInput / LocationList (`src/components/location-input.tsx`, `location-list.tsx`)
 
-Input panels for adding locations. Supports Google Maps URL pasting, CSV/JSON upload, and manual coordinate entry. LocationList renders added locations with remove actions, an expand/collapse toggle per row, and a StickyNote icon when notes exist. Both accept a `type` prop (`"homestay"` or `"destination"`).
+Input panels for adding locations. Supports Google Maps URL pasting (single or multiple URLs, including directions URLs with multiple waypoints), CSV/JSON upload, and manual address search. When a directions URL or multiple URLs are detected, calls `POST /api/extract-locations` and opens `ImportPreviewDialog` for bulk import with per-location type selection. LocationList renders added locations with remove actions, an expand/collapse toggle per row, and a StickyNote icon when notes exist. Both accept a `type` prop (`"homestay"` or `"destination"`).
+
+### ImportPreviewDialog (`src/components/import-preview-dialog.tsx`)
+
+Dialog for previewing and selecting extracted locations before bulk import. Shows checkboxes per location, a bulk type selector (Homestay/Destination), per-row type toggle badges, and extraction errors as warnings. Receives an `onConfirm` callback that returns selected locations with their chosen types.
 
 ### LocationDetail (`src/components/location-detail.tsx`)
 
@@ -293,6 +301,10 @@ The `useAutoFetchDistances` hook (`src/hooks/use-auto-fetch-distances.ts`) watch
 - `parseGoogleMapsUrl(url)` -- Extracts lat/lon/name from Google Maps URLs.
 - `parseCsvLocations(csv)` -- Parses CSV with `name,lat,lon` columns.
 - `parseJsonLocations(json)` -- Parses JSON array of location objects.
+- `isDirectionsUrl(url)` -- Detects Google Maps directions URLs (`/maps/dir/`).
+- `parseDirectionsUrl(url)` -- Extracts waypoints from directions URL path segments, returning raw names and coordinates where available.
+- `extractUrlsFromText(text)` -- Finds all Google Maps URLs in freeform text, stripping trailing punctuation.
+- `isMultiLocationInput(text)` -- Quick check: true if text contains a directions URL or multiple Maps URLs.
 
 ### Distance (`src/lib/distance.ts`)
 

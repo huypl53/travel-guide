@@ -39,7 +39,7 @@ Fully responsive layout with collapsible bottom sheet for rankings.
 - Concurrency-limited route fetching (max 3 parallel requests) with persistent route cache
 - Cost estimation — enter nightly rates per homestay, set trip duration and transport mode (motorbike/car), see total cost badges with accommodation + transport breakdown; cheapest highlighted green, most expensive red
 - Location notes and photo URLs — add context per location, visible in lists and map popups
-- Multiple input methods: Google Maps URLs (full and short links), CSV, JSON, and manual coordinates
+- Multiple input methods: Google Maps URLs (full and short links), directions URLs with multiple stops, bulk multi-URL paste, CSV, JSON, and manual address search
 - Share trips via unique URLs backed by Supabase
 - Export trip data as JSON
 - Mobile-responsive layout with collapsible bottom sheet
@@ -126,7 +126,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the landing page.
 
 1. **Landing page** (`/`) -- Click "New Trip" to create a trip workspace with a unique URL, or browse **Trip Templates** to start from a curated Vietnam itinerary with pre-populated homestays and destinations.
 2. **Trip page** (`/trip/[slug]`) -- The main workspace where you:
-   - Add **homestays** and **destinations** using the input panels (supports Google Maps URLs, CSV, JSON, and manual entry).
+   - Add **homestays** and **destinations** using the input panels (supports Google Maps URLs, directions URLs with multiple stops, multiple URLs at once, CSV, JSON, and manual address search). Paste a directions link to import all waypoints at once via a preview dialog.
    - Set **priority** (1-5 stars) on destinations to weight the ranking.
    - Expand a location row to add **notes** and a **photo URL** — notes auto-save on blur, photos display as thumbnails with broken-image fallback.
    - View all locations on an interactive **map** with color-coded markers and distance polylines.
