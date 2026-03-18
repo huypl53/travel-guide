@@ -36,6 +36,14 @@ describe("parseGoogleMapsUrl", () => {
     expect(result?.lon).toBeCloseTo(108.4583, 3);
   });
 
+  it("parses /search/ URL and extracts place name", () => {
+    const url = "https://www.google.com/maps/search/GoGi+House/@21.0272019,105.7979557,35776m/data=!3m2!1e3!4b1";
+    const result = parseGoogleMapsUrl(url);
+    expect(result?.name).toBe("GoGi House");
+    expect(result?.lat).toBeCloseTo(21.0272, 3);
+    expect(result?.lon).toBeCloseTo(105.7979, 3);
+  });
+
   it("returns null for invalid URL", () => {
     expect(parseGoogleMapsUrl("not a url")).toBeNull();
     expect(parseGoogleMapsUrl("https://example.com")).toBeNull();

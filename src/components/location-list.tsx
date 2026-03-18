@@ -34,14 +34,13 @@ export function LocationList({ type }: LocationListProps) {
     <TooltipProvider delay={300}>
       <ul className="space-y-1 max-h-[300px] overflow-y-auto">
         {locations.map((loc) => (
-          <li key={loc.id} className="overflow-hidden">
+          <li key={loc.id}>
             <div
               className={`flex items-center justify-between py-1 px-2 rounded hover:bg-muted border-l-4 cursor-pointer ${
                 loc.type === "destination" ? "border-l-red-400" : "border-l-blue-400"
               } ${!selectedIds.has(loc.id) ? "opacity-40" : ""}`}
               onClick={(e) => {
-                const btn = (e.target as HTMLElement).closest("button");
-                if (btn && btn.getAttribute("data-slot") !== "tooltip-trigger") return;
+                if ((e.target as HTMLElement).closest("button")) return;
                 setFocusedLocation({ lat: loc.lat, lon: loc.lon });
               }}
             >

@@ -87,7 +87,7 @@ export default function TripPage() {
         </div>
 
         {/* Right column: Map sticky */}
-        <div className="sticky top-4 h-[600px]">
+        <div className="sticky top-4 h-[min(600px,calc(100vh-8rem))]">
           <MapView />
         </div>
       </div>
