@@ -7,7 +7,7 @@ import { useMapData } from "@/hooks/use-map-data";
 import { haversineKm } from "@/lib/distance";
 import { type MapStyle, googleMapTypeIds } from "@/components/map-style-switcher";
 import { isSafeImageUrl } from "@/lib/utils";
-import { poiCategoryColors, poiCategories } from "@/components/nearby-poi";
+import { poiCategoryColors, getCategoryLabel } from "@/components/nearby-poi";
 import type { Location } from "@/lib/types";
 import type { PoiResult } from "@/lib/overpass";
 
@@ -117,9 +117,6 @@ function MarkerInfoWindow({ location, label }: { location: Location; label?: str
   );
 }
 
-function getCategoryLabel(category: string): string {
-  return poiCategories.find((c) => c.id === category)?.label ?? category;
-}
 
 function PoiMarker({ poi }: { poi: PoiResult }) {
   const [open, setOpen] = useState(false);

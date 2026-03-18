@@ -16,6 +16,10 @@ import type { PoiCategory, PoiResult } from "@/lib/overpass";
 
 export type { PoiResult };
 
+export function getCategoryLabel(category: string): string {
+  return poiCategories.find((c) => c.id === category)?.label ?? category;
+}
+
 interface CategoryConfig {
   id: PoiCategory;
   label: string;
@@ -54,6 +58,7 @@ export function NearbyPoi({ onPoisChange }: NearbyPoiProps) {
   const [error, setError] = useState<string | null>(null);
   const [pois, setPois] = useState<PoiResult[]>([]);
   const radiusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   const selectedHomestay = locations.find(
     (l) => l.id === selectedHomestayId && l.type === "homestay",
@@ -75,6 +80,10 @@ export function NearbyPoi({ onPoisChange }: NearbyPoiProps) {
         return;
       }
 
+      abortRef.current?.abort();
+      abortRef.current = new AbortController();
+      const { signal } = abortRef.current;
+
       setLoading(true);
       setError(null);
 
@@ -86,35 +95,39 @@ export function NearbyPoi({ onPoisChange }: NearbyPoiProps) {
           categories: cats.join(","),
         });
 
-        const res = await fetch(`/api/nearby?${params}`);
+        const res = await fetch(`/api/nearby?${params}`, { signal });
         if (!res.ok) throw new Error("Failed to fetch");
 
         const data = await res.json();
         setPois(data.pois);
         onPoisChange(data.pois);
-      } catch {
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
         setError("Could not load nearby places");
         setPois([]);
         onPoisChange([]);
       } finally {
-        setLoading(false);
+        if (!signal.aborted) setLoading(false);
       }
     },
     [selectedHomestay, onPoisChange],
   );
 
-  const toggleCategory = useCallback(
-    (cat: PoiCategory) => {
-      setEnabledCategories((prev) => {
-        const next = new Set(prev);
-        if (next.has(cat)) next.delete(cat);
-        else next.add(cat);
-        fetchPois(Array.from(next), radius);
-        return next;
-      });
-    },
-    [fetchPois, radius],
-  );
+  const toggleCategory = useCallback((cat: PoiCategory) => {
+    setEnabledCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(cat)) next.delete(cat);
+      else next.add(cat);
+      return next;
+    });
+  }, []);
+
+  // Fetch when enabled categories change (not radius — that uses debounce)
+  const categoriesKey = Array.from(enabledCategories).sort().join(",");
+  useEffect(() => {
+    fetchPois(Array.from(enabledCategories), radius);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categoriesKey]);
 
   const handleRadiusChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -130,10 +143,11 @@ export function NearbyPoi({ onPoisChange }: NearbyPoiProps) {
     [fetchPois, enabledCategories],
   );
 
-  // Cleanup debounce timer on unmount
+  // Cleanup debounce timer and abort controller on unmount
   useEffect(() => {
     return () => {
       if (radiusTimerRef.current) clearTimeout(radiusTimerRef.current);
+      abortRef.current?.abort();
     };
   }, []);
 
@@ -163,9 +177,10 @@ export function NearbyPoi({ onPoisChange }: NearbyPoiProps) {
             <button
               key={id}
               type="button"
+              aria-pressed={active}
               onClick={() => toggleCategory(id)}
               className={cn(
-                "flex items-center gap-2 w-full rounded-md px-2 py-1 text-xs transition-colors",
+                "flex items-center gap-2 w-full rounded-md px-2 py-1 min-h-[44px] sm:min-h-0 text-xs transition-colors",
                 active
                   ? "bg-muted text-foreground"
                   : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
@@ -193,6 +208,7 @@ export function NearbyPoi({ onPoisChange }: NearbyPoiProps) {
           step={100}
           value={radius}
           onChange={handleRadiusChange}
+          aria-label="Search radius"
           className="w-full h-1.5 accent-primary cursor-pointer"
         />
       </div>

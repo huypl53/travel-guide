@@ -89,6 +89,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Invalid lat/lon" }, { status: 400 });
   }
 
+  if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+    return NextResponse.json({ error: "Invalid coordinates" }, { status: 400 });
+  }
+
   const categories = categoriesParam
     .split(",")
     .filter((c): c is PoiCategory => allCategories.includes(c as PoiCategory));
@@ -111,7 +115,7 @@ export async function GET(request: NextRequest) {
       .catch(() => {})
       .then(() => queryOverpass(lat, lon, radius, categories)));
 
-    const pois = result as PoiResult[];
+    const pois = (result as PoiResult[]).slice(0, 200);
     cache.set(key, { data: pois, timestamp: Date.now() });
 
     // Evict old cache entries
