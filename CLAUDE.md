@@ -1,0 +1,1 @@
+- After implementing a feature, do UAT test on that features leveraging playwright CLI skill
