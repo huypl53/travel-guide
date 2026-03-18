@@ -29,6 +29,19 @@ export function MyTripsList({ initialTrips }: MyTripsListProps) {
     router.push(`/trip/${slug}`);
   }
 
+  async function handleRename(trip: TripCardData, newName: string) {
+    const res = await fetch(`/api/trips/${trip.shareSlug}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newName }),
+    });
+    if (res.ok) {
+      setTrips((prev) =>
+        prev.map((t) => (t.id === trip.id ? { ...t, name: newName } : t))
+      );
+    }
+  }
+
   async function confirmDelete() {
     if (!deleteTarget) return;
     setDeleting(true);
@@ -64,6 +77,7 @@ export function MyTripsList({ initialTrips }: MyTripsListProps) {
               key={trip.id}
               trip={trip}
               onDelete={setDeleteTarget}
+              onRename={handleRename}
             />
           ))}
         </div>

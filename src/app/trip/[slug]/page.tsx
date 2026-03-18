@@ -118,10 +118,10 @@ export default function TripPage() {
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-4 pb-16 md:pb-0">
       <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold flex items-center gap-2 text-primary">
-          <MapPin className="h-6 w-6" />
-          Trip Planner
-        </h1>
+        <div className="flex items-center gap-2 text-primary">
+          <MapPin className="h-6 w-6 shrink-0" />
+          <EditableTripName />
+        </div>
         <ShareExport slug={slug} />
       </header>
 
