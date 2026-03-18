@@ -1,4 +1,7 @@
+export const maxDuration = 5;
+
 import { NextRequest, NextResponse } from "next/server";
+import { withApiSecurity, publicProxyLimiter } from "@/lib/api-security";
 
 const cache = new Map<string, { data: unknown; expiresAt: number }>();
 const CACHE_TTL = 3600 * 1000; // 1 hour
@@ -7,7 +10,7 @@ function getCacheKey(lat: number, lon: number) {
   return `${lat.toFixed(2)},${lon.toFixed(2)}`;
 }
 
-export async function GET(request: NextRequest) {
+async function handleGet(request: NextRequest) {
   const lat = request.nextUrl.searchParams.get("lat");
   const lon = request.nextUrl.searchParams.get("lon");
 
@@ -72,3 +75,5 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+export const GET = withApiSecurity({ rateLimiter: publicProxyLimiter }, handleGet);

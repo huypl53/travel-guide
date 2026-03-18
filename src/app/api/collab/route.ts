@@ -1,56 +1,15 @@
+export const maxDuration = 10;
+
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServer } from "@/lib/supabase-server";
 import { validateLocations } from "@/lib/validate-location";
 import { nanoid } from "nanoid";
+import { withApiSecurity, collabCreateLimiter } from "@/lib/api-security";
 
 const MAX_LOCATIONS = 200;
 const MAX_NAME_LENGTH = 200;
 
-// --- Rate limiting: max 10 session creations per minute per IP ---
-const RATE_LIMIT_WINDOW_MS = 60_000;
-const RATE_LIMIT_MAX = 10;
-const rateLimitMap = new Map<string, number[]>();
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const timestamps = rateLimitMap.get(ip) ?? [];
-
-  // Remove expired entries
-  const valid = timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
-
-  if (valid.length >= RATE_LIMIT_MAX) {
-    rateLimitMap.set(ip, valid);
-    return true;
-  }
-
-  valid.push(now);
-  rateLimitMap.set(ip, valid);
-  return false;
-}
-
-// Periodically clean up stale IPs to avoid memory leaks
-setInterval(() => {
-  const now = Date.now();
-  for (const [ip, timestamps] of rateLimitMap) {
-    const valid = timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
-    if (valid.length === 0) {
-      rateLimitMap.delete(ip);
-    } else {
-      rateLimitMap.set(ip, valid);
-    }
-  }
-}, RATE_LIMIT_WINDOW_MS);
-
-export async function POST(request: NextRequest) {
-  // Rate limit check
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  if (isRateLimited(ip)) {
-    return NextResponse.json(
-      { error: "Too many sessions created. Try again later." },
-      { status: 429 },
-    );
-  }
-
+async function handlePost(request: NextRequest) {
   const supabase = await createSupabaseServer();
   const body = await request.json();
   const { tripName, locations } = body;
@@ -90,3 +49,8 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({ slug: data.slug });
 }
+
+export const POST = withApiSecurity(
+  { rateLimiter: collabCreateLimiter, maxBodySize: 524288 },
+  handlePost,
+);
