@@ -35,17 +35,17 @@ function distanceToColor(km: number, maxKm: number): string {
 }
 
 function RoutePolylines({
-  homestays,
+  bases,
   destinations,
-  selectedHomestayIds,
+  selectedBaseIds,
   selectedDestinationIds,
   drivingDistances,
   routes,
   maxKm,
 }: {
-  homestays: { id: string; lat: number; lon: number }[];
+  bases: { id: string; lat: number; lon: number }[];
   destinations: { id: string; lat: number; lon: number }[];
-  selectedHomestayIds: Set<string>;
+  selectedBaseIds: Set<string>;
   selectedDestinationIds: Set<string>;
   drivingDistances: Map<string, { drivingKm: number }>;
   routes: Map<string, [number, number][]>;
@@ -61,8 +61,8 @@ function RoutePolylines({
     polylinesRef.current.forEach((p) => p.setMap(null));
     polylinesRef.current = [];
 
-    for (const h of homestays) {
-      const hSelected = selectedHomestayIds.has(h.id);
+    for (const h of bases) {
+      const hSelected = selectedBaseIds.has(h.id);
       for (const d of destinations) {
         const dSelected = selectedDestinationIds.has(d.id);
         const bothSelected = hSelected && dSelected;
@@ -93,7 +93,7 @@ function RoutePolylines({
       polylinesRef.current.forEach((p) => p.setMap(null));
       polylinesRef.current = [];
     };
-  }, [map, homestays, destinations, selectedHomestayIds, selectedDestinationIds, drivingDistances, routes, maxKm]);
+  }, [map, bases, destinations, selectedBaseIds, selectedDestinationIds, drivingDistances, routes, maxKm]);
 
   return null;
 }
@@ -155,11 +155,11 @@ function PoiMarker({ poi }: { poi: PoiResult }) {
 
 export default function GoogleMapInner({ mapStyle = "default", pois = [] }: { mapStyle?: MapStyle; pois?: PoiResult[] }) {
   const {
-    homestays,
+    bases,
     destinations,
     center,
     setSelected,
-    selectedHomestayIds,
+    selectedBaseIds,
     selectedDestinationIds,
     drivingDistances,
     routes,
@@ -182,10 +182,10 @@ export default function GoogleMapInner({ mapStyle = "default", pois = [] }: { ma
 
   const allLocations = useMemo(() => {
     const map: Record<string, Location> = {};
-    for (const h of homestays) map[h.id] = h;
+    for (const h of bases) map[h.id] = h;
     for (const d of destinations) map[d.id] = d;
     return map;
-  }, [homestays, destinations]);
+  }, [bases, destinations]);
 
   return (
     <APIProvider apiKey={apiKey}>
@@ -193,20 +193,20 @@ export default function GoogleMapInner({ mapStyle = "default", pois = [] }: { ma
         defaultCenter={{ lat: center.lat, lng: center.lon }}
         defaultZoom={13}
         className="h-[250px] sm:h-[350px] md:h-[500px] w-full rounded-lg"
-        mapId="homestay-locator"
+        mapId="base-locator"
         gestureHandling="greedy"
         disableDefaultUI={false}
         mapTypeId={mapStyle !== "dark" ? googleMapTypeIds[mapStyle] : googleMapTypeIds.default}
       >
         <FlyToLocation />
 
-        {homestays.map((h) => (
+        {bases.map((h) => (
           <AdvancedMarker
             key={h.id}
             position={{ lat: h.lat, lng: h.lon }}
             onClick={handleMarkerClick(h.id)}
           >
-            <div style={{ opacity: selectedHomestayIds.has(h.id) ? 1 : 0.4 }}>
+            <div style={{ opacity: selectedBaseIds.has(h.id) ? 1 : 0.4 }}>
               <Pin background="#3b82f6" borderColor="#1e40af" glyphColor="#fff" />
             </div>
           </AdvancedMarker>
@@ -244,11 +244,11 @@ export default function GoogleMapInner({ mapStyle = "default", pois = [] }: { ma
           </InfoWindow>
         )}
 
-        {homestays.length > 0 && destinations.length > 0 && (
+        {bases.length > 0 && destinations.length > 0 && (
           <RoutePolylines
-            homestays={homestays}
+            bases={bases}
             destinations={destinations}
-            selectedHomestayIds={selectedHomestayIds}
+            selectedBaseIds={selectedBaseIds}
             selectedDestinationIds={selectedDestinationIds}
             drivingDistances={drivingDistances}
             routes={routes}

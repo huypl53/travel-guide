@@ -70,7 +70,7 @@ export function ImportPreviewDialog({
     setTypeOverrides((prev) => {
       const next = new Map(prev);
       const current = next.get(index) ?? bulkType;
-      next.set(index, current === "homestay" ? "destination" : "homestay");
+      next.set(index, current === "base" ? "destination" : "base");
       return next;
     });
   }
@@ -116,14 +116,14 @@ export function ImportPreviewDialog({
             <span className="text-muted-foreground">All as:</span>
             <Button
               size="sm"
-              variant={bulkType === "homestay" ? "default" : "outline"}
+              variant={bulkType === "base" ? "default" : "outline"}
               className="h-6 px-2 text-xs"
               onClick={() => {
-                setBulkType("homestay");
+                setBulkType("base");
                 setTypeOverrides(new Map());
               }}
             >
-              Homestay
+              Base
             </Button>
             <Button
               size="sm"
@@ -168,12 +168,12 @@ export function ImportPreviewDialog({
                     toggleType(i);
                   }}
                   className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-medium ${
-                    getType(i) === "homestay"
+                    getType(i) === "base"
                       ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
                       : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300"
                   }`}
                 >
-                  {getType(i) === "homestay" ? "H" : "D"}
+                  {getType(i) === "base" ? "B" : "D"}
                 </button>
               </label>
             ))}

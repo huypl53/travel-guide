@@ -1,4 +1,4 @@
-const VALID_TYPES = new Set(["homestay", "destination"]);
+const VALID_TYPES = new Set(["base", "destination"]);
 
 /**
  * Validates a single location object from API input.
@@ -31,9 +31,9 @@ export function validateLocation(item: unknown, index: number): string | null {
     return `locations[${index}]: lon must be a number between -180 and 180`;
   }
 
-  // Required: type ("homestay" | "destination")
+  // Required: type ("base" | "destination")
   if (!VALID_TYPES.has(loc.type as string)) {
-    return `locations[${index}]: type must be "homestay" or "destination"`;
+    return `locations[${index}]: type must be "base" or "destination"`;
   }
 
   // Optional: priority (number 1-5)

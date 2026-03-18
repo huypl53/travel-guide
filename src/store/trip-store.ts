@@ -17,9 +17,9 @@ interface AddLocationInput {
 interface TripState {
   tripName: string;
   locations: Location[];
-  selectedHomestayId: string | null;
+  selectedBaseId: string | null;
   focusedLocation: { lat: number; lon: number } | null;
-  selectedHomestayIds: Set<string>;
+  selectedBaseIds: Set<string>;
   selectedDestinationIds: Set<string>;
   comparisonIds: string[];
   setTripName: (name: string) => void;
@@ -28,7 +28,7 @@ interface TripState {
   updatePriority: (id: string, priority: number) => void;
   updateLocationNotes: (id: string, notes: string) => void;
   updateLocationPhoto: (id: string, photoUrl: string) => void;
-  setSelectedHomestay: (id: string | null) => void;
+  setSelectedBase: (id: string | null) => void;
   setFocusedLocation: (loc: { lat: number; lon: number } | null) => void;
   toggleLocationSelection: (id: string) => void;
   selectAllByType: (type: LocationType) => void;
@@ -41,9 +41,9 @@ interface TripState {
 export const useTripStore = create<TripState>((set) => ({
   tripName: "",
   locations: [],
-  selectedHomestayId: null,
+  selectedBaseId: null,
   focusedLocation: null,
-  selectedHomestayIds: new Set<string>(),
+  selectedBaseIds: new Set<string>(),
   selectedDestinationIds: new Set<string>(),
   comparisonIds: [],
 
@@ -64,7 +64,7 @@ export const useTripStore = create<TripState>((set) => ({
       photoUrl: input.photoUrl ?? null,
     };
     set((state) => {
-      const setKey = input.type === "homestay" ? "selectedHomestayIds" : "selectedDestinationIds";
+      const setKey = input.type === "base" ? "selectedBaseIds" : "selectedDestinationIds";
       const newSet = new Set(state[setKey]);
       newSet.add(location.id);
       return { locations: [...state.locations, location], [setKey]: newSet };
@@ -75,7 +75,7 @@ export const useTripStore = create<TripState>((set) => ({
     set((state) => {
       const loc = state.locations.find((l) => l.id === id);
       if (!loc) return { locations: state.locations };
-      const setKey = loc.type === "homestay" ? "selectedHomestayIds" : "selectedDestinationIds";
+      const setKey = loc.type === "base" ? "selectedBaseIds" : "selectedDestinationIds";
       const newSet = new Set(state[setKey]);
       newSet.delete(id);
       return {
@@ -106,7 +106,7 @@ export const useTripStore = create<TripState>((set) => ({
       ),
     })),
 
-  setSelectedHomestay: (id) => set({ selectedHomestayId: id }),
+  setSelectedBase: (id) => set({ selectedBaseId: id }),
 
   setFocusedLocation: (loc) => set({ focusedLocation: loc }),
 
@@ -114,7 +114,7 @@ export const useTripStore = create<TripState>((set) => ({
     set((state) => {
       const loc = state.locations.find((l) => l.id === id);
       if (!loc) return {};
-      const setKey = loc.type === "homestay" ? "selectedHomestayIds" : "selectedDestinationIds";
+      const setKey = loc.type === "base" ? "selectedBaseIds" : "selectedDestinationIds";
       const newSet = new Set(state[setKey]);
       if (newSet.has(id)) newSet.delete(id);
       else newSet.add(id);
@@ -123,14 +123,14 @@ export const useTripStore = create<TripState>((set) => ({
 
   selectAllByType: (type) =>
     set((state) => {
-      const setKey = type === "homestay" ? "selectedHomestayIds" : "selectedDestinationIds";
+      const setKey = type === "base" ? "selectedBaseIds" : "selectedDestinationIds";
       const ids = state.locations.filter((l) => l.type === type).map((l) => l.id);
       return { [setKey]: new Set(ids) };
     }),
 
   deselectAllByType: (type) =>
     set(() => {
-      const setKey = type === "homestay" ? "selectedHomestayIds" : "selectedDestinationIds";
+      const setKey = type === "base" ? "selectedBaseIds" : "selectedDestinationIds";
       return { [setKey]: new Set<string>() };
     }),
 
@@ -146,5 +146,5 @@ export const useTripStore = create<TripState>((set) => ({
 
   clearComparison: () => set({ comparisonIds: [] }),
 
-  reset: () => set({ tripName: "", locations: [], selectedHomestayId: null, focusedLocation: null, selectedHomestayIds: new Set(), selectedDestinationIds: new Set(), comparisonIds: [] }),
+  reset: () => set({ tripName: "", locations: [], selectedBaseId: null, focusedLocation: null, selectedBaseIds: new Set(), selectedDestinationIds: new Set(), comparisonIds: [] }),
 }));

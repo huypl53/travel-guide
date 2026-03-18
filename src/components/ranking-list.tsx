@@ -5,7 +5,7 @@ import { Trophy, Loader2, GitCompareArrows } from "lucide-react";
 import { useTripStore } from "@/store/trip-store";
 import { useDistanceStore } from "@/store/distance-store";
 import { useCostStore } from "@/store/cost-store";
-import { rankHomestays } from "@/lib/ranking";
+import { rankBases } from "@/lib/ranking";
 import { formatVND, calculateCost } from "@/components/cost-estimator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,8 +18,8 @@ function RankBadge({ rank }: { rank: number }) {
   return <div className={`${base} bg-muted text-muted-foreground`}>{rank}</div>;
 }
 
-function NightlyRateInput({ homestayId, homestayName }: { homestayId: string; homestayName: string }) {
-  const rate = useCostStore((s) => s.nightlyRates[homestayId]);
+function NightlyRateInput({ baseId, baseName }: { baseId: string; baseName: string }) {
+  const rate = useCostStore((s) => s.nightlyRates[baseId]);
   const setNightlyRate = useCostStore((s) => s.setNightlyRate);
   const removeNightlyRate = useCostStore((s) => s.removeNightlyRate);
   const [draft, setDraft] = useState(rate ? String(rate) : "");
@@ -37,9 +37,9 @@ function NightlyRateInput({ homestayId, homestayName }: { homestayId: string; ho
     setIsFocused(false);
     const num = Number(draft.replace(/\D/g, ""));
     if (num > 0) {
-      setNightlyRate(homestayId, num);
+      setNightlyRate(baseId, num);
     } else {
-      removeNightlyRate(homestayId);
+      removeNightlyRate(baseId);
       setDraft("");
     }
   }
@@ -64,7 +64,7 @@ function NightlyRateInput({ homestayId, homestayName }: { homestayId: string; ho
       onKeyDown={handleKeyDown}
       placeholder="VND/night"
       className="w-24 h-7 sm:h-6 text-xs text-right"
-      aria-label={`Nightly rate for ${homestayName}`}
+      aria-label={`Nightly rate for ${baseName}`}
     />
   );
 }
@@ -100,9 +100,9 @@ function CostBadge({
 
 export function RankingList() {
   const locations = useTripStore((s) => s.locations);
-  const setSelected = useTripStore((s) => s.setSelectedHomestay);
-  const selectedId = useTripStore((s) => s.selectedHomestayId);
-  const selectedHomestayIds = useTripStore((s) => s.selectedHomestayIds);
+  const setSelected = useTripStore((s) => s.setSelectedBase);
+  const selectedId = useTripStore((s) => s.selectedBaseId);
+  const selectedBaseIds = useTripStore((s) => s.selectedBaseIds);
   const setFocusedLocation = useTripStore((s) => s.setFocusedLocation);
   const comparisonIds = useTripStore((s) => s.comparisonIds);
   const toggleComparison = useTripStore((s) => s.toggleComparison);
@@ -114,23 +114,23 @@ export function RankingList() {
   const tripNights = useCostStore((s) => s.tripNights);
   const fuelCostPerKm = useCostStore((s) => s.fuelCostPerKm);
 
-  const homestays = useMemo(() => locations.filter((l) => l.type === "homestay"), [locations]);
+  const bases = useMemo(() => locations.filter((l) => l.type === "base"), [locations]);
   const destinations = useMemo(() => locations.filter((l) => l.type === "destination"), [locations]);
 
-  const ranked = useMemo(() => rankHomestays(homestays, destinations, distances), [homestays, destinations, distances]);
+  const ranked = useMemo(() => rankBases(bases, destinations, distances), [bases, destinations, distances]);
 
-  // Compute costs for homestays that have nightly rates
+  // Compute costs for bases that have nightly rates
   const costData = useMemo(() => {
     const costs: Record<string, { transportCost: number; accommodationCost: number; totalCost: number }> = {};
     for (const r of ranked) {
-      const rate = nightlyRates[r.homestay.id];
+      const rate = nightlyRates[r.base.id];
       if (rate == null || rate <= 0) continue;
 
       const totalDrivingKm = r.distances.reduce((sum, d) => {
         return sum + (d.drivingKm ?? d.km);
       }, 0);
 
-      costs[r.homestay.id] = calculateCost(totalDrivingKm, rate, tripNights, fuelCostPerKm);
+      costs[r.base.id] = calculateCost(totalDrivingKm, rate, tripNights, fuelCostPerKm);
     }
     return costs;
   }, [ranked, nightlyRates, tripNights, fuelCostPerKm]);
@@ -151,7 +151,7 @@ export function RankingList() {
   }, [costData]);
 
   if (ranked.length === 0) {
-    return <p className="text-sm text-muted-foreground">Add homestays and destinations to see rankings.</p>;
+    return <p className="text-sm text-muted-foreground">Add bases and destinations to see rankings.</p>;
   }
 
   return (
@@ -161,21 +161,21 @@ export function RankingList() {
         Ranking: Best &rarr; Worst
       </h3>
       {ranked.map((r, i) => {
-        const cost = costData[r.homestay.id];
-        const isComparing = comparisonIds.includes(r.homestay.id);
+        const cost = costData[r.base.id];
+        const isComparing = comparisonIds.includes(r.base.id);
         const atMax = comparisonIds.length >= 3 && !isComparing;
 
         return (
-          <div key={r.homestay.id} className="space-y-1">
+          <div key={r.base.id} className="space-y-1">
             <div className="flex items-center gap-1">
               <button
-                title={atMax ? "Max 3 homestays" : isComparing ? "Remove from comparison" : "Add to comparison"}
-                aria-label={atMax ? "Max 3 homestays" : isComparing ? "Remove from comparison" : "Add to comparison"}
+                title={atMax ? "Max 3 bases" : isComparing ? "Remove from comparison" : "Add to comparison"}
+                aria-label={atMax ? "Max 3 bases" : isComparing ? "Remove from comparison" : "Add to comparison"}
                 aria-pressed={isComparing}
                 disabled={atMax}
                 onClick={(e) => {
                   e.stopPropagation();
-                  toggleComparison(r.homestay.id);
+                  toggleComparison(r.base.id);
                 }}
                 className={`shrink-0 flex items-center justify-center h-10 w-10 sm:h-6 sm:w-6 rounded border transition-colors ${
                   isComparing
@@ -186,18 +186,18 @@ export function RankingList() {
                 {isComparing && <GitCompareArrows className="h-3.5 w-3.5" />}
               </button>
               <Button
-                variant={r.homestay.id === selectedId ? "secondary" : "ghost"}
+                variant={r.base.id === selectedId ? "secondary" : "ghost"}
                 className={`flex-1 justify-between h-auto py-3 sm:py-2 ${
-                  !selectedHomestayIds.has(r.homestay.id) ? "opacity-40" : ""
+                  !selectedBaseIds.has(r.base.id) ? "opacity-40" : ""
                 }`}
                 onClick={() => {
-                  setSelected(r.homestay.id);
-                  setFocusedLocation({ lat: r.homestay.lat, lon: r.homestay.lon });
+                  setSelected(r.base.id);
+                  setFocusedLocation({ lat: r.base.lat, lon: r.base.lon });
                 }}
               >
                 <span className="flex items-center gap-2">
                   <RankBadge rank={i + 1} />
-                  <span className="truncate">{r.homestay.name}</span>
+                  <span className="truncate">{r.base.name}</span>
                 </span>
                 <span className="flex items-center gap-2 shrink-0">
                   {cost && (
@@ -205,8 +205,8 @@ export function RankingList() {
                       totalCost={cost.totalCost}
                       transportCost={cost.transportCost}
                       accommodationCost={cost.accommodationCost}
-                      isCheapest={r.homestay.id === cheapestId}
-                      isMostExpensive={r.homestay.id === mostExpensiveId}
+                      isCheapest={r.base.id === cheapestId}
+                      isMostExpensive={r.base.id === mostExpensiveId}
                     />
                   )}
                   <span className="text-muted-foreground text-xs flex items-center gap-1">
@@ -219,7 +219,7 @@ export function RankingList() {
               </Button>
             </div>
             <div className="flex justify-end pr-2">
-              <NightlyRateInput homestayId={r.homestay.id} homestayName={r.homestay.name} />
+              <NightlyRateInput baseId={r.base.id} baseName={r.base.name} />
             </div>
           </div>
         );

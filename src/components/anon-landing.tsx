@@ -19,7 +19,7 @@ const features = [
   {
     icon: MapPin,
     title: "Pin Locations",
-    desc: "Add homestays and destinations via Google Maps links, address search, or CSV upload.",
+    desc: "Add bases and destinations via Google Maps links, address search, or CSV upload.",
   },
   {
     icon: BarChart3,
@@ -43,13 +43,13 @@ const steps = [
     num: 1,
     icon: MapPin,
     title: "Add your locations",
-    desc: "Pin homestays and destinations on the map using search, links, or CSV.",
+    desc: "Pin bases and destinations on the map using search, links, or CSV.",
   },
   {
     num: 2,
     icon: BarChart3,
     title: "Get smart rankings",
-    desc: "Our algorithm ranks every homestay by proximity to your destinations.",
+    desc: "Our algorithm ranks every base by proximity to your destinations.",
   },
   {
     num: 3,
@@ -107,7 +107,7 @@ export function AnonLanding() {
 
           <h1 className="max-w-3xl text-4xl leading-tight font-bold tracking-tight sm:text-5xl md:text-6xl">
             Find Your Perfect{" "}
-            <span className="text-primary">Homestay</span>
+            <span className="text-primary">Base</span>
           </h1>
 
           <p className="max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
@@ -175,7 +175,7 @@ export function AnonLanding() {
               How it works
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Three steps to your ideal homestay.
+              Three steps to your ideal base.
             </p>
           </div>
 
@@ -228,7 +228,7 @@ export function AnonLanding() {
       <section className="bg-muted/50 px-4 py-16 sm:py-20">
         <div className="mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
           <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
-            Ready to find your perfect homestay?
+            Ready to find your perfect base?
           </h2>
           <p className="text-muted-foreground">
             Start planning in seconds — no sign-up, no credit card, no catch.
@@ -251,13 +251,13 @@ export function AnonLanding() {
         <div className="mx-auto flex max-w-4xl flex-col items-center gap-2 text-center">
           <div className="flex items-center gap-2 text-muted-foreground">
             <MapPin className="h-4 w-4" />
-            <span className="text-sm font-semibold">Homestay Locator</span>
+            <span className="text-sm font-semibold">ProxiMap</span>
           </div>
           <p className="text-xs text-muted-foreground/70">
             Built for travelers, by travelers.
           </p>
           <p className="text-xs text-muted-foreground/50">
-            &copy; {new Date().getFullYear()} Homestay Locator
+            &copy; {new Date().getFullYear()} ProxiMap
           </p>
         </div>
       </footer>

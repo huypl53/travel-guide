@@ -166,12 +166,12 @@ export default function CollabPage() {
           <div className="flex items-center justify-between">
             <h2 className="font-semibold flex items-center gap-2">
               <Home className="h-4 w-4 text-muted-foreground" />
-              Homestays
+              Bases
             </h2>
-            <SelectAllButtons type="homestay" />
+            <SelectAllButtons type="base" />
           </div>
-          <LocationInput type="homestay" />
-          <LocationList type="homestay" />
+          <LocationInput type="base" />
+          <LocationList type="base" />
         </Card>
         <Card className="p-4 space-y-3">
           <div className="flex items-baseline justify-between">

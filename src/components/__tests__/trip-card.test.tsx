@@ -12,9 +12,9 @@ const baseTripCard: TripCardData = {
   name: "Da Lat Trip",
   shareSlug: "abc123",
   createdAt: new Date().toISOString(),
-  homestayCount: 3,
+  baseCount: 3,
   destinationCount: 5,
-  topHomestay: "Mountain View Lodge",
+  topBase: "Mountain View Lodge",
   isSaved: false,
 };
 
@@ -22,11 +22,11 @@ describe("TripCard", () => {
   it("renders trip name and counts", () => {
     render(<TripCard trip={baseTripCard} onDelete={vi.fn()} />);
     expect(screen.getByText("Da Lat Trip")).toBeDefined();
-    expect(screen.getByText(/3 homestays/)).toBeDefined();
+    expect(screen.getByText(/3 bases/)).toBeDefined();
     expect(screen.getByText(/5 destinations/)).toBeDefined();
   });
 
-  it("renders top homestay name", () => {
+  it("renders top base name", () => {
     render(<TripCard trip={baseTripCard} onDelete={vi.fn()} />);
     expect(screen.getByText(/Mountain View Lodge/)).toBeDefined();
   });

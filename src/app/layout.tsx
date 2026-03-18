@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Homestay Locator",
-  description: "Find the best homestay based on proximity to the places you want to visit."
+  title: "Proximap",
+  description: "Compare locations by proximity — find the best base for your trip, move, or project."
 };
 
 export default function RootLayout({

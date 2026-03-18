@@ -8,24 +8,24 @@ describe("tripStore", () => {
 
   it("starts with empty locations", () => {
     const state = useTripStore.getState();
-    expect(state.locations.filter((l) => l.type === "homestay")).toEqual([]);
+    expect(state.locations.filter((l) => l.type === "base")).toEqual([]);
     expect(state.locations.filter((l) => l.type === "destination")).toEqual([]);
   });
 
-  it("adds a homestay", () => {
+  it("adds a base", () => {
     useTripStore.getState().addLocation({
-      type: "homestay",
+      type: "base",
       name: "Villa Rose",
       lat: 11.94,
       lon: 108.45,
       address: null,
       source: "manual",
     });
-    const homestays = useTripStore
+    const bases = useTripStore
       .getState()
-      .locations.filter((l) => l.type === "homestay");
-    expect(homestays).toHaveLength(1);
-    expect(homestays[0].name).toBe("Villa Rose");
+      .locations.filter((l) => l.type === "base");
+    expect(bases).toHaveLength(1);
+    expect(bases[0].name).toBe("Villa Rose");
   });
 
   it("adds a destination with priority", () => {
@@ -47,7 +47,7 @@ describe("tripStore", () => {
 
   it("removes a location", () => {
     useTripStore.getState().addLocation({
-      type: "homestay",
+      type: "base",
       name: "Villa",
       lat: 11.94,
       lon: 108.45,
@@ -73,14 +73,14 @@ describe("tripStore", () => {
     expect(useTripStore.getState().locations[0].priority).toBe(5);
   });
 
-  it("sets selected homestay", () => {
-    useTripStore.getState().setSelectedHomestay("h1");
-    expect(useTripStore.getState().selectedHomestayId).toBe("h1");
+  it("sets selected base", () => {
+    useTripStore.getState().setSelectedBase("h1");
+    expect(useTripStore.getState().selectedBaseId).toBe("h1");
   });
 
   it("new location is auto-added to selection set", () => {
     useTripStore.getState().addLocation({
-      type: "homestay",
+      type: "base",
       name: "Villa",
       lat: 11.94,
       lon: 108.45,
@@ -88,7 +88,7 @@ describe("tripStore", () => {
       source: "manual",
     });
     const id = useTripStore.getState().locations[0].id;
-    expect(useTripStore.getState().selectedHomestayIds.has(id)).toBe(true);
+    expect(useTripStore.getState().selectedBaseIds.has(id)).toBe(true);
   });
 
   it("new destination is auto-added to selection set", () => {
@@ -106,7 +106,7 @@ describe("tripStore", () => {
 
   it("removed location is removed from selection set", () => {
     useTripStore.getState().addLocation({
-      type: "homestay",
+      type: "base",
       name: "Villa",
       lat: 11.94,
       lon: 108.45,
@@ -115,12 +115,12 @@ describe("tripStore", () => {
     });
     const id = useTripStore.getState().locations[0].id;
     useTripStore.getState().removeLocation(id);
-    expect(useTripStore.getState().selectedHomestayIds.has(id)).toBe(false);
+    expect(useTripStore.getState().selectedBaseIds.has(id)).toBe(false);
   });
 
   it("toggleLocationSelection toggles selection", () => {
     useTripStore.getState().addLocation({
-      type: "homestay",
+      type: "base",
       name: "Villa",
       lat: 11.94,
       lon: 108.45,
@@ -129,34 +129,34 @@ describe("tripStore", () => {
     });
     const id = useTripStore.getState().locations[0].id;
     useTripStore.getState().toggleLocationSelection(id);
-    expect(useTripStore.getState().selectedHomestayIds.has(id)).toBe(false);
+    expect(useTripStore.getState().selectedBaseIds.has(id)).toBe(false);
     useTripStore.getState().toggleLocationSelection(id);
-    expect(useTripStore.getState().selectedHomestayIds.has(id)).toBe(true);
+    expect(useTripStore.getState().selectedBaseIds.has(id)).toBe(true);
   });
 
   it("selectAllByType selects all of a type", () => {
-    useTripStore.getState().addLocation({ type: "homestay", name: "A", lat: 1, lon: 1, address: null, source: "manual" });
-    useTripStore.getState().addLocation({ type: "homestay", name: "B", lat: 2, lon: 2, address: null, source: "manual" });
+    useTripStore.getState().addLocation({ type: "base", name: "A", lat: 1, lon: 1, address: null, source: "manual" });
+    useTripStore.getState().addLocation({ type: "base", name: "B", lat: 2, lon: 2, address: null, source: "manual" });
     const ids = useTripStore.getState().locations.map((l) => l.id);
     // Deselect all first
     ids.forEach((id) => useTripStore.getState().toggleLocationSelection(id));
-    expect(useTripStore.getState().selectedHomestayIds.size).toBe(0);
+    expect(useTripStore.getState().selectedBaseIds.size).toBe(0);
     // Select all
-    useTripStore.getState().selectAllByType("homestay");
-    expect(useTripStore.getState().selectedHomestayIds.size).toBe(2);
+    useTripStore.getState().selectAllByType("base");
+    expect(useTripStore.getState().selectedBaseIds.size).toBe(2);
   });
 
   it("deselectAllByType deselects all of a type", () => {
-    useTripStore.getState().addLocation({ type: "homestay", name: "A", lat: 1, lon: 1, address: null, source: "manual" });
-    useTripStore.getState().addLocation({ type: "homestay", name: "B", lat: 2, lon: 2, address: null, source: "manual" });
-    useTripStore.getState().deselectAllByType("homestay");
-    expect(useTripStore.getState().selectedHomestayIds.size).toBe(0);
+    useTripStore.getState().addLocation({ type: "base", name: "A", lat: 1, lon: 1, address: null, source: "manual" });
+    useTripStore.getState().addLocation({ type: "base", name: "B", lat: 2, lon: 2, address: null, source: "manual" });
+    useTripStore.getState().deselectAllByType("base");
+    expect(useTripStore.getState().selectedBaseIds.size).toBe(0);
   });
 
   it("reset clears selection sets", () => {
-    useTripStore.getState().addLocation({ type: "homestay", name: "A", lat: 1, lon: 1, address: null, source: "manual" });
+    useTripStore.getState().addLocation({ type: "base", name: "A", lat: 1, lon: 1, address: null, source: "manual" });
     useTripStore.getState().reset();
-    expect(useTripStore.getState().selectedHomestayIds.size).toBe(0);
+    expect(useTripStore.getState().selectedBaseIds.size).toBe(0);
     expect(useTripStore.getState().selectedDestinationIds.size).toBe(0);
   });
 });

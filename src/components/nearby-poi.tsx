@@ -49,7 +49,7 @@ interface NearbyPoiProps {
 }
 
 export function NearbyPoi({ onPoisChange }: NearbyPoiProps) {
-  const selectedHomestayId = useTripStore((s) => s.selectedHomestayId);
+  const selectedBaseId = useTripStore((s) => s.selectedBaseId);
   const locations = useTripStore((s) => s.locations);
 
   const [enabledCategories, setEnabledCategories] = useState<Set<PoiCategory>>(new Set());
@@ -60,21 +60,21 @@ export function NearbyPoi({ onPoisChange }: NearbyPoiProps) {
   const radiusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  const selectedHomestay = locations.find(
-    (l) => l.id === selectedHomestayId && l.type === "homestay",
+  const selectedBase = locations.find(
+    (l) => l.id === selectedBaseId && l.type === "base",
   );
 
-  // Clear POIs when selected homestay changes
+  // Clear POIs when selected base changes
   useEffect(() => {
     setPois([]);
     onPoisChange([]);
     setEnabledCategories(new Set());
     setError(null);
-  }, [selectedHomestayId, onPoisChange]);
+  }, [selectedBaseId, onPoisChange]);
 
   const fetchPois = useCallback(
     async (cats: PoiCategory[], rad: number) => {
-      if (!selectedHomestay || cats.length === 0) {
+      if (!selectedBase || cats.length === 0) {
         setPois([]);
         onPoisChange([]);
         return;
@@ -89,8 +89,8 @@ export function NearbyPoi({ onPoisChange }: NearbyPoiProps) {
 
       try {
         const params = new URLSearchParams({
-          lat: selectedHomestay.lat.toString(),
-          lon: selectedHomestay.lon.toString(),
+          lat: selectedBase.lat.toString(),
+          lon: selectedBase.lon.toString(),
           radius: rad.toString(),
           categories: cats.join(","),
         });
@@ -110,7 +110,7 @@ export function NearbyPoi({ onPoisChange }: NearbyPoiProps) {
         if (!signal.aborted) setLoading(false);
       }
     },
-    [selectedHomestay, onPoisChange],
+    [selectedBase, onPoisChange],
   );
 
   const toggleCategory = useCallback((cat: PoiCategory) => {
@@ -151,7 +151,7 @@ export function NearbyPoi({ onPoisChange }: NearbyPoiProps) {
     };
   }, []);
 
-  if (!selectedHomestay) return null;
+  if (!selectedBase) return null;
 
   const poiCountByCategory = pois.reduce(
     (acc, p) => {
@@ -165,7 +165,7 @@ export function NearbyPoi({ onPoisChange }: NearbyPoiProps) {
     <div className="absolute bottom-3 left-3 z-[1000] w-56 rounded-lg bg-background/90 p-3 shadow-md backdrop-blur-sm">
       <div className="flex items-center gap-1.5 mb-2">
         <MapPinned className="size-3.5 text-muted-foreground" />
-        <span className="text-xs font-medium truncate">Nearby: {selectedHomestay.name}</span>
+        <span className="text-xs font-medium truncate">Nearby: {selectedBase.name}</span>
         {loading && <Loader2 className="size-3 animate-spin text-muted-foreground ml-auto" />}
       </div>
 

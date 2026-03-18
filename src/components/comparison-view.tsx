@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { X, GitCompareArrows } from "lucide-react";
 import { useTripStore } from "@/store/trip-store";
 import { useDistanceStore } from "@/store/distance-store";
-import { rankHomestays } from "@/lib/ranking";
+import { rankBases } from "@/lib/ranking";
 import { ComparisonCard } from "@/components/comparison-card";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -15,20 +15,20 @@ export function ComparisonView({ wrapped = false }: { wrapped?: boolean }) {
   const clearComparison = useTripStore((s) => s.clearComparison);
   const distances = useDistanceStore((s) => s.distances);
 
-  const homestays = useMemo(() => locations.filter((l) => l.type === "homestay"), [locations]);
+  const bases = useMemo(() => locations.filter((l) => l.type === "base"), [locations]);
   const destinations = useMemo(() => locations.filter((l) => l.type === "destination"), [locations]);
 
-  // Full ranked list to find rank of each comparison homestay
+  // Full ranked list to find rank of each comparison base
   const allRanked = useMemo(
-    () => rankHomestays(homestays, destinations, distances),
-    [homestays, destinations, distances]
+    () => rankBases(bases, destinations, distances),
+    [bases, destinations, distances]
   );
 
-  // Ranked data for compared homestays only, preserving comparison order
+  // Ranked data for compared bases only, preserving comparison order
   const comparedData = useMemo(() => {
     return comparisonIds
       .map((id) => {
-        const rankIndex = allRanked.findIndex((r) => r.homestay.id === id);
+        const rankIndex = allRanked.findIndex((r) => r.base.id === id);
         const ranked = allRanked[rankIndex];
         if (!ranked) return null;
         return { ranked, rank: rankIndex + 1 };
@@ -36,7 +36,7 @@ export function ComparisonView({ wrapped = false }: { wrapped?: boolean }) {
       .filter(Boolean) as { ranked: (typeof allRanked)[0]; rank: number }[];
   }, [comparisonIds, allRanked]);
 
-  // Compute best values across compared homestays
+  // Compute best values across compared bases
   const bestValues = useMemo(() => {
     if (comparedData.length === 0) return null;
 
@@ -69,14 +69,14 @@ export function ComparisonView({ wrapped = false }: { wrapped?: boolean }) {
     return { weightedAvgKm: bestAvg, perDestination, totalMinutes: bestTotal };
   }, [comparedData]);
 
-  // Compute "best for" labels per homestay
+  // Compute "best for" labels per base
   const bestForLabelsMap = useMemo(() => {
     const map = new Map<string, string[]>();
     if (!bestValues || comparedData.length === 0) return map;
 
     for (const c of comparedData) {
       const labels: string[] = [];
-      const id = c.ranked.homestay.id;
+      const id = c.ranked.base.id;
 
       // Check if best weighted average
       if (bestValues.weightedAvgKm > 0 && Math.abs(c.ranked.weightedAvgKm - bestValues.weightedAvgKm) < 0.01) {
@@ -113,7 +113,7 @@ export function ComparisonView({ wrapped = false }: { wrapped?: boolean }) {
   const overallWinnerId = comparedData.length > 0
     ? comparedData.reduce((best, c) =>
         c.ranked.weightedAvgKm < best.ranked.weightedAvgKm ? c : best
-      ).ranked.homestay.id
+      ).ranked.base.id
     : null;
 
   if (comparedData.length < 2 || !bestValues) return null;
@@ -134,12 +134,12 @@ export function ComparisonView({ wrapped = false }: { wrapped?: boolean }) {
         <div className="flex gap-3 min-w-min">
           {comparedData.map((c) => (
             <ComparisonCard
-              key={c.ranked.homestay.id}
+              key={c.ranked.base.id}
               ranked={c.ranked}
               rank={c.rank}
-              isOverallWinner={c.ranked.homestay.id === overallWinnerId}
+              isOverallWinner={c.ranked.base.id === overallWinnerId}
               bestValues={bestValues}
-              bestForLabels={bestForLabelsMap.get(c.ranked.homestay.id) ?? []}
+              bestForLabels={bestForLabelsMap.get(c.ranked.base.id) ?? []}
             />
           ))}
         </div>

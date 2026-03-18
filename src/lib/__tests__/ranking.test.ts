@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { rankHomestays } from "@/lib/ranking";
+import { rankBases } from "@/lib/ranking";
 import type { Location } from "@/lib/types";
 
-const homestays: Location[] = [
-  { id: "h1", tripId: "t1", type: "homestay", name: "Close", address: null, lat: 11.94, lon: 108.45, priority: 3, source: "manual", notes: null, photoUrl: null },
-  { id: "h2", tripId: "t1", type: "homestay", name: "Far", address: null, lat: 12.24, lon: 109.19, priority: 3, source: "manual", notes: null, photoUrl: null },
+const bases: Location[] = [
+  { id: "h1", tripId: "t1", type: "base", name: "Close", address: null, lat: 11.94, lon: 108.45, priority: 3, source: "manual", notes: null, photoUrl: null },
+  { id: "h2", tripId: "t1", type: "base", name: "Far", address: null, lat: 12.24, lon: 109.19, priority: 3, source: "manual", notes: null, photoUrl: null },
 ];
 
 const destinations: Location[] = [
@@ -12,29 +12,29 @@ const destinations: Location[] = [
   { id: "d2", tripId: "t1", type: "destination", name: "Dest B", address: null, lat: 11.93, lon: 108.44, priority: 1, source: "manual", notes: null, photoUrl: null },
 ];
 
-describe("rankHomestays", () => {
-  it("returns homestays sorted by weighted average distance (closest first)", () => {
-    const result = rankHomestays(homestays, destinations);
-    expect(result[0].homestay.id).toBe("h1");
-    expect(result[1].homestay.id).toBe("h2");
+describe("rankBases", () => {
+  it("returns bases sorted by weighted average distance (closest first)", () => {
+    const result = rankBases(bases, destinations);
+    expect(result[0].base.id).toBe("h1");
+    expect(result[1].base.id).toBe("h2");
   });
 
   it("respects priority weights", () => {
-    const result = rankHomestays(homestays, destinations);
+    const result = rankBases(bases, destinations);
     expect(result[0].distances).toHaveLength(2);
     expect(result[0].weightedAvgKm).toBeGreaterThan(0);
   });
 
-  it("returns empty array for no homestays", () => {
-    expect(rankHomestays([], destinations)).toEqual([]);
+  it("returns empty array for no bases", () => {
+    expect(rankBases([], destinations)).toEqual([]);
   });
 
   it("returns empty array for no destinations", () => {
-    expect(rankHomestays(homestays, [])).toEqual([]);
+    expect(rankBases(bases, [])).toEqual([]);
   });
 });
 
-describe("rankHomestays with driving distances", () => {
+describe("rankBases with driving distances", () => {
   it("uses driving distances when provided", () => {
     const drivingDistances = new Map([
       // h1 is closer by air but farther by road
@@ -45,10 +45,10 @@ describe("rankHomestays with driving distances", () => {
       ["h2:d2", { drivingKm: 6, drivingMinutes: 10 }],
     ]);
 
-    const result = rankHomestays(homestays, destinations, drivingDistances);
+    const result = rankBases(bases, destinations, drivingDistances);
     // h2 should now rank first (closer by road)
-    expect(result[0].homestay.id).toBe("h2");
-    expect(result[1].homestay.id).toBe("h1");
+    expect(result[0].base.id).toBe("h2");
+    expect(result[1].base.id).toBe("h1");
   });
 
   it("falls back to haversine when driving distance is missing", () => {
@@ -57,7 +57,7 @@ describe("rankHomestays with driving distances", () => {
       // h1:d2 missing, h2:* missing — will use haversine
     ]);
 
-    const result = rankHomestays(homestays, destinations, partial);
+    const result = rankBases(bases, destinations, partial);
     // Should not throw, should produce valid ranking
     expect(result).toHaveLength(2);
     expect(result[0].weightedAvgKm).toBeGreaterThan(0);
@@ -69,8 +69,8 @@ describe("rankHomestays with driving distances", () => {
       ["h1:d2", { drivingKm: 3.1, drivingMinutes: 7 }],
     ]);
 
-    const result = rankHomestays(homestays, destinations, drivingDistances);
-    const h1 = result.find((r) => r.homestay.id === "h1")!;
+    const result = rankBases(bases, destinations, drivingDistances);
+    const h1 = result.find((r) => r.base.id === "h1")!;
     const d1Entry = h1.distances.find((d) => d.destination.id === "d1")!;
     expect(d1Entry.drivingKm).toBe(5.2);
     expect(d1Entry.drivingMinutes).toBe(12);

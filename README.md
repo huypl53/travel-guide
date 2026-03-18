@@ -1,6 +1,6 @@
-# Homestay Locator
+# Proximap
 
-Find the best homestay based on proximity to the places you want to visit. Add homestays and destinations on a map, compare distances, and rank options automatically.
+Compare locations by proximity — find the best base for your trip, move, or project. Add candidate bases and target destinations on a map, compare distances, and rank options automatically.
 
 ## Screenshots
 
@@ -10,13 +10,13 @@ Find the best homestay based on proximity to the places you want to visit. Add h
 
 ### Trip Workspace
 
-Add homestays and destinations, see them on the map with driving route polylines, and get automatic rankings.
+Add bases and destinations, see them on the map with driving route polylines, and get automatic rankings.
 
 ![Trip Workspace](/public/screenshots/trip-workspace.png)
 
 ### Distance Matrix
 
-View pairwise driving distances and durations between all homestays and destinations.
+View pairwise driving distances and durations between all bases and destinations.
 
 ![Distance Matrix](/public/screenshots/distance-matrix.png)
 
@@ -30,23 +30,23 @@ Fully responsive layout with collapsible bottom sheet for rankings.
 
 - Interactive map with color-coded markers and actual driving route polylines (Leaflet/OSM or Google Maps)
 - Map style switcher — toggle between Default, Satellite, Terrain, and Dark map styles (persists across reloads)
-- Automatic ranking of homestays by weighted average distance to destinations
+- Automatic ranking of bases by weighted average distance to destinations
 - Real driving distances via OSRM Table API, auto-fetched when locations change (haversine fallback)
 - Priority weighting for destinations (1-5 stars)
-- Multi-select with visual comparison — toggle homestays/destinations on/off to dim unselected items across all views (lists, map markers, routes, ranking, distance matrix)
-- Side-by-side comparison mode — select 2-3 homestays to compare all metrics in aligned columns with best values highlighted in green, overall winner badge, and "best for" summary labels
+- Multi-select with visual comparison — toggle bases/destinations on/off to dim unselected items across all views (lists, map markers, routes, ranking, distance matrix)
+- Side-by-side comparison mode — select 2-3 bases to compare all metrics in aligned columns with best values highlighted in green, overall winner badge, and "best for" summary labels
 - Scrollable location lists for handling many locations
 - Concurrency-limited route fetching (max 3 parallel requests) with persistent route cache
-- Cost estimation — enter nightly rates per homestay, set trip duration and transport mode (motorbike/car), see total cost badges with accommodation + transport breakdown; cheapest highlighted green, most expensive red
+- Cost estimation — enter nightly rates per base, set trip duration and transport mode (motorbike/car), see total cost badges with accommodation + transport breakdown; cheapest highlighted green, most expensive red
 - Location notes and photo URLs — add context per location, visible in lists and map popups
 - Multiple input methods: Google Maps URLs (full and short links), directions URLs with multiple stops, bulk multi-URL paste, CSV, JSON, and manual address search
 - Share trips via unique URLs backed by Supabase
 - Export trip data as JSON
 - Mobile-responsive layout with collapsible bottom sheet
-- Pre-built Vietnam trip templates -- browse curated itineraries and clone one as a starting point
+- Pre-built trip templates -- browse curated itineraries and clone one as a starting point
 - 5-day weather forecast widget — inline weather strip powered by Open-Meteo API (no key needed), cached for 1 hour, collapsible on mobile
-- **Nearby POI layer** — select a homestay and toggle nearby points of interest (restaurants, stores, ATMs, gas stations, medical facilities) via OpenStreetMap Overpass API; adjustable radius (500m–2km), category-colored circle markers with click-to-view name and distance
-- **Collaborative sessions** — Excalidraw-style real-time collaboration. Click "Collaborate" on any trip to create a shareable session link. Anyone with the link can add/edit homestays and destinations simultaneously. Uses Supabase Realtime Broadcast for delta sync and Presence for live participant indicators. No login required. Sessions auto-expire after 30 days
+- **Nearby POI layer** — select a base and toggle nearby points of interest (restaurants, stores, ATMs, gas stations, medical facilities) via OpenStreetMap Overpass API; adjustable radius (500m-2km), category-colored circle markers with click-to-view name and distance
+- **Collaborative sessions** — Excalidraw-style real-time collaboration. Click "Collaborate" on any trip to create a shareable session link. Anyone with the link can add/edit bases and destinations simultaneously. Uses Supabase Realtime Broadcast for delta sync and Presence for live participant indicators. No login required. Sessions auto-expire after 30 days
 
 ## Authentication
 
@@ -76,7 +76,7 @@ Fully responsive layout with collapsible bottom sheet for rankings.
 
 ```bash
 git clone <repo-url>
-cd map-locator
+cd proximap
 npm install
 ```
 
@@ -124,14 +124,14 @@ Open [http://localhost:3000](http://localhost:3000) to see the landing page.
 
 ## Usage
 
-1. **Landing page** (`/`) -- Click "New Trip" to create a trip workspace with a unique URL, or browse **Trip Templates** to start from a curated Vietnam itinerary with pre-populated homestays and destinations.
+1. **Landing page** (`/`) -- Click "New Trip" to create a trip workspace with a unique URL, or browse **Trip Templates** to start from a curated itinerary with pre-populated bases and destinations.
 2. **Trip page** (`/trip/[slug]`) -- The main workspace where you:
-   - Add **homestays** and **destinations** using the input panels (supports Google Maps URLs, directions URLs with multiple stops, multiple URLs at once, CSV, JSON, and manual address search). Paste a directions link to import all waypoints at once via a preview dialog.
+   - Add **bases** and **destinations** using the input panels (supports Google Maps URLs, directions URLs with multiple stops, multiple URLs at once, CSV, JSON, and manual address search). Paste a directions link to import all waypoints at once via a preview dialog.
    - Set **priority** (1-5 stars) on destinations to weight the ranking.
    - Expand a location row to add **notes** and a **photo URL** — notes auto-save on blur, photos display as thumbnails with broken-image fallback.
    - View all locations on an interactive **map** with color-coded markers and distance polylines.
-   - Click a homestay marker to reveal the **Nearby POI** panel — toggle categories (Restaurant, Store, ATM/Bank, Gas Station, Medical) and adjust the search radius to see nearby amenities as colored circles on the map.
-   - See the **ranking list** showing homestays sorted by weighted average distance. Enter **nightly rates** (VND) per homestay, set **trip nights** and **transport mode** (motorbike at 3,000 VND/km or car at 6,000 VND/km) to see total cost badges with breakdown tooltips. Settings persist in localStorage. Use the compare toggle on each row to select 2-3 homestays for **side-by-side comparison**.
+   - Click a base marker to reveal the **Nearby POI** panel — toggle categories (Restaurant, Store, ATM/Bank, Gas Station, Medical) and adjust the search radius to see nearby amenities as colored circles on the map.
+   - See the **ranking list** showing bases sorted by weighted average distance. Enter **nightly rates** per base, set **trip nights** and **transport mode** (motorbike at 3,000 VND/km or car at 6,000 VND/km) to see total cost badges with breakdown tooltips. Settings persist in localStorage. Use the compare toggle on each row to select 2-3 bases for **side-by-side comparison**.
    - Inspect the **distance matrix** for pairwise distances — driving distances and times are fetched automatically via OSRM and shown with a car icon.
    - Click **Share** to save the trip to Supabase and copy a shareable read-only link.
    - Click **Collaborate** to create a real-time collaborative session — copies a `/collab/[slug]` link. Anyone opening it can add/edit locations simultaneously with live presence indicators.

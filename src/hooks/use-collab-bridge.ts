@@ -32,7 +32,7 @@ export function useCollabBridge() {
           // Reset and repopulate — simple and correct
           useTripStore.setState({
             locations: state.locations,
-            selectedHomestayIds: state.selectedHomestayIds,
+            selectedBaseIds: state.selectedBaseIds,
             selectedDestinationIds: state.selectedDestinationIds,
           });
         }

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { useTripStore } from "@/store/trip-store";
-import { rankHomestays } from "@/lib/ranking";
+import { rankBases } from "@/lib/ranking";
 import { parseGoogleMapsUrl, parseCsvLocations } from "@/lib/parsers";
 
 describe("full flow integration", () => {
@@ -13,9 +13,9 @@ describe("full flow integration", () => {
     );
     expect(parsed).not.toBeNull();
 
-    // Add homestays
+    // Add bases
     useTripStore.getState().addLocation({
-      type: "homestay",
+      type: "base",
       name: parsed!.name!,
       lat: parsed!.lat,
       lon: parsed!.lon,
@@ -40,14 +40,14 @@ Xuan Huong Lake,11.9465,108.4485`);
     });
 
     const locs = useTripStore.getState().locations;
-    const homestays = locs.filter((l) => l.type === "homestay");
+    const bases = locs.filter((l) => l.type === "base");
     const destinations = locs.filter((l) => l.type === "destination");
 
-    expect(homestays).toHaveLength(1);
+    expect(bases).toHaveLength(1);
     expect(destinations).toHaveLength(2);
 
     // Rank
-    const ranked = rankHomestays(homestays, destinations);
+    const ranked = rankBases(bases, destinations);
     expect(ranked).toHaveLength(1);
     expect(ranked[0].weightedAvgKm).toBeGreaterThan(0);
     expect(ranked[0].distances).toHaveLength(2);

@@ -21,7 +21,7 @@ export class NominatimGeocodingProvider implements GeocodingProvider {
 
     try {
       const res = await fetch(url, {
-        headers: { "User-Agent": "HomestayLocator/1.0" },
+        headers: { "User-Agent": "Proximap/1.0" },
       });
 
       if (!res.ok) {
