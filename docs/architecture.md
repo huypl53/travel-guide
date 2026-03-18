@@ -118,6 +118,14 @@ Proxies to the Open-Meteo free forecast API. Returns 5-day daily forecast with `
 
 Retrieves a trip by share slug with all associated locations via Supabase join.
 
+### PATCH /api/trips/[slug]
+
+Renames a trip. Accepts `{ name: string }`. Requires authentication and trip ownership. Returns `{ ok: true }` on success.
+
+### DELETE /api/trips/[slug]
+
+Deletes a trip (if owner) or removes it from saved trips (if not owner). Requires authentication.
+
 ## Key Components
 
 ### MapView (`src/components/map-view.tsx`)

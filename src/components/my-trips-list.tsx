@@ -29,6 +29,28 @@ export function MyTripsList({ initialTrips }: MyTripsListProps) {
     router.push(`/trip/${slug}`);
   }
 
+  async function handleRename(trip: TripCardData, newName: string) {
+    try {
+      const res = await fetch(`/api/trips/${trip.shareSlug}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newName }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTrips((prev) =>
+          prev.map((t) =>
+            t.id === trip.id ? { ...t, name: data.name ?? newName } : t
+          )
+        );
+      } else {
+        console.error("Rename failed:", res.status, await res.text());
+      }
+    } catch (err) {
+      console.error("Rename failed:", err);
+    }
+  }
+
   async function confirmDelete() {
     if (!deleteTarget) return;
     setDeleting(true);
@@ -64,6 +86,7 @@ export function MyTripsList({ initialTrips }: MyTripsListProps) {
               key={trip.id}
               trip={trip}
               onDelete={setDeleteTarget}
+              onRename={handleRename}
             />
           ))}
         </div>

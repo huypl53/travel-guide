@@ -35,7 +35,7 @@ function SelectAllButtons({ type }: { type: LocationType }) {
   );
 }
 
-function EditableTripName() {
+function EditableTripName({ isOwner }: { isOwner: boolean }) {
   const tripName = useTripStore((s) => s.tripName);
   const setTripName = useTripStore((s) => s.setTripName);
   const [editing, setEditing] = useState(false);
@@ -75,8 +75,17 @@ function EditableTripName() {
         onChange={(e) => setDraft(e.target.value)}
         onBlur={commit}
         onKeyDown={handleKeyDown}
+        maxLength={200}
         className="text-xl sm:text-2xl font-bold text-primary bg-transparent border-b-2 border-primary outline-none max-w-[200px] sm:max-w-[300px]"
       />
+    );
+  }
+
+  if (!isOwner) {
+    return (
+      <span className="text-xl sm:text-2xl font-bold text-primary truncate max-w-[200px] sm:max-w-[300px]">
+        {tripName || "Untitled Trip"}
+      </span>
     );
   }
 
@@ -97,7 +106,7 @@ function EditableTripName() {
 export default function TripPage() {
   const params = useParams();
   const slug = params.slug as string;
-  useAutoSave(slug);
+  const { isOwner } = useAutoSave(slug);
   useAutoFetchDistances();
   const [bottomSheetOpen, setBottomSheetOpen] = useState(false);
   const locations = useTripStore((s) => s.locations);
@@ -118,10 +127,10 @@ export default function TripPage() {
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-4 pb-16 md:pb-0">
       <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold flex items-center gap-2 text-primary">
-          <MapPin className="h-6 w-6" />
-          Trip Planner
-        </h1>
+        <div className="flex items-center gap-2 text-primary">
+          <MapPin className="h-6 w-6 shrink-0" />
+          <EditableTripName isOwner={isOwner} />
+        </div>
         <ShareExport slug={slug} />
       </header>
 
