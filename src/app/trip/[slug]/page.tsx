@@ -56,10 +56,10 @@ export default function TripPage() {
       <WeatherWidget center={weatherCenter} />
 
       {/* Data Input + Map side-by-side on desktop */}
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-4 items-start md:items-stretch">
-        {/* Left column: Bases + Destinations stacked */}
-        <div className="space-y-4">
-          <Card className="p-4 space-y-3">
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-4">
+        {/* Left column: flex-col so both cards share height equally on desktop */}
+        <div className="space-y-4 md:space-y-0 md:flex md:flex-col md:gap-4">
+          <Card className="p-4 space-y-3 md:flex-1 md:flex md:flex-col">
             <div className="flex items-center justify-between">
               <h2 className="font-semibold flex items-center gap-2">
                 <Home className="h-4 w-4 text-muted-foreground" />
@@ -68,29 +68,31 @@ export default function TripPage() {
               <SelectAllButtons type="base" />
             </div>
             <LocationInput type="base" />
-            <LocationList type="base" />
+            <div className="md:flex-1 md:min-h-0 md:overflow-hidden">
+              <LocationList type="base" />
+            </div>
           </Card>
-          <Card className="p-4 space-y-3">
-            <div className="flex items-baseline justify-between">
+          <Card className="p-4 space-y-3 md:flex-1 md:flex md:flex-col">
+            <div className="flex items-center justify-between">
               <h2 className="font-semibold flex items-center gap-2">
                 <Compass className="h-4 w-4 text-muted-foreground" />
                 Destinations
               </h2>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">Set priority to weight ranking</span>
+                <span className="text-xs text-muted-foreground hidden lg:inline">Set priority to weight ranking</span>
                 <SelectAllButtons type="destination" />
               </div>
             </div>
             <LocationInput type="destination" />
-            <LocationList type="destination" />
+            <div className="md:flex-1 md:min-h-0 md:overflow-hidden">
+              <LocationList type="destination" />
+            </div>
           </Card>
         </div>
 
-        {/* Right column: matches left column height, map sticky inside */}
-        <div>
-          <div className="sticky top-4 h-[min(100%,calc(100vh-2rem))]">
-            <MapView className="h-full" />
-          </div>
+        {/* Right column: map with explicit viewport height, no outer wrapper */}
+        <div className="sticky top-4 h-[calc(100vh-10rem)] min-h-[400px]">
+          <MapView className="h-full" />
         </div>
       </div>
 
