@@ -40,7 +40,8 @@ export function LocationList({ type }: LocationListProps) {
                 loc.type === "destination" ? "border-l-red-400" : "border-l-blue-400"
               } ${!selectedIds.has(loc.id) ? "opacity-40" : ""}`}
               onClick={(e) => {
-                if ((e.target as HTMLElement).closest("button")) return;
+                const btn = (e.target as HTMLElement).closest("button");
+                if (btn && btn.getAttribute("data-slot") !== "tooltip-trigger") return;
                 setFocusedLocation({ lat: loc.lat, lon: loc.lon });
               }}
             >
@@ -73,8 +74,8 @@ export function LocationList({ type }: LocationListProps) {
                 <StickyNote className="h-3 w-3 text-amber-500 mr-1 flex-shrink-0" aria-label="Has notes" />
               )}
               <Tooltip>
-                <TooltipTrigger asChild>
-                  <span data-tooltip-trigger className="flex-1 truncate text-sm text-left">{loc.name}</span>
+                <TooltipTrigger className="flex-1 truncate text-sm text-left min-w-0 bg-transparent font-normal">
+                  {loc.name}
                 </TooltipTrigger>
                 <TooltipContent side="top">
                   <p className="text-xs">{loc.name}</p>
