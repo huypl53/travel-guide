@@ -13,24 +13,23 @@ interface DayForecast {
   tempMax: number;
   tempMin: number;
   weatherCode: number;
-  precipitation: number;
 }
 
 interface OpenMeteoResponse {
-  daily: {
-    time: string[];
+  daily?: {
+    time?: string[];
     temperature_2m_max: number[];
     temperature_2m_min: number[];
-    precipitation_sum: number[];
     weathercode: number[];
   };
 }
 
-function parseForecast(data: OpenMeteoResponse): DayForecast[] {
-  const { time, temperature_2m_max, temperature_2m_min, precipitation_sum, weathercode } =
-    data.daily;
+const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+function parseForecast(data: OpenMeteoResponse): DayForecast[] | null {
+  if (!data?.daily?.time?.length) return null;
+
+  const { time, temperature_2m_max, temperature_2m_min, weathercode } = data.daily;
 
   return time.map((date, i) => {
     const d = new Date(date + "T00:00:00+07:00");
@@ -40,7 +39,6 @@ function parseForecast(data: OpenMeteoResponse): DayForecast[] {
       tempMax: Math.round(temperature_2m_max[i]),
       tempMin: Math.round(temperature_2m_min[i]),
       weatherCode: weathercode[i],
-      precipitation: precipitation_sum[i],
     };
   });
 }
@@ -61,7 +59,8 @@ function DayCard({ day, isToday }: { day: DayForecast; isToday: boolean }) {
       <span className="text-xs font-medium text-muted-foreground">
         {isToday ? "Today" : day.dayName}
       </span>
-      <Icon className={cn("h-5 w-5", weather.isRainy ? "text-blue-500" : "text-amber-500")} />
+      <Icon className={cn("h-5 w-5", weather.isRainy ? "text-blue-500" : "text-amber-500")} aria-hidden="true" />
+      <span className="sr-only">{weather.label}</span>
       <div className="flex gap-1 text-xs">
         <span className="font-semibold">{day.tempMax}°</span>
         <span className="text-muted-foreground">{day.tempMin}°</span>
@@ -97,14 +96,22 @@ export function WeatherWidget({ center }: WeatherWidgetProps) {
     setLoading(true);
     setError(false);
 
-    fetch(`/api/weather?lat=${center.lat}&lon=${center.lon}`)
+    const roundedLat = Math.round(center.lat * 100) / 100;
+    const roundedLon = Math.round(center.lon * 100) / 100;
+
+    fetch(`/api/weather?lat=${roundedLat}&lon=${roundedLon}`)
       .then((res) => {
         if (!res.ok) throw new Error("API error");
         return res.json();
       })
       .then((data: OpenMeteoResponse) => {
         if (!cancelled) {
-          setForecast(parseForecast(data));
+          const parsed = parseForecast(data);
+          if (!parsed) {
+            setError(true);
+          } else {
+            setForecast(parsed);
+          }
           setLoading(false);
         }
       })
