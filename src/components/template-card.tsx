@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, Home, Clock, ArrowRight, Loader2 } from "lucide-react";
+import { MapPin, Clock, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,8 +23,8 @@ export function TemplateCard({ template }: TemplateCardProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const homestayCount = template.locations.filter(
-    (l) => l.type === "homestay",
+  const baseCount = template.locations.filter(
+    (l) => l.type === "base",
   ).length;
   const destinationCount = template.locations.filter(
     (l) => l.type === "destination",
@@ -96,8 +96,8 @@ export function TemplateCard({ template }: TemplateCardProps) {
             {template.duration}
           </span>
           <span className="flex items-center gap-1">
-            <Home className="h-3.5 w-3.5" />
-            {homestayCount} stays
+            <MapPin className="h-3.5 w-3.5" />
+            {baseCount} stays
           </span>
           <span className="flex items-center gap-1">
             <MapPin className="h-3.5 w-3.5" />

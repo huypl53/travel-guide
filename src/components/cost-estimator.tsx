@@ -91,7 +91,7 @@ export function formatVND(value: number): string {
   return new Intl.NumberFormat("vi-VN").format(Math.round(value));
 }
 
-/** Calculate total cost for a homestay given its distances to destinations */
+/** Calculate total cost for a base given its distances to destinations */
 export function calculateCost(
   totalDrivingKm: number,
   nightlyRate: number,

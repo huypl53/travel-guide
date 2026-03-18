@@ -7,9 +7,9 @@ export interface DrivingDistance {
   drivingMinutes: number;
 }
 
-function coordHash(homestays: Location[], destinations: Location[]): string {
+function coordHash(bases: Location[], destinations: Location[]): string {
   const coords = [
-    ...homestays.map((h) => `${h.lat},${h.lon}`),
+    ...bases.map((h) => `${h.lat},${h.lon}`),
     "|",
     ...destinations.map((d) => `${d.lat},${d.lon}`),
   ];
@@ -45,8 +45,8 @@ interface DistanceState {
   loading: boolean;
   error: string | null;
   _lastCoordHash: string;
-  fetchDistances: (homestays: Location[], destinations: Location[]) => Promise<void>;
-  fetchRoutes: (homestay: Location, destinations: Location[]) => Promise<void>;
+  fetchDistances: (bases: Location[], destinations: Location[]) => Promise<void>;
+  fetchRoutes: (base: Location, destinations: Location[]) => Promise<void>;
   clearDistances: () => void;
   clear: () => void;
 }
@@ -59,18 +59,18 @@ export const useDistanceStore = create<DistanceState>((set, get) => ({
   error: null,
   _lastCoordHash: "",
 
-  fetchDistances: async (homestays, destinations) => {
-    if (homestays.length === 0 || destinations.length === 0) {
+  fetchDistances: async (bases, destinations) => {
+    if (bases.length === 0 || destinations.length === 0) {
       set({ distances: new Map(), loading: false, _lastCoordHash: "" });
       return;
     }
 
-    const hash = coordHash(homestays, destinations);
+    const hash = coordHash(bases, destinations);
     if (hash === get()._lastCoordHash) return;
 
     set({ loading: true, error: null });
 
-    const sourcesParam = homestays.map((h) => `${h.lat},${h.lon}`).join(";");
+    const sourcesParam = bases.map((h) => `${h.lat},${h.lon}`).join(";");
     const destsParam = destinations.map((d) => `${d.lat},${d.lon}`).join(";");
 
     try {
@@ -80,11 +80,11 @@ export const useDistanceStore = create<DistanceState>((set, get) => ({
       const data = await res.json();
       const newDistances = new Map<string, DrivingDistance>();
 
-      for (let s = 0; s < homestays.length; s++) {
+      for (let s = 0; s < bases.length; s++) {
         for (let d = 0; d < destinations.length; d++) {
           const entry = data.matrix[s][d];
           if (entry) {
-            newDistances.set(`${homestays[s].id}:${destinations[d].id}`, {
+            newDistances.set(`${bases[s].id}:${destinations[d].id}`, {
               drivingKm: entry.distanceKm,
               drivingMinutes: entry.durationMinutes,
             });
@@ -98,22 +98,22 @@ export const useDistanceStore = create<DistanceState>((set, get) => ({
     }
   },
 
-  fetchRoutes: async (homestay, destinations) => {
+  fetchRoutes: async (base, destinations) => {
     if (destinations.length === 0) return;
 
     // Skip routes we already have cached
-    const needed = destinations.filter((d) => !get().routes.has(`${homestay.id}:${d.id}`));
+    const needed = destinations.filter((d) => !get().routes.has(`${base.id}:${d.id}`));
     if (needed.length === 0) return;
 
     set({ routesLoading: true });
 
     const tasks = needed.map((dest) => async () => {
       try {
-        const res = await fetch(`/api/routes?from=${homestay.lat},${homestay.lon}&to=${dest.lat},${dest.lon}`);
+        const res = await fetch(`/api/routes?from=${base.lat},${base.lon}&to=${dest.lat},${dest.lon}`);
         if (!res.ok) return null;
         const data = await res.json();
         if (!data.geometry) return null;
-        return { key: `${homestay.id}:${dest.id}`, points: data.geometry as [number, number][] };
+        return { key: `${base.id}:${dest.id}`, points: data.geometry as [number, number][] };
       } catch {
         return null;
       }

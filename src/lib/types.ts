@@ -1,4 +1,4 @@
-export type LocationType = "homestay" | "destination";
+export type LocationType = "base" | "destination";
 export type LocationSource = "manual" | "google_maps" | "csv";
 
 export interface Location {
@@ -16,15 +16,15 @@ export interface Location {
 }
 
 export interface DistanceEntry {
-  homestayId: string;
+  baseId: string;
   destinationId: string;
   straightLineKm: number;
   drivingKm: number | null;
   drivingMinutes: number | null;
 }
 
-export interface RankedHomestay {
-  homestay: Location;
+export interface RankedBase {
+  base: Location;
   weightedAvgKm: number;
   distances: {
     destination: Location;
@@ -55,9 +55,9 @@ export interface TripCardData {
   name: string;
   shareSlug: string;
   createdAt: string;
-  homestayCount: number;
+  baseCount: number;
   destinationCount: number;
-  topHomestay: string | null;
+  topBase: string | null;
   isSaved: boolean;
 }
 

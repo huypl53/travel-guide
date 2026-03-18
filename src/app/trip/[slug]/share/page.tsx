@@ -49,10 +49,10 @@ export default async function SharePage({
       </div>
       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
         <div>
-          <h2 className="font-semibold mb-2">Homestays</h2>
+          <h2 className="font-semibold mb-2">Bases</h2>
           <ul className="space-y-1">
             {trip.locations
-              ?.filter((l: { type: string }) => l.type === "homestay")
+              ?.filter((l: { type: string }) => l.type === "base")
               .map((l: { id: string; name: string; notes: string | null; photo_url: string | null }) => (
                 <li key={l.id} className="text-sm">
                   <span>{l.name}</span>

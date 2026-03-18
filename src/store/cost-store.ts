@@ -8,12 +8,12 @@ const FUEL_COST_DEFAULTS: Record<TransportMode, number> = {
 };
 
 interface CostState {
-  nightlyRates: Record<string, number>; // homestayId -> VND per night
+  nightlyRates: Record<string, number>; // baseId -> VND per night
   tripNights: number;
   transportMode: TransportMode;
   fuelCostPerKm: number;
-  setNightlyRate: (homestayId: string, rate: number) => void;
-  removeNightlyRate: (homestayId: string) => void;
+  setNightlyRate: (baseId: string, rate: number) => void;
+  removeNightlyRate: (baseId: string) => void;
   setTripNights: (nights: number) => void;
   setTransportMode: (mode: TransportMode) => void;
   loadFromStorage: (slug: string) => void;
@@ -26,15 +26,15 @@ export const useCostStore = create<CostState>((set, get) => ({
   transportMode: "motorbike",
   fuelCostPerKm: FUEL_COST_DEFAULTS.motorbike,
 
-  setNightlyRate: (homestayId, rate) => {
+  setNightlyRate: (baseId, rate) => {
     set((state) => ({
-      nightlyRates: { ...state.nightlyRates, [homestayId]: rate },
+      nightlyRates: { ...state.nightlyRates, [baseId]: rate },
     }));
   },
 
-  removeNightlyRate: (homestayId) => {
+  removeNightlyRate: (baseId) => {
     set((state) => {
-      const { [homestayId]: _removed, ...rest } = state.nightlyRates;
+      const { [baseId]: _removed, ...rest } = state.nightlyRates;
       return { nightlyRates: rest };
     });
   },

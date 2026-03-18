@@ -13,16 +13,16 @@ export function useAutoFetchDistances() {
   useEffect(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
 
-    const homestays = locations.filter((l) => l.type === "homestay");
+    const bases = locations.filter((l) => l.type === "base");
     const destinations = locations.filter((l) => l.type === "destination");
 
-    if (homestays.length === 0 || destinations.length === 0) {
+    if (bases.length === 0 || destinations.length === 0) {
       clearDistances();
       return;
     }
 
     timerRef.current = setTimeout(() => {
-      fetchDistances(homestays, destinations);
+      fetchDistances(bases, destinations);
     }, 300);
 
     return () => {

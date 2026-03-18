@@ -6,8 +6,8 @@ function makeLocation(overrides: Partial<Location> = {}): Location {
   return {
     id: "loc-1",
     tripId: "",
-    type: "homestay",
-    name: "Test Homestay",
+    type: "base",
+    name: "Test Base",
     address: null,
     lat: 11.94,
     lon: 108.45,
@@ -33,7 +33,7 @@ describe("collab-store", () => {
       expect(state.sessionSlug).toBe("abc123");
       expect(state.tripName).toBe("My Trip");
       expect(state.locations).toHaveLength(2);
-      expect(state.selectedHomestayIds.has("loc-1")).toBe(true);
+      expect(state.selectedBaseIds.has("loc-1")).toBe(true);
       expect(state.selectedDestinationIds.has("loc-2")).toBe(true);
     });
   });
@@ -52,7 +52,7 @@ describe("collab-store", () => {
       const broadcast = vi.fn();
       useCollabStore.getState().setBroadcast(broadcast);
       useCollabStore.getState().addLocation({
-        type: "homestay",
+        type: "base",
         name: "Test",
         lat: 11,
         lon: 108,
@@ -66,7 +66,7 @@ describe("collab-store", () => {
       expect(delta.action).toBe("add-location");
       if (delta.action === "add-location") {
         expect(delta.location.name).toBe("Test");
-        expect(delta.location.type).toBe("homestay");
+        expect(delta.location.type).toBe("base");
       }
     });
 
@@ -129,7 +129,7 @@ describe("collab-store", () => {
 
       expect(useCollabStore.getState().locations).toHaveLength(1);
       expect(useCollabStore.getState().locations[0].id).toBe("remote-loc");
-      expect(useCollabStore.getState().selectedHomestayIds.has("remote-loc")).toBe(true);
+      expect(useCollabStore.getState().selectedBaseIds.has("remote-loc")).toBe(true);
     });
 
     it("deduplicates add-location with same id", () => {
@@ -171,7 +171,7 @@ describe("collab-store", () => {
       const state = useCollabStore.getState();
       expect(state.tripName).toBe("Synced Trip");
       expect(state.locations).toHaveLength(2);
-      expect(state.selectedHomestayIds.has("sync-1")).toBe(true);
+      expect(state.selectedBaseIds.has("sync-1")).toBe(true);
       expect(state.selectedDestinationIds.has("sync-2")).toBe(true);
     });
 

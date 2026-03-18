@@ -22,7 +22,7 @@ export function LocationList({ type }: LocationListProps) {
   const removeLocation = useTripStore((s) => s.removeLocation);
   const updatePriority = useTripStore((s) => s.updatePriority);
   const setFocusedLocation = useTripStore((s) => s.setFocusedLocation);
-  const selectedIds = useTripStore((s) => type === "homestay" ? s.selectedHomestayIds : s.selectedDestinationIds);
+  const selectedIds = useTripStore((s) => type === "base" ? s.selectedBaseIds : s.selectedDestinationIds);
   const toggleSelection = useTripStore((s) => s.toggleLocationSelection);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 

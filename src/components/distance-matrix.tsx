@@ -10,17 +10,17 @@ import { Button } from "@/components/ui/button";
 export function DistanceMatrix() {
   const [expanded, setExpanded] = useState(false);
   const locations = useTripStore((s) => s.locations);
-  const setSelected = useTripStore((s) => s.setSelectedHomestay);
+  const setSelected = useTripStore((s) => s.setSelectedBase);
   const setFocusedLocation = useTripStore((s) => s.setFocusedLocation);
-  const selectedHomestayIds = useTripStore((s) => s.selectedHomestayIds);
+  const selectedBaseIds = useTripStore((s) => s.selectedBaseIds);
   const selectedDestinationIds = useTripStore((s) => s.selectedDestinationIds);
   const drivingDistances = useDistanceStore((s) => s.distances);
   const distancesLoading = useDistanceStore((s) => s.loading);
 
-  const homestays = useMemo(() => locations.filter((l) => l.type === "homestay"), [locations]);
+  const bases = useMemo(() => locations.filter((l) => l.type === "base"), [locations]);
   const destinations = useMemo(() => locations.filter((l) => l.type === "destination"), [locations]);
 
-  if (homestays.length === 0 || destinations.length === 0) return null;
+  if (bases.length === 0 || destinations.length === 0) return null;
 
   return (
     <div>
@@ -54,7 +54,7 @@ export function DistanceMatrix() {
               </tr>
             </thead>
             <tbody>
-              {homestays.map((h, rowIndex) => {
+              {bases.map((h, rowIndex) => {
                 const dists = destinations.map((d) =>
                   haversineKm(h.lat, h.lon, d.lat, d.lon)
                 );
@@ -68,7 +68,7 @@ export function DistanceMatrix() {
                 return (
                   <tr
                     key={h.id}
-                    className={`hover:bg-muted cursor-pointer border-b border-border/50 ${rowIndex % 2 !== 0 ? "bg-muted/30" : ""} ${!selectedHomestayIds.has(h.id) ? "opacity-40" : ""}`}
+                    className={`hover:bg-muted cursor-pointer border-b border-border/50 ${rowIndex % 2 !== 0 ? "bg-muted/30" : ""} ${!selectedBaseIds.has(h.id) ? "opacity-40" : ""}`}
                     onClick={() => {
                       setSelected(h.id);
                       setFocusedLocation({ lat: h.lat, lon: h.lon });

@@ -35,7 +35,7 @@ describe("NominatimGeocodingProvider", () => {
     expect(calledUrl).toContain("limit=5");
 
     const calledOptions = fetchSpy.mock.calls[0][1] as RequestInit;
-    expect(calledOptions.headers).toEqual({ "User-Agent": "HomestayLocator/1.0" });
+    expect(calledOptions.headers).toEqual({ "User-Agent": "Proximap/1.0" });
 
     expect(results).toEqual([
       { name: "Hanoi, Vietnam", lat: 21.0285, lon: 105.8542 },

@@ -1,7 +1,7 @@
 "use client";
 
 import { Trophy, Car, MapPin } from "lucide-react";
-import type { RankedHomestay } from "@/lib/types";
+import type { RankedBase } from "@/lib/types";
 
 interface BestValues {
   weightedAvgKm: number;
@@ -10,7 +10,7 @@ interface BestValues {
 }
 
 interface ComparisonCardProps {
-  ranked: RankedHomestay;
+  ranked: RankedBase;
   rank: number;
   isOverallWinner: boolean;
   bestValues: BestValues;
@@ -45,7 +45,7 @@ export function ComparisonCard({ ranked, rank, isOverallWinner, bestValues, best
       <div className="flex items-center gap-2 mb-3">
         <RankBadge rank={rank} />
         <h4 className={`text-sm font-semibold truncate ${isOverallWinner ? "text-primary font-bold" : ""}`}>
-          {ranked.homestay.name}
+          {ranked.base.name}
         </h4>
         {isOverallWinner && <Trophy className="h-4 w-4 text-amber-500 shrink-0" />}
       </div>

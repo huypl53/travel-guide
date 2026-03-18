@@ -1,5 +1,5 @@
 import type { TripCardData } from "@/lib/types";
-import { rankHomestays } from "@/lib/ranking";
+import { rankBases } from "@/lib/ranking";
 
 export interface TripRow {
   id: string;
@@ -10,14 +10,14 @@ export interface TripRow {
 }
 
 export function toCardData(trip: TripRow, isSaved: boolean): TripCardData {
-  const homestays = trip.locations?.filter((l) => l.type === "homestay") ?? [];
+  const bases = trip.locations?.filter((l) => l.type === "base") ?? [];
   const destinations = trip.locations?.filter((l) => l.type === "destination") ?? [];
 
-  let topHomestay: string | null = null;
-  if (homestays.length > 0 && destinations.length > 0) {
-    const ranked = rankHomestays(
-      homestays.map((h, i) => ({
-        id: `h${i}`, tripId: "", type: "homestay" as const,
+  let topBase: string | null = null;
+  if (bases.length > 0 && destinations.length > 0) {
+    const ranked = rankBases(
+      bases.map((h, i) => ({
+        id: `h${i}`, tripId: "", type: "base" as const,
         name: h.name, address: null, lat: h.lat, lon: h.lon,
         priority: 3, source: "manual" as const, notes: null, photoUrl: null,
       })),
@@ -27,7 +27,7 @@ export function toCardData(trip: TripRow, isSaved: boolean): TripCardData {
         priority: d.priority, source: "manual" as const, notes: null, photoUrl: null,
       }))
     );
-    topHomestay = ranked[0]?.homestay.name ?? null;
+    topBase = ranked[0]?.base.name ?? null;
   }
 
   return {
@@ -35,9 +35,9 @@ export function toCardData(trip: TripRow, isSaved: boolean): TripCardData {
     name: trip.name || "Untitled Trip",
     shareSlug: trip.share_slug,
     createdAt: trip.created_at,
-    homestayCount: homestays.length,
+    baseCount: bases.length,
     destinationCount: destinations.length,
-    topHomestay,
+    topBase,
     isSaved,
   };
 }

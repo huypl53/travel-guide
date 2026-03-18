@@ -17,7 +17,7 @@ export function ComparisonBar({ onView }: ComparisonBarProps) {
   return (
     <div className="fixed bottom-14 md:bottom-4 left-1/2 -translate-x-1/2 z-[60] bg-primary text-primary-foreground rounded-full shadow-lg px-4 py-2 flex items-center gap-3 text-sm">
       <GitCompareArrows className="h-4 w-4" />
-      <span>Comparing {comparisonIds.length} homestays</span>
+      <span>Comparing {comparisonIds.length} bases</span>
       <Button
         variant="secondary"
         size="xs"

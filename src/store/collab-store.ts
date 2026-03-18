@@ -22,9 +22,9 @@ interface CollabState {
   locations: Location[];
   participants: CollabParticipant[];
   syncStatus: SyncStatus;
-  selectedHomestayId: string | null;
+  selectedBaseId: string | null;
   focusedLocation: { lat: number; lon: number } | null;
-  selectedHomestayIds: Set<string>;
+  selectedBaseIds: Set<string>;
   selectedDestinationIds: Set<string>;
   comparisonIds: string[];
 
@@ -49,7 +49,7 @@ interface CollabState {
   applyRemoteDelta: (delta: CollabDelta) => void;
 
   // UI-only (no broadcast needed)
-  setSelectedHomestay: (id: string | null) => void;
+  setSelectedBase: (id: string | null) => void;
   setFocusedLocation: (loc: { lat: number; lon: number } | null) => void;
   toggleLocationSelection: (id: string) => void;
   selectAllByType: (type: LocationType) => void;
@@ -65,9 +65,9 @@ export const useCollabStore = create<CollabState>((set, get) => ({
   locations: [],
   participants: [],
   syncStatus: "connecting",
-  selectedHomestayId: null,
+  selectedBaseId: null,
   focusedLocation: null,
-  selectedHomestayIds: new Set<string>(),
+  selectedBaseIds: new Set<string>(),
   selectedDestinationIds: new Set<string>(),
   comparisonIds: [],
   _broadcast: null,
@@ -79,7 +79,7 @@ export const useCollabStore = create<CollabState>((set, get) => ({
       sessionSlug: slug,
       tripName,
       locations,
-      selectedHomestayIds: new Set(locations.filter((l) => l.type === "homestay").map((l) => l.id)),
+      selectedBaseIds: new Set(locations.filter((l) => l.type === "base").map((l) => l.id)),
       selectedDestinationIds: new Set(locations.filter((l) => l.type === "destination").map((l) => l.id)),
     }),
 
@@ -107,7 +107,7 @@ export const useCollabStore = create<CollabState>((set, get) => ({
       photoUrl: input.photoUrl ?? null,
     };
     set((state) => {
-      const setKey = input.type === "homestay" ? "selectedHomestayIds" : "selectedDestinationIds";
+      const setKey = input.type === "base" ? "selectedBaseIds" : "selectedDestinationIds";
       const newSet = new Set(state[setKey]);
       newSet.add(location.id);
       return { locations: [...state.locations, location], [setKey]: newSet };
@@ -119,7 +119,7 @@ export const useCollabStore = create<CollabState>((set, get) => ({
     set((state) => {
       const loc = state.locations.find((l) => l.id === id);
       if (!loc) return { locations: state.locations };
-      const setKey = loc.type === "homestay" ? "selectedHomestayIds" : "selectedDestinationIds";
+      const setKey = loc.type === "base" ? "selectedBaseIds" : "selectedDestinationIds";
       const newSet = new Set(state[setKey]);
       newSet.delete(id);
       return {
@@ -161,7 +161,7 @@ export const useCollabStore = create<CollabState>((set, get) => ({
         const loc = delta.location;
         set((state) => {
           if (state.locations.some((l) => l.id === loc.id)) return {};
-          const setKey = loc.type === "homestay" ? "selectedHomestayIds" : "selectedDestinationIds";
+          const setKey = loc.type === "base" ? "selectedBaseIds" : "selectedDestinationIds";
           const newSet = new Set(state[setKey]);
           newSet.add(loc.id);
           return { locations: [...state.locations, loc], [setKey]: newSet };
@@ -172,7 +172,7 @@ export const useCollabStore = create<CollabState>((set, get) => ({
         set((state) => {
           const loc = state.locations.find((l) => l.id === delta.locationId);
           if (!loc) return {};
-          const setKey = loc.type === "homestay" ? "selectedHomestayIds" : "selectedDestinationIds";
+          const setKey = loc.type === "base" ? "selectedBaseIds" : "selectedDestinationIds";
           const newSet = new Set(state[setKey]);
           newSet.delete(delta.locationId);
           return {
@@ -210,7 +210,7 @@ export const useCollabStore = create<CollabState>((set, get) => ({
         set({
           tripName: delta.tripName,
           locations: delta.locations,
-          selectedHomestayIds: new Set(delta.locations.filter((l) => l.type === "homestay").map((l) => l.id)),
+          selectedBaseIds: new Set(delta.locations.filter((l) => l.type === "base").map((l) => l.id)),
           selectedDestinationIds: new Set(delta.locations.filter((l) => l.type === "destination").map((l) => l.id)),
         });
         break;
@@ -218,14 +218,14 @@ export const useCollabStore = create<CollabState>((set, get) => ({
   },
 
   // UI-only state (same as trip-store, no broadcast)
-  setSelectedHomestay: (id) => set({ selectedHomestayId: id }),
+  setSelectedBase: (id) => set({ selectedBaseId: id }),
   setFocusedLocation: (loc) => set({ focusedLocation: loc }),
 
   toggleLocationSelection: (id) =>
     set((state) => {
       const loc = state.locations.find((l) => l.id === id);
       if (!loc) return {};
-      const setKey = loc.type === "homestay" ? "selectedHomestayIds" : "selectedDestinationIds";
+      const setKey = loc.type === "base" ? "selectedBaseIds" : "selectedDestinationIds";
       const newSet = new Set(state[setKey]);
       if (newSet.has(id)) newSet.delete(id);
       else newSet.add(id);
@@ -234,14 +234,14 @@ export const useCollabStore = create<CollabState>((set, get) => ({
 
   selectAllByType: (type) =>
     set((state) => {
-      const setKey = type === "homestay" ? "selectedHomestayIds" : "selectedDestinationIds";
+      const setKey = type === "base" ? "selectedBaseIds" : "selectedDestinationIds";
       const ids = state.locations.filter((l) => l.type === type).map((l) => l.id);
       return { [setKey]: new Set(ids) };
     }),
 
   deselectAllByType: (type) =>
     set(() => {
-      const setKey = type === "homestay" ? "selectedHomestayIds" : "selectedDestinationIds";
+      const setKey = type === "base" ? "selectedBaseIds" : "selectedDestinationIds";
       return { [setKey]: new Set<string>() };
     }),
 
@@ -262,9 +262,9 @@ export const useCollabStore = create<CollabState>((set, get) => ({
       locations: [],
       participants: [],
       syncStatus: "connecting",
-      selectedHomestayId: null,
+      selectedBaseId: null,
       focusedLocation: null,
-      selectedHomestayIds: new Set(),
+      selectedBaseIds: new Set(),
       selectedDestinationIds: new Set(),
       comparisonIds: [],
       _broadcast: null,

@@ -46,7 +46,7 @@ export function Header() {
     <header className="sticky top-0 z-50 border-b bg-background px-3 py-2 sm:px-4 flex items-center justify-between">
       <Link href="/" className="flex items-center gap-2 font-semibold text-base sm:text-lg">
         <MapPin className="h-5 w-5" />
-        Homestay Locator
+        ProxiMap
       </Link>
 
       {user ? (

@@ -1,4 +1,4 @@
-# Architecture
+# Proximap Architecture
 
 ## Overview
 
@@ -61,7 +61,7 @@ Defined in `supabase/migrations/001_initial.sql`, with additions in `003_locatio
 |----------|------------------|------------------------------------------|
 | id       | uuid (PK)        | Auto-generated                           |
 | trip_id  | uuid (FK trips)  | Cascade delete                           |
-| type     | text             | 'homestay' or 'destination'              |
+| type     | text             | 'base' or 'destination'                  |
 | name     | text             | Display name                             |
 | address  | text (nullable)  | Optional address string                  |
 | lat      | double precision | Latitude                                 |
@@ -77,13 +77,13 @@ Defined in `supabase/migrations/001_initial.sql`, with additions in `003_locatio
 |-----------------|------------------|--------------------------------|
 | id              | uuid (PK)        | Auto-generated                 |
 | trip_id         | uuid (FK trips)  | Cascade delete                 |
-| homestay_id     | uuid (FK locations) | Cascade delete              |
+| base_id         | uuid (FK locations) | Cascade delete              |
 | destination_id  | uuid (FK locations) | Cascade delete              |
 | straight_line_km| double precision | Haversine distance             |
 | driving_km      | double precision (nullable) | From OSRM              |
 | driving_minutes | double precision (nullable) | From OSRM              |
 
-Unique constraint on `(homestay_id, destination_id)`.
+Unique constraint on `(base_id, destination_id)`.
 
 ### collaborative_sessions
 
@@ -111,7 +111,7 @@ Proxies to the OSRM Table API for bulk driving distance calculation. Returns `{ 
 
 ### GET /api/directions?from=lat,lon&to=lat,lon
 
-Proxies to OSRM for individual driving route calculation. Returns `{ distanceKm, durationMinutes }`. (Legacy — superseded by `/api/distances` for bulk operations.)
+Proxies to OSRM for individual driving route calculation. Returns `{ distanceKm, durationMinutes }`. (Legacy -- superseded by `/api/distances` for bulk operations.)
 
 ### POST /api/trips
 
@@ -165,27 +165,27 @@ Map toggle component that selects between Leaflet (OSM) and Google Maps based on
 
 ### MapStyleSwitcher (`src/components/map-style-switcher.tsx`)
 
-Floating button group rendered in the top-right corner of the map. Provides style options — Default (`Map` icon), Satellite, Terrain (`Mountain` icon), and Dark (`Moon` icon, Leaflet only). For Leaflet, each style maps to a different tile URL (OSM, Esri World Imagery, OpenTopoMap, CartoDB Dark). For Google Maps, styles map to `mapTypeId` values (`roadmap`, `satellite`, `terrain`); the Dark option is hidden since Google Maps has no dark tile equivalent. Accepts a `provider` prop to filter out unsupported styles. Respects `prefers-reduced-motion` for transitions.
+Floating button group rendered in the top-right corner of the map. Provides style options -- Default (`Map` icon), Satellite, Terrain (`Mountain` icon), and Dark (`Moon` icon, Leaflet only). For Leaflet, each style maps to a different tile URL (OSM, Esri World Imagery, OpenTopoMap, CartoDB Dark). For Google Maps, styles map to `mapTypeId` values (`roadmap`, `satellite`, `terrain`); the Dark option is hidden since Google Maps has no dark tile equivalent. Accepts a `provider` prop to filter out unsupported styles. Respects `prefers-reduced-motion` for transitions.
 
 ### NearbyPoi (`src/components/nearby-poi.tsx`)
 
-Floating panel rendered in the bottom-left corner of the map when a homestay is selected (reads `selectedHomestayId` from `useTripStore`). Displays 5 category toggle buttons (Restaurant, Store, ATM/Bank, Gas Station, Medical) with lucide-react icons and a radius slider (500m--2km, default 1km). Fetches POIs on demand from `/api/nearby` when categories are toggled or radius changes. Passes POI results up to `MapView` via `onPoisChange` callback. Clears POIs when the selected homestay changes. All state is local (ephemeral). Exports `poiCategoryColors` and `poiCategories` for use by map providers.
+Floating panel rendered in the bottom-left corner of the map when a base is selected (reads `selectedBaseId` from `useTripStore`). Displays 5 category toggle buttons (Restaurant, Store, ATM/Bank, Gas Station, Medical) with lucide-react icons and a radius slider (500m--2km, default 1km). Fetches POIs on demand from `/api/nearby` when categories are toggled or radius changes. Passes POI results up to `MapView` via `onPoisChange` callback. Clears POIs when the selected base changes. All state is local (ephemeral). Exports `poiCategoryColors` and `poiCategories` for use by map providers.
 
 ### LeafletMap (`src/components/map-providers/leaflet-map.tsx`)
 
-Interactive Leaflet map (OSM tiles). Displays blue markers for homestays and red markers for destinations. Fetches driving route geometries from OSRM for all homestays and draws them as polylines color-coded by driving distance (green = close, red = far). Falls back to straight lines if route geometry is unavailable. Unselected homestays/destinations have dimmed markers (opacity 0.4) and dimmed routes (opacity 0.15). Renders POI markers as `CircleMarker` components with category-specific fill colors; clicking a POI circle shows a popup with name, category label, and distance. Default center: Da Lat, Vietnam.
+Interactive Leaflet map (OSM tiles). Displays blue markers for bases and red markers for destinations. Fetches driving route geometries from OSRM for all bases and draws them as polylines color-coded by driving distance (green = close, red = far). Falls back to straight lines if route geometry is unavailable. Unselected bases/destinations have dimmed markers (opacity 0.4) and dimmed routes (opacity 0.15). Renders POI markers as `CircleMarker` components with category-specific fill colors; clicking a POI circle shows a popup with name, category label, and distance. Default center: Da Lat, Vietnam.
 
 ### GoogleMap (`src/components/map-providers/google-map.tsx`)
 
-Google Maps equivalent using `@vis.gl/react-google-maps`. Uses `AdvancedMarker` with colored `Pin` components and `google.maps.Polyline` for route visualization. Renders routes for all homestays with opacity-based dimming for unselected items. Renders POI markers as small colored circle `div` elements inside `AdvancedMarker`; clicking opens an `InfoWindow` with name, category, and distance. Requires `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` and a Maps JavaScript API key with Map ID configured.
+Google Maps equivalent using `@vis.gl/react-google-maps`. Uses `AdvancedMarker` with colored `Pin` components and `google.maps.Polyline` for route visualization. Renders routes for all bases with opacity-based dimming for unselected items. Renders POI markers as small colored circle `div` elements inside `AdvancedMarker`; clicking opens an `InfoWindow` with name, category, and distance. Requires `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` and a Maps JavaScript API key with Map ID configured.
 
 ### LocationInput / LocationList (`src/components/location-input.tsx`, `location-list.tsx`)
 
-Input panels for adding locations. Supports Google Maps URL pasting (single or multiple URLs, including directions URLs with multiple waypoints), CSV/JSON upload, and manual address search. When a directions URL or multiple URLs are detected, calls `POST /api/extract-locations` and opens `ImportPreviewDialog` for bulk import with per-location type selection. LocationList renders added locations with remove actions, an expand/collapse toggle per row, and a StickyNote icon when notes exist. Both accept a `type` prop (`"homestay"` or `"destination"`).
+Input panels for adding locations. Supports Google Maps URL pasting (single or multiple URLs, including directions URLs with multiple waypoints), CSV/JSON upload, and manual address search. When a directions URL or multiple URLs are detected, calls `POST /api/extract-locations` and opens `ImportPreviewDialog` for bulk import with per-location type selection. LocationList renders added locations with remove actions, an expand/collapse toggle per row, and a StickyNote icon when notes exist. Both accept a `type` prop (`"base"` or `"destination"`).
 
 ### ImportPreviewDialog (`src/components/import-preview-dialog.tsx`)
 
-Dialog for previewing and selecting extracted locations before bulk import. Shows checkboxes per location, a bulk type selector (Homestay/Destination), per-row type toggle badges, and extraction errors as warnings. Receives an `onConfirm` callback that returns selected locations with their chosen types.
+Dialog for previewing and selecting extracted locations before bulk import. Shows checkboxes per location, a bulk type selector (Base/Destination), per-row type toggle badges, and extraction errors as warnings. Receives an `onConfirm` callback that returns selected locations with their chosen types.
 
 ### LocationDetail (`src/components/location-detail.tsx`)
 
@@ -197,23 +197,23 @@ Settings bar for cost estimation. Provides a trip nights spinner, motorbike/car 
 
 ### RankingList (`src/components/ranking-list.tsx`)
 
-Displays homestays ranked by weighted average distance to all destinations. Priority stars on destinations affect the weighting. Integrates cost estimation: each ranked homestay has a nightly rate input (VND), and when a rate is entered, a cost badge shows the total trip cost (accommodation + transport). The cheapest homestay gets a green badge, the most expensive gets red. Hover/title shows the breakdown. Each row also includes a compare toggle button (max 3) that adds the homestay to the comparison selection stored in `useTripStore.comparisonIds`.
+Displays bases ranked by weighted average distance to all destinations. Priority stars on destinations affect the weighting. Integrates cost estimation: each ranked base has a nightly rate input (VND), and when a rate is entered, a cost badge shows the total trip cost (accommodation + transport). The cheapest base gets a green badge, the most expensive gets red. Hover/title shows the breakdown. Each row also includes a compare toggle button (max 3) that adds the base to the comparison selection stored in `useTripStore.comparisonIds`.
 
 ### ComparisonView (`src/components/comparison-view.tsx`)
 
-Side-by-side comparison of 2-3 selected homestays. Renders when `comparisonIds` has 2+ entries. Computes best values across compared homestays (weighted average, per-destination distances, total drive time) and passes them to `ComparisonCard` components. Supports a `wrapped` prop to render inside a Card. Appears on desktop below the ranking/matrix section and inside the mobile bottom sheet.
+Side-by-side comparison of 2-3 selected bases. Renders when `comparisonIds` has 2+ entries. Computes best values across compared bases (weighted average, per-destination distances, total drive time) and passes them to `ComparisonCard` components. Supports a `wrapped` prop to render inside a Card. Appears on desktop below the ranking/matrix section and inside the mobile bottom sheet.
 
 ### ComparisonCard (`src/components/comparison-card.tsx`)
 
-Single column in the comparison view. Shows homestay name with rank badge, weighted average distance, per-destination breakdown (km + minutes), total drive time, and "best for" labels. Best values are highlighted in green. The overall winner column gets a primary border tint, bold name, and trophy icon.
+Single column in the comparison view. Shows base name with rank badge, weighted average distance, per-destination breakdown (km + minutes), total drive time, and "best for" labels. Best values are highlighted in green. The overall winner column gets a primary border tint, bold name, and trophy icon.
 
 ### ComparisonBar (`src/components/comparison-bar.tsx`)
 
-Floating pill bar at the bottom of the viewport. Appears when 2+ homestays are selected for comparison. Shows count, a "View" button that scrolls to the comparison section, and a clear button. Positioned above the mobile bottom sheet on small screens.
+Floating pill bar at the bottom of the viewport. Appears when 2+ bases are selected for comparison. Shows count, a "View" button that scrolls to the comparison section, and a clear button. Positioned above the mobile bottom sheet on small screens.
 
 ### DistanceMatrix (`src/components/distance-matrix.tsx`)
 
-Pairwise distance table between homestays and destinations. Each cell shows driving distance and duration (with car icon) when available, or haversine distance with a loading spinner while driving distances are being fetched.
+Pairwise distance table between bases and destinations. Each cell shows driving distance and duration (with car icon) when available, or haversine distance with a loading spinner while driving distances are being fetched.
 
 ### ShareExport (`src/components/share-export.tsx`)
 
@@ -234,13 +234,13 @@ Star rating input for setting destination priority (1-5), used in the location l
 | Field                | Type              | Description                             |
 |----------------------|-------------------|-----------------------------------------|
 | tripName             | string            | Current trip name                       |
-| locations            | Location[]        | All homestays and destinations          |
-| selectedHomestayId   | string or null    | Currently selected homestay for map     |
-| selectedHomestayIds  | Set\<string\>     | Homestays included in visual comparison |
+| locations            | Location[]        | All bases and destinations              |
+| selectedBaseId       | string or null    | Currently selected base for map         |
+| selectedBaseIds      | Set\<string\>     | Bases included in visual comparison     |
 | selectedDestinationIds | Set\<string\>   | Destinations included in visual comparison |
-| comparisonIds        | string[]          | Up to 3 homestay IDs for side-by-side comparison |
+| comparisonIds        | string[]          | Up to 3 base IDs for side-by-side comparison |
 
-Actions: `setTripName`, `addLocation`, `removeLocation`, `updatePriority`, `updateLocationNotes`, `updateLocationPhoto`, `setSelectedHomestay`, `toggleLocationSelection`, `selectAllByType`, `deselectAllByType`, `toggleComparison`, `clearComparison`, `reset`.
+Actions: `setTripName`, `addLocation`, `removeLocation`, `updatePriority`, `updateLocationNotes`, `updateLocationPhoto`, `setSelectedBase`, `toggleLocationSelection`, `selectAllByType`, `deselectAllByType`, `toggleComparison`, `clearComparison`, `reset`.
 
 ### useCollabStore (`src/store/collab-store.ts`)
 
@@ -259,29 +259,29 @@ The `useCollabBridge` hook (`src/hooks/use-collab-bridge.ts`) bidirectionally sy
 
 The `useCollabSession` hook (`src/hooks/use-collab-session.ts`) manages the Supabase Realtime channel lifecycle: subscribes to Broadcast events for delta sync, tracks Presence for participant awareness, debounce-persists to DB every 3 seconds on data changes, and uses `navigator.sendBeacon` for reliable save on tab close.
 
-Components read from the store and filter by `type` to get homestays or destinations.
+Components read from the store and filter by `type` to get bases or destinations.
 
 #### Selection & Visual Dimming
 
-New locations are auto-added to their selection set on creation and removed on deletion. All components read `selectedHomestayIds` / `selectedDestinationIds` and apply `opacity-40` (CSS) or `opacity: 0.4` (Leaflet/Google Maps) to unselected items. This propagates across location lists, ranking list, distance matrix, map markers, and route polylines — enabling visual comparison by toggling items on/off.
+New locations are auto-added to their selection set on creation and removed on deletion. All components read `selectedBaseIds` / `selectedDestinationIds` and apply `opacity-40` (CSS) or `opacity: 0.4` (Leaflet/Google Maps) to unselected items. This propagates across location lists, ranking list, distance matrix, map markers, and route polylines -- enabling visual comparison by toggling items on/off.
 
 ### useDistanceStore (`src/store/distance-store.ts`)
 
 | Field         | Type                               | Description                                       |
 |---------------|------------------------------------|----------------------------------------------------|
-| distances     | Map\<string, DrivingDistance\>     | Driving distances keyed by `homestayId:destId`      |
-| routes        | Map\<string, [number, number][]\>  | Route geometries keyed by `homestayId:destId`       |
+| distances     | Map\<string, DrivingDistance\>     | Driving distances keyed by `baseId:destId`          |
+| routes        | Map\<string, [number, number][]\>  | Route geometries keyed by `baseId:destId`           |
 | routesLoading | boolean                            | True while fetching route geometries                |
 | loading       | boolean                            | True while fetching from OSRM                      |
 | error         | string or null                     | Error message if fetch failed                      |
 
-Actions: `fetchDistances(homestays, destinations)`, `fetchRoutes(homestay, destinations)`, `clearDistances()`, `clear()`.
+Actions: `fetchDistances(bases, destinations)`, `fetchRoutes(base, destinations)`, `clearDistances()`, `clear()`.
 
 ### useCostStore (`src/store/cost-store.ts`)
 
 | Field          | Type                        | Description                              |
 |----------------|-----------------------------|------------------------------------------|
-| nightlyRates   | Record\<string, number\>   | Homestay ID to nightly rate in VND       |
+| nightlyRates   | Record\<string, number\>   | Base ID to nightly rate in VND           |
 | tripNights     | number                      | Trip duration in nights (default 1)      |
 | transportMode  | 'motorbike' \| 'car'       | Selected transport mode                  |
 | fuelCostPerKm  | number                      | Auto-set: 3,000 (motorbike) or 6,000 (car) |
@@ -290,9 +290,9 @@ Actions: `setNightlyRate`, `removeNightlyRate`, `setTripNights`, `setTransportMo
 
 Cost formula: `totalCost = (totalDrivingKm * 2 * fuelCostPerKm) + (nightlyRate * tripNights)`. All data persisted to `localStorage` under key `cost-settings-{slug}`. No Supabase schema changes required.
 
-Route fetching uses a concurrency limiter (max 3 parallel requests) to avoid overwhelming the OSRM server. Routes are cached by `homestayId:destId` key and preserved across distance recalculations — only `clearDistances()` is called when locations change, while `clear()` (which also wipes routes) is reserved for full trip reset.
+Route fetching uses a concurrency limiter (max 3 parallel requests) to avoid overwhelming the OSRM server. Routes are cached by `baseId:destId` key and preserved across distance recalculations -- only `clearDistances()` is called when locations change, while `clear()` (which also wipes routes) is reserved for full trip reset.
 
-The `useAutoFetchDistances` hook (`src/hooks/use-auto-fetch-distances.ts`) watches the trip store's locations and debounces (300ms) a call to `fetchDistances` whenever homestays or destinations change. Map components fetch route geometries for all homestays (not just the selected one), rendering selected routes at full opacity and unselected routes dimmed.
+The `useAutoFetchDistances` hook (`src/hooks/use-auto-fetch-distances.ts`) watches the trip store's locations and debounces (300ms) a call to `fetchDistances` whenever bases or destinations change. Map components fetch route geometries for all bases (not just the selected one), rendering selected routes at full opacity and unselected routes dimmed.
 
 ## Utility Libraries
 
@@ -317,11 +317,11 @@ Haversine formula for straight-line distance between two coordinates.
 
 ### Ranking (`src/lib/ranking.ts`)
 
-Computes weighted average distance from each homestay to all destinations, using destination priority as weights. Accepts an optional `drivingDistances` map — when a driving distance is available for a homestay-destination pair, it is used instead of the haversine distance. Returns sorted `RankedHomestay[]`.
+Computes weighted average distance from each base to all destinations, using destination priority as weights. Accepts an optional `drivingDistances` map -- when a driving distance is available for a base-destination pair, it is used instead of the haversine distance. Returns sorted `RankedBase[]`.
 
 ### Templates (`src/lib/templates.ts`)
 
-Static data for 6 curated Vietnam trip templates (Da Lat, Hoi An & Da Nang, Phu Quoc, Ha Noi, Ho Chi Minh City, Ninh Binh). Each template defines a `TripTemplate` with `id`, `name`, `description`, `region`, `duration`, `coverEmoji`, and an array of `TemplateLocation` objects (2-3 homestays + 4-6 destinations with real GPS coordinates). Exported as `TRIP_TEMPLATES` array.
+Static data for 6 curated Vietnam trip templates (Da Lat, Hoi An & Da Nang, Phu Quoc, Ha Noi, Ho Chi Minh City, Ninh Binh). Each template defines a `TripTemplate` with `id`, `name`, `description`, `region`, `duration`, `coverEmoji`, and an array of `TemplateLocation` objects (2-3 bases + 4-6 destinations with real GPS coordinates). Exported as `TRIP_TEMPLATES` array.
 
 ### Overpass (`src/lib/overpass.ts`)
 
@@ -332,7 +332,7 @@ Static data for 6 curated Vietnam trip templates (Da Lat, Hoi An & Da Nang, Phu 
 
 ### Types (`src/lib/types.ts`)
 
-TypeScript interfaces: `Location`, `DistanceEntry`, `RankedHomestay`.
+TypeScript interfaces: `Location`, `DistanceEntry`, `RankedBase`.
 
 ### Supabase Client (`src/lib/supabase.ts`)
 
@@ -357,8 +357,8 @@ All four are free and require no API keys (Supabase uses project URL + anon key)
 
 Authentication uses **Supabase Auth** with `@supabase/ssr` for cookie-based session management. Two sign-in methods are supported:
 
-- **Google OAuth** — redirects through Supabase's OAuth flow
-- **Magic link** — passwordless email sign-in
+- **Google OAuth** -- redirects through Supabase's OAuth flow
+- **Magic link** -- passwordless email sign-in
 
 Sessions are stored in cookies and refreshed automatically by Next.js middleware (`src/middleware.ts`), which runs on every request to keep the Supabase auth token fresh. Row Level Security (RLS) policies on all tables ensure users can only access their own data.
 
@@ -381,7 +381,7 @@ Refreshes the Supabase auth session on every request using `@supabase/ssr`. This
 
 ### Database Changes
 
-#### `trips` table — new column
+#### `trips` table -- new column
 
 | Column  | Type          | Notes                                      |
 |---------|---------------|--------------------------------------------|

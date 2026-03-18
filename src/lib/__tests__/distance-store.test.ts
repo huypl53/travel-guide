@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { useDistanceStore } from "@/store/distance-store";
 import type { Location } from "@/lib/types";
 
-const homestays: Location[] = [
-  { id: "h1", tripId: "t1", type: "homestay", name: "H1", address: null, lat: 11.94, lon: 108.45, priority: 3, source: "manual", notes: null, photoUrl: null },
+const bases: Location[] = [
+  { id: "h1", tripId: "t1", type: "base", name: "H1", address: null, lat: 11.94, lon: 108.45, priority: 3, source: "manual", notes: null, photoUrl: null },
 ];
 
 const destinations: Location[] = [
@@ -36,7 +36,7 @@ describe("useDistanceStore", () => {
       }),
     });
 
-    await useDistanceStore.getState().fetchDistances(homestays, destinations);
+    await useDistanceStore.getState().fetchDistances(bases, destinations);
 
     const state = useDistanceStore.getState();
     expect(state.distances.get("h1:d1")).toEqual({
@@ -69,12 +69,12 @@ describe("useDistanceStore", () => {
       );
     }) as unknown as typeof fetch;
 
-    const homestay = { id: "h1", tripId: "", type: "homestay" as const, name: "H", lat: 1, lon: 1, address: null, priority: 3, source: "manual" as const, notes: null, photoUrl: null };
+    const base ={ id: "h1", tripId: "", type: "base" as const, name: "H", lat: 1, lon: 1, address: null, priority: 3, source: "manual" as const, notes: null, photoUrl: null };
     const dests = Array.from({ length: 6 }, (_, i) => ({
       id: `d${i}`, tripId: "", type: "destination" as const, name: `D${i}`, lat: i, lon: i, address: null, priority: 3, source: "manual" as const, notes: null, photoUrl: null,
     }));
 
-    await useDistanceStore.getState().fetchRoutes(homestay, dests);
+    await useDistanceStore.getState().fetchRoutes(base, dests);
     expect(maxActive).toBeLessThanOrEqual(3);
   });
 });

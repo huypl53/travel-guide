@@ -1,22 +1,22 @@
 import { haversineKm } from "./distance";
-import type { Location, RankedHomestay } from "./types";
+import type { Location, RankedBase } from "./types";
 import type { DrivingDistance } from "@/store/distance-store";
 
-export function rankHomestays(
-  homestays: Location[],
+export function rankBases(
+  bases: Location[],
   destinations: Location[],
   drivingDistances?: Map<string, DrivingDistance>
-): RankedHomestay[] {
-  if (homestays.length === 0 || destinations.length === 0) return [];
+): RankedBase[] {
+  if (bases.length === 0 || destinations.length === 0) return [];
 
   const totalWeight = destinations.reduce((sum, d) => sum + d.priority, 0);
 
-  return homestays
-    .map((homestay) => {
+  return bases
+    .map((base) => {
       const distances = destinations.map((dest) => {
-        const key = `${homestay.id}:${dest.id}`;
+        const key = `${base.id}:${dest.id}`;
         const driving = drivingDistances?.get(key);
-        const haversine = haversineKm(homestay.lat, homestay.lon, dest.lat, dest.lon);
+        const haversine = haversineKm(base.lat, base.lon, dest.lat, dest.lon);
 
         return {
           destination: dest,
@@ -32,7 +32,7 @@ export function rankHomestays(
           return sum + effectiveKm * d.destination.priority;
         }, 0) / totalWeight;
 
-      return { homestay, weightedAvgKm, distances };
+      return { base, weightedAvgKm, distances };
     })
     .sort((a, b) => a.weightedAvgKm - b.weightedAvgKm);
 }

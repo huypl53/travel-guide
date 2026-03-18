@@ -7,25 +7,25 @@ import { haversineKm } from "@/lib/distance";
 
 export function useMapData() {
   const locations = useTripStore((s) => s.locations);
-  const setSelected = useTripStore((s) => s.setSelectedHomestay);
-  const selectedHomestayIds = useTripStore((s) => s.selectedHomestayIds);
+  const setSelected = useTripStore((s) => s.setSelectedBase);
+  const selectedBaseIds = useTripStore((s) => s.selectedBaseIds);
   const selectedDestinationIds = useTripStore((s) => s.selectedDestinationIds);
 
-  const homestays = useMemo(() => locations.filter((l) => l.type === "homestay"), [locations]);
+  const bases = useMemo(() => locations.filter((l) => l.type === "base"), [locations]);
   const destinations = useMemo(() => locations.filter((l) => l.type === "destination"), [locations]);
 
   const drivingDistances = useDistanceStore((s) => s.distances);
   const routes = useDistanceStore((s) => s.routes);
   const fetchRoutes = useDistanceStore((s) => s.fetchRoutes);
 
-  // Lazy route fetching: fetch for selected homestays first, then background-fetch the rest
+  // Lazy route fetching: fetch for selected bases first, then background-fetch the rest
   const fetchedRef = useRef(new Set<string>());
   useEffect(() => {
     if (destinations.length === 0) return;
 
-    // Fetch selected homestays first (priority)
-    const selected = homestays.filter((h) => selectedHomestayIds.has(h.id));
-    const unselected = homestays.filter((h) => !selectedHomestayIds.has(h.id));
+    // Fetch selected bases first (priority)
+    const selected = bases.filter((h) => selectedBaseIds.has(h.id));
+    const unselected = bases.filter((h) => !selectedBaseIds.has(h.id));
 
     for (const h of selected) {
       if (!fetchedRef.current.has(h.id)) {
@@ -45,7 +45,7 @@ export function useMapData() {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [homestays, destinations, selectedHomestayIds, fetchRoutes]);
+  }, [bases, destinations, selectedBaseIds, fetchRoutes]);
 
   // Reset fetched tracking when destinations change
   const prevDestsRef = useRef(destinations);
@@ -57,9 +57,9 @@ export function useMapData() {
   }, [destinations]);
 
   const maxKm = useMemo(() => {
-    if (homestays.length === 0 || destinations.length === 0) return 10;
+    if (bases.length === 0 || destinations.length === 0) return 10;
     let max = 0;
-    for (const h of homestays) {
+    for (const h of bases) {
       for (const d of destinations) {
         const key = `${h.id}:${d.id}`;
         const driving = drivingDistances.get(key);
@@ -68,7 +68,7 @@ export function useMapData() {
       }
     }
     return max || 10;
-  }, [homestays, destinations, drivingDistances]);
+  }, [bases, destinations, drivingDistances]);
 
   const center = useMemo(() => {
     if (locations.length > 0) {
@@ -82,11 +82,11 @@ export function useMapData() {
 
   return {
     locations,
-    homestays,
+    bases,
     destinations,
     center,
     setSelected,
-    selectedHomestayIds,
+    selectedBaseIds,
     selectedDestinationIds,
     drivingDistances,
     routes,

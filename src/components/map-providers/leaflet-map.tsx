@@ -35,7 +35,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
-const homestayIcon = new L.Icon({
+const baseIcon = new L.Icon({
   iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
   iconSize: [25, 41],
@@ -59,11 +59,11 @@ function distanceToColor(km: number, maxKm: number): string {
 
 export default function MapInner({ mapStyle = "default", pois = [] }: { mapStyle?: MapStyle; pois?: PoiResult[] }) {
   const {
-    homestays,
+    bases,
     destinations,
     center,
     setSelected,
-    selectedHomestayIds,
+    selectedBaseIds,
     selectedDestinationIds,
     drivingDistances,
     routes,
@@ -79,12 +79,12 @@ export default function MapInner({ mapStyle = "default", pois = [] }: { mapStyle
         url={leafletTileUrls[mapStyle]}
       />
 
-      {homestays.map((h) => (
+      {bases.map((h) => (
         <Marker
           key={h.id}
           position={[h.lat, h.lon]}
-          icon={homestayIcon}
-          opacity={selectedHomestayIds.has(h.id) ? 1 : 0.4}
+          icon={baseIcon}
+          opacity={selectedBaseIds.has(h.id) ? 1 : 0.4}
           eventHandlers={{ click: () => setSelected(h.id) }}
         >
           <Popup>
@@ -144,8 +144,8 @@ export default function MapInner({ mapStyle = "default", pois = [] }: { mapStyle
         </CircleMarker>
       ))}
 
-      {homestays.map((h) => {
-        const hSelected = selectedHomestayIds.has(h.id);
+      {bases.map((h) => {
+        const hSelected = selectedBaseIds.has(h.id);
         return destinations.map((d) => {
           const dSelected = selectedDestinationIds.has(d.id);
           const bothSelected = hSelected && dSelected;

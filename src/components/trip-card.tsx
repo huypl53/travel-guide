@@ -95,12 +95,12 @@ export function TripCard({ trip, onDelete, onRename }: TripCardProps) {
             )}
           </div>
           <p className="text-sm text-muted-foreground">
-            {trip.homestayCount} homestays, {trip.destinationCount} destinations
+            {trip.baseCount} bases, {trip.destinationCount} destinations
             &middot; {timeAgo(trip.createdAt)}
           </p>
-          {trip.topHomestay && (
+          {trip.topBase && (
             <p className="text-xs text-muted-foreground mt-0.5">
-              Top: {trip.topHomestay}
+              Top: {trip.topBase}
             </p>
           )}
         </div>

@@ -26,7 +26,7 @@ export function LocationInput({ type }: LocationInputProps) {
   const abortRef = useRef<AbortController | null>(null);
   const addLocation = useTripStore((s) => s.addLocation);
 
-  const label = type === "homestay" ? "Homestay" : "Destination";
+  const label = type === "base" ? "Base" : "Destination";
 
   const cancelPending = useCallback(() => {
     abortRef.current?.abort();
@@ -220,7 +220,7 @@ export function LocationInput({ type }: LocationInputProps) {
 
       <div className="flex gap-2">
         <Input
-          placeholder={mode === "paste" ? "Paste Google Maps link(s) or directions URL..." : `Search ${label.toLowerCase()} address...`}
+          placeholder={mode === "paste" ? "Paste Google Maps link(s) or directions URL..." : `Search ${label.toLowerCase()} location...`}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => {
