@@ -43,6 +43,7 @@ Fully responsive layout with collapsible bottom sheet for rankings.
 - Export trip data as JSON
 - Mobile-responsive layout with collapsible bottom sheet
 - Pre-built Vietnam trip templates -- browse curated itineraries and clone one as a starting point
+- 5-day weather forecast widget — inline weather strip powered by Open-Meteo API (no key needed), cached for 1 hour, collapsible on mobile
 
 ## Authentication
 
