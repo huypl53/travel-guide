@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useMemo } from "react";
 import { useParams } from "next/navigation";
-import { MapPin, Home, Compass, ChevronUp, ChevronDown, Pencil } from "lucide-react";
+import { MapPin, Home, Compass, ChevronUp, ChevronDown } from "lucide-react";
 import { useTripStore } from "@/store/trip-store";
-import type { LocationType } from "@/lib/types";
 import { MapView } from "@/components/map-view";
 import { LocationInput } from "@/components/location-input";
 import { LocationList } from "@/components/location-list";
@@ -19,89 +18,8 @@ import { Button } from "@/components/ui/button";
 import { useAutoSave } from "@/hooks/use-auto-save";
 import { useAutoFetchDistances } from "@/hooks/use-auto-fetch-distances";
 import { Card } from "@/components/ui/card";
-
-function SelectAllButtons({ type }: { type: LocationType }) {
-  const selectAll = useTripStore((s) => s.selectAllByType);
-  const deselectAll = useTripStore((s) => s.deselectAllByType);
-  return (
-    <div className="flex gap-1">
-      <Button variant="ghost" size="xs" className="text-xs px-2" onClick={() => selectAll(type)}>
-        All
-      </Button>
-      <Button variant="ghost" size="xs" className="text-xs px-2" onClick={() => deselectAll(type)}>
-        None
-      </Button>
-    </div>
-  );
-}
-
-function EditableTripName({ isOwner }: { isOwner: boolean }) {
-  const tripName = useTripStore((s) => s.tripName);
-  const setTripName = useTripStore((s) => s.setTripName);
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (editing && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
-    }
-  }, [editing]);
-
-  function startEditing() {
-    setDraft(tripName || "Untitled Trip");
-    setEditing(true);
-  }
-
-  function commit() {
-    const trimmed = draft.trim();
-    if (trimmed && trimmed !== tripName) {
-      setTripName(trimmed);
-    }
-    setEditing(false);
-  }
-
-  function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === "Enter") commit();
-    if (e.key === "Escape") setEditing(false);
-  }
-
-  if (editing) {
-    return (
-      <input
-        ref={inputRef}
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        onBlur={commit}
-        onKeyDown={handleKeyDown}
-        maxLength={200}
-        className="text-xl sm:text-2xl font-bold text-primary bg-transparent border-b-2 border-primary outline-none max-w-[200px] sm:max-w-[300px]"
-      />
-    );
-  }
-
-  if (!isOwner) {
-    return (
-      <span className="text-xl sm:text-2xl font-bold text-primary truncate max-w-[200px] sm:max-w-[300px]">
-        {tripName || "Untitled Trip"}
-      </span>
-    );
-  }
-
-  return (
-    <button
-      onClick={startEditing}
-      className="group flex items-center gap-2 text-left"
-      title="Click to rename trip"
-    >
-      <span className="text-xl sm:text-2xl font-bold text-primary truncate max-w-[200px] sm:max-w-[300px]">
-        {tripName || "Untitled Trip"}
-      </span>
-      <Pencil className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-    </button>
-  );
-}
+import { EditableTripName } from "./editable-trip-name";
+import { SelectAllButtons } from "./select-all-buttons";
 
 export default function TripPage() {
   const params = useParams();
@@ -137,37 +55,42 @@ export default function TripPage() {
       {/* Weather Forecast */}
       <WeatherWidget center={weatherCenter} />
 
-      {/* Data Input */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold flex items-center gap-2">
-              <Home className="h-4 w-4 text-muted-foreground" />
-              Bases
-            </h2>
-            <SelectAllButtons type="base" />
-          </div>
-          <LocationInput type="base" />
-          <LocationList type="base" />
-        </Card>
-        <Card className="p-4 space-y-3">
-          <div className="flex items-baseline justify-between">
-            <h2 className="font-semibold flex items-center gap-2">
-              <Compass className="h-4 w-4 text-muted-foreground" />
-              Destinations
-            </h2>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">Set priority to weight ranking</span>
-              <SelectAllButtons type="destination" />
+      {/* Data Input + Map side-by-side on desktop */}
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-4 items-start">
+        {/* Left column: Bases + Destinations stacked */}
+        <div className="space-y-4">
+          <Card className="p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold flex items-center gap-2">
+                <Home className="h-4 w-4 text-muted-foreground" />
+                Bases
+              </h2>
+              <SelectAllButtons type="base" />
             </div>
-          </div>
-          <LocationInput type="destination" />
-          <LocationList type="destination" />
-        </Card>
-      </div>
+            <LocationInput type="base" />
+            <LocationList type="base" />
+          </Card>
+          <Card className="p-4 space-y-3">
+            <div className="flex items-baseline justify-between">
+              <h2 className="font-semibold flex items-center gap-2">
+                <Compass className="h-4 w-4 text-muted-foreground" />
+                Destinations
+              </h2>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Set priority to weight ranking</span>
+                <SelectAllButtons type="destination" />
+              </div>
+            </div>
+            <LocationInput type="destination" />
+            <LocationList type="destination" />
+          </Card>
+        </div>
 
-      {/* Map */}
-      <MapView />
+        {/* Right column: Map sticky */}
+        <div className="sticky top-4 h-[600px]">
+          <MapView />
+        </div>
+      </div>
 
       {/* Ranking + Matrix: Desktop inline */}
       <div className="hidden md:grid grid-cols-1 md:grid-cols-2 gap-4">

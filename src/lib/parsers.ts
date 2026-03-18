@@ -34,7 +34,7 @@ export function isShortMapsUrl(url: string): boolean {
 }
 
 function extractPlaceName(url: string): string | null {
-  const placeMatch = url.match(/\/place\/([^/@]+)/);
+  const placeMatch = url.match(/\/(?:place|search)\/([^/@]+)/);
   if (placeMatch) {
     return decodeURIComponent(placeMatch[1].replace(/\+/g, " "));
   }
