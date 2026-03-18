@@ -3,13 +3,14 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import { createSupabaseBrowser } from "@/lib/supabase-browser";
 import { useTripStore } from "@/store/trip-store";
+import { useDistanceStore } from "@/store/distance-store";
 import type { User } from "@supabase/supabase-js";
 
 export function useAutoSave(slug: string) {
   const supabase = createSupabaseBrowser();
   const tripIdRef = useRef<string | null>(null);
   const userRef = useRef<User | null>(null);
-  const initializedRef = useRef(false);
+  const initializedSlugRef = useRef<string | null>(null);
   const [isOwner, setIsOwner] = useState(false);
 
   const save = useCallback(async () => {
@@ -72,10 +73,16 @@ export function useAutoSave(slug: string) {
   }, [supabase]);
 
   useEffect(() => {
-    if (initializedRef.current) return;
-    initializedRef.current = true;
+    if (initializedSlugRef.current === slug) return;
+    initializedSlugRef.current = slug;
 
     async function init() {
+      // Disable auto-save before resetting to prevent the subscription
+      // from saving empty state to the database.
+      tripIdRef.current = null;
+      useTripStore.getState().reset();
+      useDistanceStore.getState().clear();
+
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -93,7 +100,7 @@ export function useAutoSave(slug: string) {
         tripIdRef.current = existing.id;
         const store = useTripStore.getState();
         if (existing.name) store.setTripName(existing.name);
-        if (existing.locations?.length > 0 && store.locations.length === 0) {
+        if (existing.locations?.length > 0) {
           for (const loc of existing.locations) {
             store.addLocation({
               type: loc.type,

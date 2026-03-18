@@ -5,7 +5,8 @@ import { Link, Search, Upload, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTripStore } from "@/store/trip-store";
-import { parseGoogleMapsUrl, isShortMapsUrl, parseCsvLocations, parseJsonLocations } from "@/lib/parsers";
+import { parseGoogleMapsUrl, isShortMapsUrl, isMultiLocationInput, parseCsvLocations, parseJsonLocations } from "@/lib/parsers";
+import { ImportPreviewDialog } from "./import-preview-dialog";
 import type { LocationType } from "@/lib/types";
 
 interface LocationInputProps {
@@ -16,6 +17,11 @@ export function LocationInput({ type }: LocationInputProps) {
   const [input, setInput] = useState("");
   const [mode, setMode] = useState<"paste" | "manual">("paste");
   const [geocoding, setGeocoding] = useState(false);
+  const [extracting, setExtracting] = useState(false);
+  const [importPreview, setImportPreview] = useState<{
+    locations: Array<{ name: string; lat: number; lon: number; address: string | null }>;
+    errors: string[];
+  } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const addLocation = useTripStore((s) => s.addLocation);
@@ -28,7 +34,40 @@ export function LocationInput({ type }: LocationInputProps) {
   }, []);
 
   async function handlePaste() {
-    let url = input.trim();
+    const text = input.trim();
+    if (!text) return;
+
+    // Multi-location detection (directions URL or multiple URLs)
+    if (isMultiLocationInput(text)) {
+      cancelPending();
+      const controller = new AbortController();
+      abortRef.current = controller;
+      setExtracting(true);
+      try {
+        const res = await fetch("/api/extract-locations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text }),
+          signal: controller.signal,
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setImportPreview({ locations: [], errors: [data.error || "Extraction failed"] });
+        } else if (data.locations?.length > 0) {
+          setImportPreview({ locations: data.locations, errors: data.errors ?? [] });
+        } else {
+          setImportPreview({ locations: [], errors: data.errors?.length ? data.errors : ["No locations found in the provided URL(s)"] });
+        }
+      } catch (e) {
+        if (e instanceof DOMException && e.name === "AbortError") return;
+        setImportPreview({ locations: [], errors: ["Network error — could not extract locations"] });
+      } finally {
+        setExtracting(false);
+      }
+      return;
+    }
+
+    let url = text;
 
     // Resolve short URLs (maps.app.goo.gl) via server
     if (isShortMapsUrl(url)) {
@@ -123,6 +162,23 @@ export function LocationInput({ type }: LocationInputProps) {
     e.target.value = "";
   }
 
+  function handleBulkImport(
+    items: Array<{ name: string; lat: number; lon: number; address: string | null; type: LocationType }>
+  ) {
+    items.forEach((item) => {
+      addLocation({
+        type: item.type,
+        name: item.name,
+        lat: item.lat,
+        lon: item.lon,
+        address: item.address,
+        source: "google_maps",
+      });
+    });
+    setImportPreview(null);
+    setInput("");
+  }
+
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap gap-2">
@@ -164,7 +220,7 @@ export function LocationInput({ type }: LocationInputProps) {
 
       <div className="flex gap-2">
         <Input
-          placeholder={mode === "paste" ? "Paste Google Maps link..." : `Search ${label.toLowerCase()} address...`}
+          placeholder={mode === "paste" ? "Paste Google Maps link(s) or directions URL..." : `Search ${label.toLowerCase()} address...`}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => {
@@ -175,12 +231,32 @@ export function LocationInput({ type }: LocationInputProps) {
         />
         <Button
           onClick={mode === "paste" ? handlePaste : handleManual}
-          disabled={geocoding}
-          aria-label={geocoding ? "Loading" : "Add location"}
+          disabled={geocoding || extracting}
+          aria-label={geocoding || extracting ? "Loading" : "Add location"}
         >
-          {geocoding ? <Loader2 className="h-4 w-4 animate-spin" /> : "Add"}
+          {geocoding || extracting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Add"}
         </Button>
       </div>
+
+      {mode === "paste" && !extracting && (
+        <p className="text-xs text-muted-foreground">
+          Tip: Paste a Google Maps directions link to import all stops at once, or paste multiple links separated by spaces.
+        </p>
+      )}
+      {extracting && (
+        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Loader2 className="h-3 w-3 animate-spin" />
+          Extracting locations...
+        </p>
+      )}
+
+      <ImportPreviewDialog
+        open={importPreview !== null}
+        onOpenChange={(open) => { if (!open) setImportPreview(null); }}
+        locations={importPreview?.locations ?? []}
+        errors={importPreview?.errors ?? []}
+        onConfirm={handleBulkImport}
+      />
     </div>
   );
 }

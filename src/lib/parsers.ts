@@ -41,7 +41,7 @@ function extractPlaceName(url: string): string | null {
   return null;
 }
 
-interface ParsedFileLocation {
+export interface ParsedFileLocation {
   name: string;
   lat: number;
   lon: number;
@@ -92,4 +92,50 @@ export function parseJsonLocations(json: string): ParsedFileLocation[] {
   } catch {
     return [];
   }
+}
+
+// --- Multi-location import ---
+
+export interface DirectionsWaypoint {
+  raw: string;
+  coords: { lat: number; lon: number } | null;
+}
+
+export function isDirectionsUrl(url: string): boolean {
+  return /google\.\w+\/maps\/dir\//.test(url);
+}
+
+export function parseDirectionsUrl(url: string): DirectionsWaypoint[] {
+  const dirMatch = url.match(/\/maps\/dir\/([^?#]+)/);
+  if (!dirMatch) return [];
+
+  return dirMatch[1]
+    .split("/")
+    .filter((seg) => seg && !seg.startsWith("@"))
+    .map((seg) => {
+      const decoded = decodeURIComponent(seg.replace(/\+/g, " "));
+      const coordMatch = decoded.match(/^(-?\d+\.?\d*),\s*(-?\d+\.?\d*)$/);
+      return {
+        raw: decoded,
+        coords: coordMatch
+          ? { lat: parseFloat(coordMatch[1]), lon: parseFloat(coordMatch[2]) }
+          : null,
+      };
+    })
+    .filter((wp) => wp.raw.trim().length > 0);
+}
+
+export function extractUrlsFromText(text: string): string[] {
+  const urlPattern =
+    /https?:\/\/(?:www\.)?(?:google\.\w+\/maps|maps\.app\.goo\.gl|goo\.gl\/maps)\S+/gi;
+  return [...text.matchAll(urlPattern)].map((m) =>
+    m[0].replace(/[.,;!?)'"\]]+$/, "")
+  );
+}
+
+export function isMultiLocationInput(text: string): boolean {
+  const urls = extractUrlsFromText(text);
+  if (urls.length > 1) return true;
+  if (urls.length === 1 && isDirectionsUrl(urls[0])) return true;
+  return false;
 }
