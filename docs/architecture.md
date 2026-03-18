@@ -21,10 +21,10 @@
 |    useDistanceStore  (driving distances)          |
 +--------------------------------------------------+
          |              |              |
-   /api/geocode   /api/distances   /api/trips
-         |              |              |
-   Nominatim OSM   OSRM Table      Supabase
-   (geocoding)     (bulk driving)  (persistence)
+   /api/geocode   /api/distances   /api/trips   /api/nearby
+         |              |              |             |
+   Nominatim OSM   OSRM Table      Supabase    Overpass API
+   (geocoding)     (bulk driving)  (persistence)  (POIs)
 ```
 
 ## Tech Stack
@@ -102,6 +102,10 @@ Proxies to OSRM for individual driving route calculation. Returns `{ distanceKm,
 
 Creates a new trip. Accepts `{ name, locations? }`. Generates a `nanoid` share slug. Optionally bulk-inserts locations. Returns `{ slug, id }`.
 
+### GET /api/nearby?lat=X&lon=Y&radius=1000&categories=restaurant,store,atm
+
+Proxies to the Overpass API (OpenStreetMap) for nearby POI queries. Accepts comma-separated categories: `restaurant`, `store`, `atm`, `fuel`, `medical`. Returns `{ pois: { category, name, lat, lon, distance }[] }` sorted by distance. Uses in-memory cache with 5-minute TTL and serializes requests to respect Overpass rate limits.
+
 ### GET /api/resolve-url?url=...
 
 Follows short URL redirects (e.g., `maps.app.goo.gl/...`) server-side and returns the resolved full URL. Used by the location input to support short Google Maps links.
@@ -124,13 +128,17 @@ Map toggle component that selects between Leaflet (OSM) and Google Maps based on
 
 Floating button group rendered in the top-right corner of the map. Provides style options — Default (`Map` icon), Satellite, Terrain (`Mountain` icon), and Dark (`Moon` icon, Leaflet only). For Leaflet, each style maps to a different tile URL (OSM, Esri World Imagery, OpenTopoMap, CartoDB Dark). For Google Maps, styles map to `mapTypeId` values (`roadmap`, `satellite`, `terrain`); the Dark option is hidden since Google Maps has no dark tile equivalent. Accepts a `provider` prop to filter out unsupported styles. Respects `prefers-reduced-motion` for transitions.
 
+### NearbyPoi (`src/components/nearby-poi.tsx`)
+
+Floating panel rendered in the bottom-left corner of the map when a homestay is selected (reads `selectedHomestayId` from `useTripStore`). Displays 5 category toggle buttons (Restaurant, Store, ATM/Bank, Gas Station, Medical) with lucide-react icons and a radius slider (500m--2km, default 1km). Fetches POIs on demand from `/api/nearby` when categories are toggled or radius changes. Passes POI results up to `MapView` via `onPoisChange` callback. Clears POIs when the selected homestay changes. All state is local (ephemeral). Exports `poiCategoryColors` and `poiCategories` for use by map providers.
+
 ### LeafletMap (`src/components/map-providers/leaflet-map.tsx`)
 
-Interactive Leaflet map (OSM tiles). Displays blue markers for homestays and red markers for destinations. Fetches driving route geometries from OSRM for all homestays and draws them as polylines color-coded by driving distance (green = close, red = far). Falls back to straight lines if route geometry is unavailable. Unselected homestays/destinations have dimmed markers (opacity 0.4) and dimmed routes (opacity 0.15). Default center: Da Lat, Vietnam.
+Interactive Leaflet map (OSM tiles). Displays blue markers for homestays and red markers for destinations. Fetches driving route geometries from OSRM for all homestays and draws them as polylines color-coded by driving distance (green = close, red = far). Falls back to straight lines if route geometry is unavailable. Unselected homestays/destinations have dimmed markers (opacity 0.4) and dimmed routes (opacity 0.15). Renders POI markers as `CircleMarker` components with category-specific fill colors; clicking a POI circle shows a popup with name, category label, and distance. Default center: Da Lat, Vietnam.
 
 ### GoogleMap (`src/components/map-providers/google-map.tsx`)
 
-Google Maps equivalent using `@vis.gl/react-google-maps`. Uses `AdvancedMarker` with colored `Pin` components and `google.maps.Polyline` for route visualization. Renders routes for all homestays with opacity-based dimming for unselected items. Requires `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` and a Maps JavaScript API key with Map ID configured.
+Google Maps equivalent using `@vis.gl/react-google-maps`. Uses `AdvancedMarker` with colored `Pin` components and `google.maps.Polyline` for route visualization. Renders routes for all homestays with opacity-based dimming for unselected items. Renders POI markers as small colored circle `div` elements inside `AdvancedMarker`; clicking opens an `InfoWindow` with name, category, and distance. Requires `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` and a Maps JavaScript API key with Map ID configured.
 
 ### LocationInput / LocationList (`src/components/location-input.tsx`, `location-list.tsx`)
 
@@ -251,6 +259,13 @@ Computes weighted average distance from each homestay to all destinations, using
 
 Static data for 6 curated Vietnam trip templates (Da Lat, Hoi An & Da Nang, Phu Quoc, Ha Noi, Ho Chi Minh City, Ninh Binh). Each template defines a `TripTemplate` with `id`, `name`, `description`, `region`, `duration`, `coverEmoji`, and an array of `TemplateLocation` objects (2-3 homestays + 4-6 destinations with real GPS coordinates). Exported as `TRIP_TEMPLATES` array.
 
+### Overpass (`src/lib/overpass.ts`)
+
+- `buildOverpassQuery(lat, lon, radius, categories)` -- Builds Overpass QL queries for POI categories around a point.
+- `classifyElement(tags)` -- Determines which `PoiCategory` an OSM element belongs to based on its tags.
+- `haversineMeters(lat1, lon1, lat2, lon2)` -- Haversine distance in meters (used for POI distance calculation).
+- Types: `PoiCategory`, `PoiResult`, `allCategories`.
+
 ### Types (`src/lib/types.ts`)
 
 TypeScript interfaces: `Location`, `DistanceEntry`, `RankedHomestay`.
@@ -266,6 +281,7 @@ Initializes the Supabase client using `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLI
 | Nominatim  | Address geocoding      | 1 req/sec (OSM usage policy)      |
 | OSRM       | Driving route distance | Public demo server, best-effort   |
 | Supabase   | Database persistence   | Free tier: 500 MB, 2 GB transfer  |
+| Overpass   | POI queries (OSM)      | 1 req/sec, 10k elements/query     |
 
 | Open-Meteo | Weather forecast       | Free, no API key, 10k req/day     |
 

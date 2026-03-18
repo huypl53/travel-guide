@@ -7,7 +7,9 @@ import { useMapData } from "@/hooks/use-map-data";
 import { haversineKm } from "@/lib/distance";
 import { type MapStyle, googleMapTypeIds } from "@/components/map-style-switcher";
 import { isSafeImageUrl } from "@/lib/utils";
+import { poiCategoryColors, getCategoryLabel } from "@/components/nearby-poi";
 import type { Location } from "@/lib/types";
+import type { PoiResult } from "@/lib/overpass";
 
 function FlyToLocation() {
   const map = useMap();
@@ -115,7 +117,43 @@ function MarkerInfoWindow({ location, label }: { location: Location; label?: str
   );
 }
 
-export default function GoogleMapInner({ mapStyle = "default" }: { mapStyle?: MapStyle }) {
+
+function PoiMarker({ poi }: { poi: PoiResult }) {
+  const [open, setOpen] = useState(false);
+  const color = poiCategoryColors[poi.category];
+
+  return (
+    <>
+      <AdvancedMarker
+        position={{ lat: poi.lat, lng: poi.lon }}
+        onClick={() => setOpen(true)}
+      >
+        <div
+          className="rounded-full border-2"
+          style={{
+            width: 14,
+            height: 14,
+            backgroundColor: color,
+            borderColor: "white",
+          }}
+        />
+      </AdvancedMarker>
+      {open && (
+        <InfoWindow
+          position={{ lat: poi.lat, lng: poi.lon }}
+          onCloseClick={() => setOpen(false)}
+        >
+          <div className="text-xs max-w-[160px]">
+            <strong>{poi.name}</strong>
+            <p className="text-gray-500">{getCategoryLabel(poi.category)} &middot; {poi.distance}m away</p>
+          </div>
+        </InfoWindow>
+      )}
+    </>
+  );
+}
+
+export default function GoogleMapInner({ mapStyle = "default", pois = [] }: { mapStyle?: MapStyle; pois?: PoiResult[] }) {
   const {
     homestays,
     destinations,
@@ -184,6 +222,11 @@ export default function GoogleMapInner({ mapStyle = "default" }: { mapStyle?: Ma
               <Pin background="#ef4444" borderColor="#991b1b" glyphColor="#fff" />
             </div>
           </AdvancedMarker>
+        ))}
+
+        {/* POI markers */}
+        {pois.map((poi, i) => (
+          <PoiMarker key={`poi-${i}-${poi.lat}-${poi.lon}`} poi={poi} />
         ))}
 
         {openInfoId && allLocations[openInfoId] && (

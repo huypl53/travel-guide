@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Polyline, CircleMarker, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useTripStore } from "@/store/trip-store";
@@ -9,6 +9,8 @@ import { useMapData } from "@/hooks/use-map-data";
 import { haversineKm } from "@/lib/distance";
 import { type MapStyle, leafletTileUrls, leafletAttributions } from "@/components/map-style-switcher";
 import { isSafeImageUrl } from "@/lib/utils";
+import { poiCategoryColors, getCategoryLabel } from "@/components/nearby-poi";
+import type { PoiResult } from "@/lib/overpass";
 
 function FlyToLocation() {
   const map = useMap();
@@ -54,7 +56,8 @@ function distanceToColor(km: number, maxKm: number): string {
   return `rgb(${r},${g},0)`;
 }
 
-export default function MapInner({ mapStyle = "default" }: { mapStyle?: MapStyle }) {
+
+export default function MapInner({ mapStyle = "default", pois = [] }: { mapStyle?: MapStyle; pois?: PoiResult[] }) {
   const {
     homestays,
     destinations,
@@ -117,6 +120,28 @@ export default function MapInner({ mapStyle = "default" }: { mapStyle?: MapStyle
             </div>
           </Popup>
         </Marker>
+      ))}
+
+      {/* POI markers */}
+      {pois.map((poi, i) => (
+        <CircleMarker
+          key={`poi-${i}-${poi.lat}-${poi.lon}`}
+          center={[poi.lat, poi.lon]}
+          radius={6}
+          pathOptions={{
+            color: poiCategoryColors[poi.category],
+            fillColor: poiCategoryColors[poi.category],
+            fillOpacity: 0.8,
+            weight: 2,
+          }}
+        >
+          <Popup>
+            <div className="text-xs">
+              <strong>{poi.name}</strong>
+              <p className="text-gray-500">{getCategoryLabel(poi.category)} &middot; {poi.distance}m away</p>
+            </div>
+          </Popup>
+        </CircleMarker>
       ))}
 
       {homestays.map((h) => {
