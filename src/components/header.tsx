@@ -25,8 +25,11 @@ export function Header() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
+      if (event === "SIGNED_IN") {
+        router.push("/trips");
+      }
       router.refresh();
     });
 
@@ -55,7 +58,7 @@ export function Header() {
             </span>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => router.push("/")}>
+            <DropdownMenuItem onClick={() => router.push("/trips")}>
               My Trips
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleSignOut}>

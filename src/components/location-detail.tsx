@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ImageOff } from "lucide-react";
 import { useTripStore } from "@/store/trip-store";
 import { Input } from "@/components/ui/input";
@@ -17,9 +17,18 @@ export function LocationDetail({ location }: LocationDetailProps) {
   const [notes, setNotes] = useState(location.notes ?? "");
   const [photoUrl, setPhotoUrl] = useState(location.photoUrl ?? "");
   const [imgError, setImgError] = useState(false);
+  const [prevNotes, setPrevNotes] = useState(location.notes);
+  const [prevPhotoUrl, setPrevPhotoUrl] = useState(location.photoUrl);
 
-  useEffect(() => { setNotes(location.notes ?? ""); }, [location.notes]);
-  useEffect(() => { setPhotoUrl(location.photoUrl ?? ""); setImgError(false); }, [location.photoUrl]);
+  if (location.notes !== prevNotes) {
+    setPrevNotes(location.notes);
+    setNotes(location.notes ?? "");
+  }
+  if (location.photoUrl !== prevPhotoUrl) {
+    setPrevPhotoUrl(location.photoUrl);
+    setPhotoUrl(location.photoUrl ?? "");
+    setImgError(false);
+  }
 
   const showImage = photoUrl && isSafeImageUrl(photoUrl) && !imgError;
   const showError = photoUrl && isSafeImageUrl(photoUrl) && imgError;

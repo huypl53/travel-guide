@@ -93,18 +93,17 @@ export function WeatherWidget({ center }: WeatherWidgetProps) {
     if (!center) return;
 
     let cancelled = false;
-    setLoading(true);
-    setError(false);
 
     const roundedLat = Math.round(center.lat * 100) / 100;
     const roundedLon = Math.round(center.lon * 100) / 100;
 
-    fetch(`/api/weather?lat=${roundedLat}&lon=${roundedLon}`)
-      .then((res) => {
+    const fetchWeather = async () => {
+      setLoading(true);
+      setError(false);
+      try {
+        const res = await fetch(`/api/weather?lat=${roundedLat}&lon=${roundedLon}`);
         if (!res.ok) throw new Error("API error");
-        return res.json();
-      })
-      .then((data: OpenMeteoResponse) => {
+        const data: OpenMeteoResponse = await res.json();
         if (!cancelled) {
           const parsed = parseForecast(data);
           if (!parsed) {
@@ -114,13 +113,15 @@ export function WeatherWidget({ center }: WeatherWidgetProps) {
           }
           setLoading(false);
         }
-      })
-      .catch(() => {
+      } catch {
         if (!cancelled) {
           setError(true);
           setLoading(false);
         }
-      });
+      }
+    };
+
+    fetchWeather();
 
     return () => {
       cancelled = true;
