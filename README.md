@@ -34,6 +34,7 @@ Fully responsive layout with collapsible bottom sheet for rankings.
 - Real driving distances via OSRM Table API, auto-fetched when locations change (haversine fallback)
 - Priority weighting for destinations (1-5 stars)
 - Multi-select with visual comparison — toggle homestays/destinations on/off to dim unselected items across all views (lists, map markers, routes, ranking, distance matrix)
+- Side-by-side comparison mode — select 2-3 homestays to compare all metrics in aligned columns with best values highlighted in green, overall winner badge, and "best for" summary labels
 - Scrollable location lists for handling many locations
 - Concurrency-limited route fetching (max 3 parallel requests) with persistent route cache
 - Cost estimation — enter nightly rates per homestay, set trip duration and transport mode (motorbike/car), see total cost badges with accommodation + transport breakdown; cheapest highlighted green, most expensive red
@@ -127,7 +128,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the landing page.
    - Set **priority** (1-5 stars) on destinations to weight the ranking.
    - Expand a location row to add **notes** and a **photo URL** — notes auto-save on blur, photos display as thumbnails with broken-image fallback.
    - View all locations on an interactive **map** with color-coded markers and distance polylines.
-   - See the **ranking list** showing homestays sorted by weighted average distance. Enter **nightly rates** (VND) per homestay, set **trip nights** and **transport mode** (motorbike at 3,000 VND/km or car at 6,000 VND/km) to see total cost badges with breakdown tooltips. Settings persist in localStorage.
+   - See the **ranking list** showing homestays sorted by weighted average distance. Enter **nightly rates** (VND) per homestay, set **trip nights** and **transport mode** (motorbike at 3,000 VND/km or car at 6,000 VND/km) to see total cost badges with breakdown tooltips. Settings persist in localStorage. Use the compare toggle on each row to select 2-3 homestays for **side-by-side comparison**.
    - Inspect the **distance matrix** for pairwise distances — driving distances and times are fetched automatically via OSRM and shown with a car icon.
    - Click **Share** to save the trip to Supabase and copy a shareable read-only link.
    - Click **Export** to download the trip data as a JSON file.

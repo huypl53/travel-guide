@@ -146,7 +146,19 @@ Settings bar for cost estimation. Provides a trip nights spinner, motorbike/car 
 
 ### RankingList (`src/components/ranking-list.tsx`)
 
-Displays homestays ranked by weighted average distance to all destinations. Priority stars on destinations affect the weighting. Integrates cost estimation: each ranked homestay has a nightly rate input (VND), and when a rate is entered, a cost badge shows the total trip cost (accommodation + transport). The cheapest homestay gets a green badge, the most expensive gets red. Hover/title shows the breakdown.
+Displays homestays ranked by weighted average distance to all destinations. Priority stars on destinations affect the weighting. Integrates cost estimation: each ranked homestay has a nightly rate input (VND), and when a rate is entered, a cost badge shows the total trip cost (accommodation + transport). The cheapest homestay gets a green badge, the most expensive gets red. Hover/title shows the breakdown. Each row also includes a compare toggle button (max 3) that adds the homestay to the comparison selection stored in `useTripStore.comparisonIds`.
+
+### ComparisonView (`src/components/comparison-view.tsx`)
+
+Side-by-side comparison of 2-3 selected homestays. Renders when `comparisonIds` has 2+ entries. Computes best values across compared homestays (weighted average, per-destination distances, total drive time) and passes them to `ComparisonCard` components. Supports a `wrapped` prop to render inside a Card. Appears on desktop below the ranking/matrix section and inside the mobile bottom sheet.
+
+### ComparisonCard (`src/components/comparison-card.tsx`)
+
+Single column in the comparison view. Shows homestay name with rank badge, weighted average distance, per-destination breakdown (km + minutes), total drive time, and "best for" labels. Best values are highlighted in green. The overall winner column gets a primary border tint, bold name, and trophy icon.
+
+### ComparisonBar (`src/components/comparison-bar.tsx`)
+
+Floating pill bar at the bottom of the viewport. Appears when 2+ homestays are selected for comparison. Shows count, a "View" button that scrolls to the comparison section, and a clear button. Positioned above the mobile bottom sheet on small screens.
 
 ### DistanceMatrix (`src/components/distance-matrix.tsx`)
 
@@ -175,8 +187,9 @@ Star rating input for setting destination priority (1-5), used in the location l
 | selectedHomestayId   | string or null    | Currently selected homestay for map     |
 | selectedHomestayIds  | Set\<string\>     | Homestays included in visual comparison |
 | selectedDestinationIds | Set\<string\>   | Destinations included in visual comparison |
+| comparisonIds        | string[]          | Up to 3 homestay IDs for side-by-side comparison |
 
-Actions: `setTripName`, `addLocation`, `removeLocation`, `updatePriority`, `updateLocationNotes`, `updateLocationPhoto`, `setSelectedHomestay`, `toggleLocationSelection`, `selectAllByType`, `deselectAllByType`, `reset`.
+Actions: `setTripName`, `addLocation`, `removeLocation`, `updatePriority`, `updateLocationNotes`, `updateLocationPhoto`, `setSelectedHomestay`, `toggleLocationSelection`, `selectAllByType`, `deselectAllByType`, `toggleComparison`, `clearComparison`, `reset`.
 
 Components read from the store and filter by `type` to get homestays or destinations.
 
