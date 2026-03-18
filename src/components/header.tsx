@@ -55,7 +55,7 @@ export function Header() {
             </span>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => router.push("/")}>
+            <DropdownMenuItem onClick={() => router.push("/trips")}>
               My Trips
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleSignOut}>
