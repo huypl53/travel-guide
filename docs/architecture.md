@@ -136,9 +136,13 @@ Input panels for adding locations. Supports Google Maps URL pasting, CSV/JSON up
 
 Expandable detail panel rendered below a location row when expanded. Contains a textarea for notes (auto-saves to the store on blur) and a URL input for a photo. Displays the photo as a 64x64 thumbnail with an `ImageOff` fallback icon when the URL fails to load.
 
+### CostEstimator (`src/components/cost-estimator.tsx`)
+
+Settings bar for cost estimation. Provides a trip nights spinner, motorbike/car transport mode toggle, and displays the current fuel cost per km. Loads/saves settings from/to `localStorage` keyed by `cost-settings-{slug}`. Also exports `formatVND()` for VND number formatting and `calculateCost()` for the cost formula.
+
 ### RankingList (`src/components/ranking-list.tsx`)
 
-Displays homestays ranked by weighted average distance to all destinations. Priority stars on destinations affect the weighting.
+Displays homestays ranked by weighted average distance to all destinations. Priority stars on destinations affect the weighting. Integrates cost estimation: each ranked homestay has a nightly rate input (VND), and when a rate is entered, a cost badge shows the total trip cost (accommodation + transport). The cheapest homestay gets a green badge, the most expensive gets red. Hover/title shows the breakdown.
 
 ### DistanceMatrix (`src/components/distance-matrix.tsx`)
 
@@ -183,6 +187,19 @@ New locations are auto-added to their selection set on creation and removed on d
 | error         | string or null                     | Error message if fetch failed                      |
 
 Actions: `fetchDistances(homestays, destinations)`, `fetchRoutes(homestay, destinations)`, `clearDistances()`, `clear()`.
+
+### useCostStore (`src/store/cost-store.ts`)
+
+| Field          | Type                        | Description                              |
+|----------------|-----------------------------|------------------------------------------|
+| nightlyRates   | Record\<string, number\>   | Homestay ID to nightly rate in VND       |
+| tripNights     | number                      | Trip duration in nights (default 1)      |
+| transportMode  | 'motorbike' \| 'car'       | Selected transport mode                  |
+| fuelCostPerKm  | number                      | Auto-set: 3,000 (motorbike) or 6,000 (car) |
+
+Actions: `setNightlyRate`, `removeNightlyRate`, `setTripNights`, `setTransportMode`, `loadFromStorage(slug)`, `saveToStorage(slug)`.
+
+Cost formula: `totalCost = (totalDrivingKm * 2 * fuelCostPerKm) + (nightlyRate * tripNights)`. All data persisted to `localStorage` under key `cost-settings-{slug}`. No Supabase schema changes required.
 
 Route fetching uses a concurrency limiter (max 3 parallel requests) to avoid overwhelming the OSRM server. Routes are cached by `homestayId:destId` key and preserved across distance recalculations — only `clearDistances()` is called when locations change, while `clear()` (which also wipes routes) is reserved for full trip reset.
 

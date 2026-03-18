@@ -10,6 +10,7 @@ import { LocationInput } from "@/components/location-input";
 import { LocationList } from "@/components/location-list";
 import { RankingList } from "@/components/ranking-list";
 import { DistanceMatrix } from "@/components/distance-matrix";
+import { CostEstimator } from "@/components/cost-estimator";
 import { ShareExport } from "@/components/share-export";
 import { Button } from "@/components/ui/button";
 import { useAutoSave } from "@/hooks/use-auto-save";
@@ -141,7 +142,8 @@ export default function TripPage() {
 
       {/* Ranking + Matrix: Desktop inline */}
       <div className="hidden md:grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="p-4">
+        <Card className="p-4 space-y-3">
+          <CostEstimator />
           <RankingList />
         </Card>
         <Card className="p-4">
@@ -177,6 +179,7 @@ export default function TripPage() {
             bottomSheetOpen ? "max-h-[50vh] sm:max-h-[60vh] p-4" : "max-h-0 overflow-hidden"
           }`}
         >
+          <CostEstimator />
           <RankingList />
           <DistanceMatrix />
         </div>
