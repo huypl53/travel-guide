@@ -82,6 +82,7 @@ export function TripCard({ trip, onDelete, onRename }: TripCardProps) {
                 onBlur={commitRename}
                 onKeyDown={handleKeyDown}
                 onClick={(e) => e.stopPropagation()}
+                maxLength={200}
                 className="font-medium bg-transparent border-b-2 border-primary outline-none w-full max-w-[180px] sm:max-w-[250px]"
               />
             ) : (

@@ -30,15 +30,24 @@ export function MyTripsList({ initialTrips }: MyTripsListProps) {
   }
 
   async function handleRename(trip: TripCardData, newName: string) {
-    const res = await fetch(`/api/trips/${trip.shareSlug}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newName }),
-    });
-    if (res.ok) {
-      setTrips((prev) =>
-        prev.map((t) => (t.id === trip.id ? { ...t, name: newName } : t))
-      );
+    try {
+      const res = await fetch(`/api/trips/${trip.shareSlug}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newName }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTrips((prev) =>
+          prev.map((t) =>
+            t.id === trip.id ? { ...t, name: data.name ?? newName } : t
+          )
+        );
+      } else {
+        console.error("Rename failed:", res.status, await res.text());
+      }
+    } catch (err) {
+      console.error("Rename failed:", err);
     }
   }
 

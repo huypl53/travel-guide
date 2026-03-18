@@ -37,7 +37,7 @@ export async function PATCH(
   }
 
   const { name } = await request.json();
-  if (!name || typeof name !== "string") {
+  if (!name || typeof name !== "string" || name.trim().length === 0 || name.length > 200) {
     return NextResponse.json({ error: "Invalid name" }, { status: 400 });
   }
 
@@ -64,7 +64,8 @@ export async function PATCH(
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true });
+  const trimmed = name.trim();
+  return NextResponse.json({ ok: true, name: trimmed });
 }
 
 export async function DELETE(

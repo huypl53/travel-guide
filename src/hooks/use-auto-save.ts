@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import { createSupabaseBrowser } from "@/lib/supabase-browser";
 import { useTripStore } from "@/store/trip-store";
 import type { User } from "@supabase/supabase-js";
@@ -10,6 +10,7 @@ export function useAutoSave(slug: string) {
   const tripIdRef = useRef<string | null>(null);
   const userRef = useRef<User | null>(null);
   const initializedRef = useRef(false);
+  const [isOwner, setIsOwner] = useState(false);
 
   const save = useCallback(async () => {
     if (!userRef.current || !tripIdRef.current) return;
@@ -111,6 +112,8 @@ export function useAutoSave(slug: string) {
         // Only enable auto-save if the current user owns this trip
         if (!user || existing.user_id !== user.id) {
           tripIdRef.current = null;
+        } else {
+          setIsOwner(true);
         }
       } else if (user) {
         // Create new trip (only for authenticated users)
@@ -126,6 +129,7 @@ export function useAutoSave(slug: string) {
 
         if (newTrip) {
           tripIdRef.current = newTrip.id;
+          setIsOwner(true);
         }
       }
     }
@@ -148,4 +152,6 @@ export function useAutoSave(slug: string) {
       clearTimeout(timeout);
     };
   }, [save]);
+
+  return { isOwner };
 }
