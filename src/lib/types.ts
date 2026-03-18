@@ -60,3 +60,28 @@ export interface TripCardData {
   topHomestay: string | null;
   isSaved: boolean;
 }
+
+export interface CollabSession {
+  id: string;
+  slug: string;
+  tripName: string;
+  tripData: Location[];
+  createdAt: string;
+  updatedAt: string;
+  expiresAt: string;
+}
+
+export interface CollabParticipant {
+  id: string;
+  nickname: string;
+  color: string;
+}
+
+export type CollabDelta =
+  | { action: "set-trip-name"; name: string }
+  | { action: "add-location"; location: Location }
+  | { action: "remove-location"; locationId: string }
+  | { action: "update-priority"; locationId: string; priority: number }
+  | { action: "update-notes"; locationId: string; notes: string }
+  | { action: "update-photo"; locationId: string; photoUrl: string }
+  | { action: "full-sync"; tripName: string; locations: Location[] };
