@@ -9,7 +9,7 @@ import { ComparisonCard } from "@/components/comparison-card";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
-export function ComparisonView({ wrapped }: { wrapped?: boolean } = {}) {
+export function ComparisonView({ wrapped = false }: { wrapped?: boolean }) {
   const locations = useTripStore((s) => s.locations);
   const comparisonIds = useTripStore((s) => s.comparisonIds);
   const clearComparison = useTripStore((s) => s.clearComparison);

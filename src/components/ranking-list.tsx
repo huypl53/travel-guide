@@ -177,7 +177,7 @@ export function RankingList() {
                   e.stopPropagation();
                   toggleComparison(r.homestay.id);
                 }}
-                className={`shrink-0 flex items-center justify-center h-6 w-6 rounded border transition-colors ${
+                className={`shrink-0 flex items-center justify-center h-10 w-10 sm:h-6 sm:w-6 rounded border transition-colors ${
                   isComparing
                     ? "bg-primary border-primary text-primary-foreground"
                     : "border-border hover:border-primary/50"

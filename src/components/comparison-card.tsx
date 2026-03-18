@@ -53,7 +53,7 @@ export function ComparisonCard({ ranked, rank, isOverallWinner, bestValues, best
       {/* Weighted average */}
       <div
         className={`text-center py-2 rounded-md mb-3 ${
-          isBest(ranked.weightedAvgKm, bestValues.weightedAvgKm)
+          bestValues.weightedAvgKm > 0 && isBest(ranked.weightedAvgKm, bestValues.weightedAvgKm)
             ? "bg-green-500/15 text-green-700 dark:text-green-400"
             : "bg-muted"
         }`}
@@ -68,8 +68,8 @@ export function ComparisonCard({ ranked, rank, isOverallWinner, bestValues, best
           const effectiveKm = d.drivingKm ?? d.km;
           const effectiveMin = d.drivingMinutes ?? 0;
           const bestDest = bestValues.perDestination.get(d.destination.id);
-          const isBestKm = bestDest ? isBest(effectiveKm, bestDest.km) : false;
-          const isBestMin = bestDest && effectiveMin > 0 ? isBest(effectiveMin, bestDest.minutes) : false;
+          const isBestKm = bestDest && bestDest.km > 0 ? isBest(effectiveKm, bestDest.km) : false;
+          const isBestMin = bestDest && bestDest.minutes > 0 && effectiveMin > 0 ? isBest(effectiveMin, bestDest.minutes) : false;
 
           return (
             <div key={d.destination.id} className="border-t border-border/50 pt-2">
@@ -105,7 +105,7 @@ export function ComparisonCard({ ranked, rank, isOverallWinner, bestValues, best
       {totalMinutes > 0 && (
         <div
           className={`text-center py-2 rounded-md mt-3 ${
-            isBest(totalMinutes, bestValues.totalMinutes)
+            bestValues.totalMinutes > 0 && isBest(totalMinutes, bestValues.totalMinutes)
               ? "bg-green-500/15 text-green-700 dark:text-green-400"
               : "bg-muted"
           }`}
@@ -118,9 +118,9 @@ export function ComparisonCard({ ranked, rank, isOverallWinner, bestValues, best
       {/* Best for labels */}
       {bestForLabels.length > 0 && (
         <div className="mt-3 space-y-1">
-          {bestForLabels.map((label) => (
+          {bestForLabels.map((label, i) => (
             <div
-              key={label}
+              key={`${label}-${i}`}
               className="text-xs text-green-700 dark:text-green-400 bg-green-500/10 rounded px-2 py-1"
             >
               {label}
