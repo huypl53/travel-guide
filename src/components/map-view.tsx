@@ -12,12 +12,12 @@ import { NearbyPoi, type PoiResult } from "./nearby-poi";
 
 const LeafletMap = dynamic(
   () => import("./map-providers/leaflet-map"),
-  { ssr: false, loading: () => <div className="h-[250px] sm:h-[350px] md:h-[500px] bg-muted animate-pulse rounded-lg" /> }
+  { ssr: false, loading: () => <div className="h-full min-h-[300px] bg-muted animate-pulse rounded-lg" /> }
 );
 
 const GoogleMap = dynamic(
   () => import("./map-providers/google-map"),
-  { ssr: false, loading: () => <div className="h-[250px] sm:h-[350px] md:h-[500px] bg-muted animate-pulse rounded-lg" /> }
+  { ssr: false, loading: () => <div className="h-full min-h-[300px] bg-muted animate-pulse rounded-lg" /> }
 );
 
 function getMapProviderType(): "google" | "osm" {
@@ -27,7 +27,7 @@ function getMapProviderType(): "google" | "osm" {
   return "osm";
 }
 
-export function MapView() {
+export function MapView({ className }: { className?: string }) {
   const provider = getMapProviderType();
   const [mapStyle, setMapStyle] = useState<MapStyle>(getPersistedMapStyle);
   const [pois, setPois] = useState<PoiResult[]>([]);
@@ -42,7 +42,7 @@ export function MapView() {
   }, []);
 
   return (
-    <div className="relative">
+    <div className={`relative h-full${className ? ` ${className}` : ""}`}>
       <MapStyleSwitcher value={mapStyle} onChange={handleStyleChange} provider={provider} />
       {provider === "google" ? (
         <GoogleMap mapStyle={mapStyle} pois={pois} />

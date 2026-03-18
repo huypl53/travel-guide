@@ -56,7 +56,7 @@ export default function TripPage() {
       <WeatherWidget center={weatherCenter} />
 
       {/* Data Input + Map side-by-side on desktop */}
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-4 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-4 items-start md:items-stretch">
         {/* Left column: Bases + Destinations stacked */}
         <div className="space-y-4">
           <Card className="p-4 space-y-3">
@@ -86,9 +86,11 @@ export default function TripPage() {
           </Card>
         </div>
 
-        {/* Right column: Map sticky */}
-        <div className="sticky top-4 h-[min(600px,calc(100vh-8rem))]">
-          <MapView />
+        {/* Right column: matches left column height, map sticky inside */}
+        <div>
+          <div className="sticky top-4 h-[min(100%,calc(100vh-2rem))]">
+            <MapView className="h-full" />
+          </div>
         </div>
       </div>
 

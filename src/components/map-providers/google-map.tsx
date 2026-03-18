@@ -192,7 +192,7 @@ export default function GoogleMapInner({ mapStyle = "default", pois = [] }: { ma
       <Map
         defaultCenter={{ lat: center.lat, lng: center.lon }}
         defaultZoom={13}
-        className="h-[250px] sm:h-[350px] md:h-[500px] w-full rounded-lg"
+        className="h-full min-h-[300px] w-full rounded-lg"
         mapId="base-locator"
         gestureHandling="greedy"
         disableDefaultUI={false}

@@ -71,7 +71,7 @@ export default function MapInner({ mapStyle = "default", pois = [] }: { mapStyle
   } = useMapData();
 
   return (
-    <MapContainer center={[center.lat, center.lon]} zoom={13} zoomSnap={0.5} wheelDebounceTime={100} wheelPxPerZoomLevel={120} className="h-[250px] sm:h-[350px] md:h-[500px] w-full rounded-lg z-0">
+    <MapContainer center={[center.lat, center.lon]} zoom={13} zoomSnap={0.5} wheelDebounceTime={100} wheelPxPerZoomLevel={120} className="h-full min-h-[300px] w-full rounded-lg z-0">
       <FlyToLocation />
       <TileLayer
         key={mapStyle}
