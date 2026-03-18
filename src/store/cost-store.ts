@@ -49,13 +49,12 @@ export const useCostStore = create<CostState>((set, get) => ({
       const raw = localStorage.getItem(`cost-settings-${slug}`);
       if (!raw) return;
       const data = JSON.parse(raw);
+      const mode: TransportMode = data.transportMode ?? "motorbike";
       set({
         nightlyRates: data.nightlyRates ?? {},
         tripNights: data.tripNights ?? 1,
-        transportMode: data.transportMode ?? "motorbike",
-        fuelCostPerKm:
-          data.fuelCostPerKm ??
-          FUEL_COST_DEFAULTS[(data.transportMode ?? "motorbike") as TransportMode],
+        transportMode: mode,
+        fuelCostPerKm: FUEL_COST_DEFAULTS[mode],
       });
     } catch {
       // ignore corrupt data
@@ -63,11 +62,11 @@ export const useCostStore = create<CostState>((set, get) => ({
   },
 
   saveToStorage: (slug) => {
-    const { nightlyRates, tripNights, transportMode, fuelCostPerKm } = get();
+    const { nightlyRates, tripNights, transportMode } = get();
     try {
       localStorage.setItem(
         `cost-settings-${slug}`,
-        JSON.stringify({ nightlyRates, tripNights, transportMode, fuelCostPerKm })
+        JSON.stringify({ nightlyRates, tripNights, transportMode })
       );
     } catch {
       // storage full — ignore

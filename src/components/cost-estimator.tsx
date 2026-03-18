@@ -21,15 +21,18 @@ export function CostEstimator() {
 
   const nightlyRates = useCostStore((s) => s.nightlyRates);
   const slugRef = useRef<string>("");
+  const hasLoaded = useRef(false);
 
   // Load from localStorage on mount or slug change
   useEffect(() => {
     loadFromStorage(slug);
     slugRef.current = slug;
+    hasLoaded.current = true;
   }, [slug, loadFromStorage]);
 
   // Auto-save on any cost-related change
   useEffect(() => {
+    if (!hasLoaded.current) return;
     if (slugRef.current !== slug) return;
     saveToStorage(slug);
   }, [slug, tripNights, transportMode, fuelCostPerKm, nightlyRates, saveToStorage]);
@@ -55,6 +58,7 @@ export function CostEstimator() {
         <Button
           variant={transportMode === "motorbike" ? "secondary" : "ghost"}
           size="icon-xs"
+          className="h-11 w-11 sm:h-8 sm:w-8"
           onClick={() => setTransportMode("motorbike")}
           title="Motorbike (3,000 VND/km)"
           aria-label="Motorbike"
@@ -65,6 +69,7 @@ export function CostEstimator() {
         <Button
           variant={transportMode === "car" ? "secondary" : "ghost"}
           size="icon-xs"
+          className="h-11 w-11 sm:h-8 sm:w-8"
           onClick={() => setTransportMode("car")}
           title="Car (6,000 VND/km)"
           aria-label="Car"

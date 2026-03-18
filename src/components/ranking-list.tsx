@@ -18,7 +18,7 @@ function RankBadge({ rank }: { rank: number }) {
   return <div className={`${base} bg-muted text-muted-foreground`}>{rank}</div>;
 }
 
-function NightlyRateInput({ homestayId }: { homestayId: string }) {
+function NightlyRateInput({ homestayId, homestayName }: { homestayId: string; homestayName: string }) {
   const rate = useCostStore((s) => s.nightlyRates[homestayId]);
   const setNightlyRate = useCostStore((s) => s.setNightlyRate);
   const removeNightlyRate = useCostStore((s) => s.removeNightlyRate);
@@ -64,7 +64,7 @@ function NightlyRateInput({ homestayId }: { homestayId: string }) {
       onKeyDown={handleKeyDown}
       placeholder="VND/night"
       className="w-24 h-7 sm:h-6 text-xs text-right"
-      aria-label="Nightly rate"
+      aria-label={`Nightly rate for ${homestayName}`}
     />
   );
 }
@@ -196,7 +196,7 @@ export function RankingList() {
               </span>
             </Button>
             <div className="flex justify-end pr-2">
-              <NightlyRateInput homestayId={r.homestay.id} />
+              <NightlyRateInput homestayId={r.homestay.id} homestayName={r.homestay.name} />
             </div>
           </div>
         );
