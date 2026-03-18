@@ -57,25 +57,55 @@ export class RateLimiter {
   }
 }
 
+// ---------------------------------------------------------------------------
 // Pre-configured limiter instances
+//
+// In Next.js dev mode, modules are re-evaluated on every request due to HMR.
+// We store instances on globalThis so they survive reloads and actually enforce
+// rate limits during development.
+// ---------------------------------------------------------------------------
+
+interface RateLimiterCache {
+  publicProxyLimiter: RateLimiter;
+  extractLimiter: RateLimiter;
+  collabCreateLimiter: RateLimiter;
+  collabAccessLimiter: RateLimiter;
+  nearbyLimiter: RateLimiter;
+  resolveUrlLimiter: RateLimiter;
+  authLimiter: RateLimiter;
+}
+
+const g = globalThis as typeof globalThis & { __rateLimiters?: RateLimiterCache };
+
+if (!g.__rateLimiters) {
+  g.__rateLimiters = {
+    publicProxyLimiter: new RateLimiter(30, 60_000),
+    extractLimiter: new RateLimiter(10, 60_000),
+    collabCreateLimiter: new RateLimiter(10, 60_000),
+    collabAccessLimiter: new RateLimiter(60, 60_000),
+    nearbyLimiter: new RateLimiter(20, 60_000),
+    resolveUrlLimiter: new RateLimiter(20, 60_000),
+    authLimiter: new RateLimiter(30, 60_000),
+  };
+}
 
 /** Geocode / public proxy routes — 30 req/min */
-export const publicProxyLimiter = new RateLimiter(30, 60_000);
+export const publicProxyLimiter = g.__rateLimiters.publicProxyLimiter;
 
 /** Extract / import routes — 10 req/min */
-export const extractLimiter = new RateLimiter(10, 60_000);
+export const extractLimiter = g.__rateLimiters.extractLimiter;
 
 /** Collaborative session creation — 10 req/min */
-export const collabCreateLimiter = new RateLimiter(10, 60_000);
+export const collabCreateLimiter = g.__rateLimiters.collabCreateLimiter;
 
 /** Collaborative session access — 60 req/min */
-export const collabAccessLimiter = new RateLimiter(60, 60_000);
+export const collabAccessLimiter = g.__rateLimiters.collabAccessLimiter;
 
 /** Nearby POI route — 20 req/min */
-export const nearbyLimiter = new RateLimiter(20, 60_000);
+export const nearbyLimiter = g.__rateLimiters.nearbyLimiter;
 
 /** Resolve-url route — 20 req/min */
-export const resolveUrlLimiter = new RateLimiter(20, 60_000);
+export const resolveUrlLimiter = g.__rateLimiters.resolveUrlLimiter;
 
 /** Auth-related routes — 30 req/min */
-export const authLimiter = new RateLimiter(30, 60_000);
+export const authLimiter = g.__rateLimiters.authLimiter;
